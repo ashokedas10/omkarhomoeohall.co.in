@@ -139,7 +139,9 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/21/list/"><i class="fa fa-circle-o"></i>Brand Master</a></li> 		
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/22/list/"><i class="fa fa-circle-o"></i>Product Group Master</a></li> 		 
 		<?php /*?><li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/2/list/"><i class="fa fa-circle-o"></i>Product Master Old</a></li> 	<?php */?>	
-		<li><a href="<?php echo ADMIN_BASE_URL?>Accounts_controller/load_form_report/product_master"><i class="fa fa-circle-o"></i>Product Master</a></li>
+	<?php /*?>	<li><a href="<?php echo ADMIN_BASE_URL?>Accounts_controller/load_form_report/product_master"><i class="fa fa-circle-o"></i>Product Master -old</a></li><?php */?>
+		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/product_master"><i class="fa fa-circle-o"></i>Product Master</a></li>
 		
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/38/list/"><i class="fa fa-circle-o"></i>Potency Master</a></li> 
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/39/list/"><i class="fa fa-circle-o"></i>Pack Size Master</a></li> 
@@ -149,7 +151,14 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/product_rate_master/master/47/">
 		<i class="fa fa-circle-o"></i>Rate Master</a></li>
 				
-		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/9/list/"><i class="fa fa-circle-o"></i>Party/Vendor Master</a></li> 
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/9/list/"><i class="fa fa-circle-o"></i>Vendor Master</a></li> 
+		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/41/list/"><i class="fa fa-circle-o"></i>Party Master</a></li> 
+		
+			<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/42/list/"><i class="fa fa-circle-o"></i>Agent Master</a></li> 
+			
+				<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/43/list/"><i class="fa fa-circle-o"></i>Patient Registration</a></li> 
+		
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/23/list/"><i class="fa fa-circle-o"></i>Account Group Manage</a></li>					
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/24/list/"><i class="fa fa-circle-o"></i>Ledger Manage</a></li>			
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/25/list/"><i class="fa fa-circle-o"></i>Doctor master</a></li>			

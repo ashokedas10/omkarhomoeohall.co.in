@@ -195,17 +195,33 @@ font-weight:200;
 		 document.addEventListener("keydown", function(event) {
 		 
 		 	//alert(event.keyCode);
+			if(event.keyCode==27)
+			{
+				var answer1 = window.confirm("Save Bill?");
+				if (answer1) 
+				{
+					//some code
+					angular.element(document.getElementById('myBody')).scope().save_check();
+					//PRINT LABEL
+					var answer2 = window.confirm("Print Label?");
+					if (answer2) 
+					{				
+						angular.element(document.getElementById('myBody')).scope().print_label();
+					}		
+				}
+			}		
+		
 			
 			//(F9) -LABEL PRINT
-			if(event.keyCode==120)
-			{angular.element(document.getElementById('myBody')).scope().print_label();}
+			<?php /*?><!--if(event.keyCode==120)
+			{angular.element(document.getElementById('myBody')).scope().print_label();}--><?php */?>
 			
 			//(F10) -PRINT BILL IN POS
-			if(event.keyCode==121)
+			if(event.keyCode==120)
 			{angular.element(document.getElementById('myBody')).scope().print_documents('POS_INVOICE');}
 			
 			//(F11) -NEW ENTRY
-			if(event.keyCode==122) 
+			if(event.keyCode==121) 
 			{angular.element(document.getElementById('myBody')).scope().new_entry();}
 			
 			
@@ -236,7 +252,7 @@ font-weight:200;
 																
 	<table class="table table-bordered table-striped" >
 	
-	<tr>
+	<!--<tr>
 		<td  align="center" colspan="2"  class="activeTR">
 		<span class="style3">
 		<button type="button" class="btn btn-danger" ng-click="test()">LOAD INVOICE ENTRY</button>
@@ -245,10 +261,17 @@ font-weight:200;
 		Label Print (<strong>F9</strong>) | Bill Print(<strong>F10</strong>) |		
 		New Entry (<strong>F11</strong>) ) 
 		</td> 	
-	</tr>	
+	</tr>	-->
 			
 	<tr>		
-		<td  align="center" colspan="6" style="background-color:#CC6633">
+		
+		<td  align="center" colspan="2"  class="activeTR">
+		<span class="style3">
+		<button type="button" class="btn btn-danger" ng-click="test()">LOAD INVOICE ENTRY</button>
+		</span>	
+		</td> 
+		
+		<td  align="center" colspan="2" style="background-color:#CC6633">
 		<span class="style4"><strong>{{server_msg}}<strong></span>	<br />
 		
 		<span class="style4"><strong>{{FormInputArray[0]["header"][1]['fields'][0]['product_id']['validation_msg']}}
@@ -257,6 +280,10 @@ font-weight:200;
 		<span class="style4"><strong>{{FormInputArray[0]["header"][1]['fields'][0]['batchno']['validation_msg']}}
 		<strong></span>	
 		
+		</td> 
+		
+		<td  align="left" colspan="2" class="activeTR"><strong>Shortcut Keys</strong> :
+		Bill Print (<strong>F9</strong>) |  New Entry(<strong>F10</strong>)  
 		</td> 	
 	</tr>	
 				
@@ -264,7 +291,8 @@ font-weight:200;
 <tr>
 		<td  align="left">{{get_field_name(0,'LabelName','invoice_no')}}</td> 
 		<td  align="left" >{{get_field_name(0,'LabelName','invoice_date')}}</td> 
-		<td  align="left">{{get_field_name(0,'LabelName','tbl_party_id')}}</td> 
+		<td  align="left">{{get_field_name(0,'LabelName','patient_name')}}</td> 
+		<td  align="left">{{get_field_name(0,'LabelName','patient_address')}}</td> 
 		<td  align="left">{{get_field_name(0,'LabelName','doctor_ledger_id')}}</td> 
 </tr>
 
@@ -302,20 +330,35 @@ class="form-control" onfocus="this.select();" onmouseup="return false;"  />
 </td>
 	
 				
-<td>	
-<input id="{{FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['input_id_index']}}" 
+<td>
+<input id="{{FormInputArray[0]['header'][0]['fields'][0]['patient_name']['input_id_index']}}" 
 autofocus type="text" name=""   autocomplete="off" 
-placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['LabelName']}}" 				 
-ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['input_id_index'])" 
+placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['patient_name']['LabelName']}}" 				 
+ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['patient_name']['input_id_index'])" 
 ng-keyup="checkKeyUp($event)" 
-ng-model="FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['Inputvalue']"
-ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['InputName'],0,0,0,0,'search')" 			
-ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['InputName'],0,0,0,0,'search')" 	
-ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['input_id_index'])"
+ng-model="FormInputArray[0]['header'][0]['fields'][0]['patient_name']['Inputvalue']"
+ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['patient_name']['InputName'],0,0,0,0,'search')" 			
+ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['patient_name']['InputName'],0,0,0,0,'search')" 	
+ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['patient_name']['input_id_index'])"
 class="form-control" onfocus="this.select();" onmouseup="return false;"  />
 
 </td>  
 
+
+<td>				
+<input id="{{FormInputArray[0]['header'][0]['fields'][0]['patient_address']['input_id_index']}}" 
+autofocus type="text" name=""   autocomplete="off" 
+placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['patient_address']['LabelName']}}" 				 
+ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['patient_address']['input_id_index'])" 
+ng-keyup="checkKeyUp($event)" 
+ng-model="FormInputArray[0]['header'][0]['fields'][0]['patient_address']['Inputvalue']"
+ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['patient_address']['InputName'],0,0,0,0,'search')" 			
+ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['patient_address']['InputName'],0,0,0,0,'search')" 	
+ng-keypress="mainOperation($event,0,0,0,0,
+FormInputArray[0]['header'][0]['fields'][0]['patient_address']['input_id_index'])"
+class="form-control" onfocus="this.select();" onmouseup="return false;"  />
+
+</td>  
 
 <td>				
 <input id="{{FormInputArray[0]['header'][0]['fields'][0]['doctor_ledger_id']['input_id_index']}}" 
@@ -535,7 +578,7 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 			
 			
 			<tr style="background-color:#999999" class="input_field_height">
-				<td colspan="10" align="right" class="input_field_height">Total :</td>	
+				<td colspan="11" align="right" class="input_field_height">Total :</td>	
 				<td  align="right" class="input_field_height">{{dtlist_total_array['total_amt']}}</td>	
 				<!--<td colspan="2" align="right" class="input_field_height">&nbsp;</td>
 				<td align="right" class="input_field_height">{{dtlist_total_array['tot_discount']}}</td>	
@@ -664,7 +707,7 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 
 <!--{{FormInputArray[0]}}-->
 
-<!--{{final_array[0]['header'][1]['fields'][0]['tax_ledger_id']}}-->
+<!--{{FormInputArray[0]['header'][1]['fields'][0]['rate']}}-->
 
 <!--main array : {{FormInputArray[0]['header'][1]['fields'][0]['batchno']}}
 <br />
@@ -682,11 +725,14 @@ Temp array : {{final_array[0]['header'][1]['fields'][0]['batchno']}}
 
 
 
-BB-  {{FormInputArray[0]["header"][1]['fields'][0]['Synonym']['Inputvalue']}} <BR />
-potency_id-  {{FormInputArray[0]["header"][1]['fields'][0]['potency_id']['Inputvalue_id']}} <BR />
+<!--BB-  {{FormInputArray[0]["header"][0]['fields'][0]['doctor_ledger_id']}} <BR />-->
+
+
+
+<!--potency_id-  {{FormInputArray[0]["header"][1]['fields'][0]['potency_id']['Inputvalue_id']}} <BR />
 pack_id-  {{FormInputArray[0]["header"][1]['fields'][0]['pack_id']['Inputvalue_id']}} <BR />
 product_group_id-  {{FormInputArray[0]["header"][1]['fields'][0]['product_group_id']['Inputvalue_id']}} <BR />
-
+-->
 
 <!--{{FormInputArray[0]["header"][1]['fields'][0]['product_id']}}-->
 

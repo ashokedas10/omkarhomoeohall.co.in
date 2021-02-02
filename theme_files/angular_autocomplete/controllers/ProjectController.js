@@ -5,11 +5,11 @@
 //http://www.codexworld.com/angularjs-crud-operations-php-mysql/
 'use strict';
 
-//var domain_name="http://adequatesolutions.co.in/homeopathi/";
 
-var domain_name="https://omkarhomoeohall.co.in/";
 
-//var domain_name="http://localhost/Subhojit_DEPAK_BHUIYA/homeopathi/omkar_homeo/";
+//var domain_name="https://omkarhomoeohall.co.in/";
+
+var domain_name="http://localhost/Subhojit_DEPAK_BHUIYA/homeopathi/omkar_homeo/";
 
 
 var query_result_link=domain_name+"Accounts_controller/query_result/";
@@ -5327,8 +5327,6 @@ function($scope,$window,$rootScope,$http,$location,AccountsTransaction)
 	// console.log('arraindx billdetail '+
 	// $rootScope.FormInputArray[0]['billdetail'][2]['testarray'][0].val);
 	// console.log('$rootScope.max_bill_count '+$rootScope.max_bill_count);
-
-
 	//https://stackoverflow.com/questions/18086865/angularjs-move-focus-to-next-control-on-enter
 
 		$scope.mainOperation=function(event,element_name,index_value,child_index,searchItem,frmrpt_simple_query_builder_id)
@@ -6032,8 +6030,7 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 						if($rootScope.current_form_report=='purchase_entry')
 						{
 						var field_list=['id','product_id','batchno','qnty','rate','batchno','disc_per','disc_per2','mrp',
-						,'exp_monyr','mfg_monyr','tax_ledger_id'];				
-
+						,'exp_monyr','mfg_monyr','tax_ledger_id'];	
 						}
 
 						//id,product_id,batchno,qnty,rate,subtotal,disc_per,disc_per2,disc_amt,taxable_amt,mrp,
@@ -6143,7 +6140,7 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 					 }
 
 					 if($rootScope.current_form_report=='invoice_entry')
-					 {document.getElementById(2).focus();}
+					 {document.getElementById(3).focus();}
 
 					 if($rootScope.current_form_report=='purchase_entry')
 					 {document.getElementById(0).focus();}
@@ -6198,30 +6195,31 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 									if($rootScope.searchelement=='qnty')	
 									{$scope.save_check();}	
 
-									if($rootScope.searchelement=='product_id')	
-									{
+									// if($rootScope.searchelement=='product_id')	
+									// {
 										
-												$rootScope.final_array=[];
-												$rootScope.final_array = JSON.parse(JSON.stringify($rootScope.FormInputArray));
+									// 			$rootScope.final_array=[];
+									// 			$rootScope.final_array = JSON.parse(JSON.stringify($rootScope.FormInputArray));
 											
-												for(var i=0;i<2;i++)
-												{
-													angular.forEach($rootScope.final_array[0]['header'][i]['fields'][0], function (values, key) 
-													{ 
-														$rootScope.final_array[0]['header'][i]['fields'][0][key]['datafields']='';													
-													}); 
-												}		
+									// 			for(var i=0;i<2;i++)
+									// 			{
+									// 				angular.forEach($rootScope.final_array[0]['header'][i]['fields'][0], function (values, key) 
+									// 				{ 
+									// 					$rootScope.final_array[0]['header'][i]['fields'][0][key]['datafields']='';													
+									// 				}); 
+									// 			}		
 											
-											$rootScope.FormInputArray[0]['header'][1]['fields'][0]['batchno']['datafields']='';
-											general_functions.batch_search($rootScope.current_form_report,'batch_search',BaseUrl,1);	
+									// 		$rootScope.FormInputArray[0]['header'][1]['fields'][0]['batchno']['datafields']='';
+									// 		general_functions.batch_search($rootScope.current_form_report,'batch_search',BaseUrl,1);	
 																				
-									}
+									// }
 
 									 if($rootScope.searchelement=='tbl_party_id'  || $rootScope.searchelement=='batchno'|| 
 									 $rootScope.searchelement=='rate' ||  $rootScope.searchelement=='disc_per'	 ||
 									 $rootScope.searchelement=='disc_per2' ||  $rootScope.searchelement=='main_group_id' 
 									 ||  $rootScope.searchelement=='potency_id' ||  $rootScope.searchelement=='pack_id' 
-									 ||  $rootScope.searchelement=='no_of_dose')	
+									 ||  $rootScope.searchelement=='no_of_dose' ||  $rootScope.searchelement=='patient_name' 
+									 ||  $rootScope.searchelement=='product_id')	
 									 {$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement);}
 
 								}	
@@ -6271,8 +6269,16 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 						$rootScope.index3=index3;
 						$rootScope.index3=index4;
 
-							console.log('Input Type :'+$rootScope.FormInputArray[0]['header'][indx1]['fields'][0][searchelement]['InputType']);
+						console.log('Input Type :'+$rootScope.FormInputArray[0]['header'][indx1]['fields'][0][searchelement]['InputType']);
+						console.log('Input Inputvalue Inputvalue :'+$rootScope.FormInputArray[0]['header'][indx1]['fields'][0][searchelement]['Inputvalue']);
 						
+						if(searchelement=='qnty')
+						{
+							$rootScope.FormInputArray[0]['header'][1]['fields'][0]['subtotal']['Inputvalue']=
+							Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue'])*
+							Number($rootScope.FormInputArray[0]['header'][1]['fields'][0][searchelement]['Inputvalue']);
+
+						}
 
 						$rootScope.suggestions = [];
 						$rootScope.searchItems=[];
@@ -6325,10 +6331,14 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 						if(val !== -1) 
 						{
 							
-							$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
-							$rootScope.suggestions[$rootScope.selectedIndex]['FieldVal'];
-							$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
-							$rootScope.suggestions[$rootScope.selectedIndex]['FieldID'];
+							if($rootScope.FormInputArray[0]['header'][indx1]['fields'][0][searchelement]['Inputvalue']!='')
+							{
+								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
+								$rootScope.suggestions[$rootScope.selectedIndex]['FieldVal'];
+								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
+								$rootScope.suggestions[$rootScope.selectedIndex]['FieldID'];
+							}
+							
 
 							//inner div $anchorScroll
 							//http://plnkr.co/edit/yFj9fL3sOhDqjhMawI72?p=preview&preview
@@ -6552,15 +6562,19 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 
 							angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
 							{ 
-								$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
-								$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']='';	
+								if(key!='main_group_id' )
+								{
+									$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
+									$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']='';	
+								}
+						
 							}); 
 
 
 						//CHANGES HERE FORM BASIS
 
 						if($rootScope.current_form_report=='invoice_entry' )
-						{document.getElementById(4).focus();}
+						{document.getElementById(6).focus();}
 
 						if($rootScope.current_form_report=='purchase_entry' )
 						{document.getElementById(8).focus();}
@@ -6656,6 +6670,140 @@ function($scope,$rootScope,general_functions,$http){
 					// $scope.id_header=response.data.id_header;
 					// console.log($scope.savemsg);
 					// $scope.new_entry();
+
+				},
+				function error(response){
+					$scope.errorMessage = 'Error - Receord Not Saved!';
+					$scope.message = '';
+				});
+
+			}
+	
+}]);
+
+
+
+
+
+
+
+app.controller('product_master',['$scope','$rootScope','$http',
+function($scope,$rootScope,$http){
+	"use strict";
+	
+			$scope.products={};
+			$scope.ledgers={};
+			$rootScope.FormInputArray=[];	
+
+			var BaseUrl=domain_name+"Project_controller/product_master/";
+			var AcTranType;
+			// $scope.initarray=function(trantype){		
+			// 	BaseUrl=BaseUrl+trantype+'/';	
+			// 	AcTranType=trantype;
+			// }
+
+			var CurrentDate=new Date();
+			var year = CurrentDate.getFullYear();
+			var month = CurrentDate.getMonth()+1;
+			var dt = CurrentDate.getDate();
+			if (dt < 10) {	dt = '0' + dt;}
+			if (month < 10) {month = '0' + month;}
+			$scope.tran_date=year+'-' + month + '-'+dt;
+			
+			
+			var data_link=query_result_link+"32/";$http.get(data_link).then(function(response) {$scope.master_lovs=response.data;});
+			//console.log(data_link);
+			var data_link=query_result_link+"33/";$http.get(data_link).then(function(response) {$scope.active_inactive_list=response.data;});
+
+			var data_link=query_result_link+"39/";$http.get(data_link).then(function(response) {$scope.product_group_list=response.data;});
+			var data_link=query_result_link+"38/";$http.get(data_link).then(function(response) {$scope.brand_list=response.data;});
+			
+			var data_link=query_result_link+"40/";$http.get(data_link).then(function(response) {$scope.tax_list=response.data;});
+			var data_link=query_result_link+"41/";$http.get(data_link).then(function(response) {$scope.active_inactive_list=response.data;});
+			console.log(data_link);
+
+			console.log(data_link);
+						
+			$scope.entry_index=0;
+			$scope.transetting='ENTRY';	
+			$scope.id_header=0;
+
+			$rootScope.FormInputArray[0] =
+			{	
+					group_id:0,	
+					brand_id:0,
+					list_of_values:[{id_detail:'',productname:'',group_id:'',brand_id:'',sell_discount:'',mrp:'',spl_discount:'',hsncode:'',tax_ledger_id:'',active_inactive:'ACTIVE'}]	
+			};
+			
+			$scope.new_entry=function()
+			{
+				$rootScope.FormInputArray[0] =
+				{	
+					group_id:0,	
+					brand_id:0,
+					list_of_values:[{id_detail:'',productname:'',group_id:'',brand_id:'',sell_discount:'',mrp:'',spl_discount:'',hsncode:'',tax_ledger_id:'',active_inactive:'ACTIVE'}]				
+				};
+			}
+
+			$scope.add_entry=function(detail_type)
+			{
+				console.log(detail_type);
+				if(detail_type=='lov_list')
+				{
+					var length=$rootScope.FormInputArray[0].list_of_values.length;					
+					$scope.FormInputArray[0].list_of_values[length]={id_detail:'',productname:'',
+					group_id:$rootScope.FormInputArray[0].group_id,
+					brand_id:$rootScope.FormInputArray[0].brand_id,
+					sell_discount:'',mrp:'',spl_discount:'',hsncode:'',tax_ledger_id:'',active_inactive:'ACTIVE'};				
+
+				}			
+			}
+			
+			$scope.view_list=function(group_id,brand_id)
+			{
+				var data_link=BaseUrl+"VIEWALLVALUE/"+group_id+'/'+brand_id;
+				console.log(data_link);
+				$http.get(data_link).then(function(response) 
+				{
+					angular.forEach(response.data,function(value,key)
+					{
+
+					//	console.log('test'+value.list_of_values);
+
+						$rootScope.FormInputArray[0] =
+							{		
+								group_id:value.group_id,	
+								brand_id:value.brand_id,								
+								list_of_values:value.list_of_values							
+							};		
+					});	
+				});	
+
+				// $scope.id_header=id_header;
+				// $rootScope.transetting='ENTRY';	
+				// $scope.form_control();
+
+			}		
+		
+							
+			$scope.savedata=function()
+			{
+				var data_link=BaseUrl+"SAVE/";
+				console.log(data_link);
+				var success={};		
+			
+				var data_save = JSON.stringify($rootScope.FormInputArray);	
+			    	console.log(data_save);
+
+				var config = {headers : 
+					{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'	}
+				}		
+				$http.post(data_link,data_save,config)
+				.then (function success(response){	
+					//$scope.savemsg=response.data.server_msg;
+					//$scope.id_header=response.data.id_header;
+					//console.log($scope.savemsg);
+					$scope.new_entry();
 
 				},
 				function error(response){

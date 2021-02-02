@@ -1,14 +1,59 @@
+<html>
+<head>
 
-<?php if($PRINTTYPE=='LABEL'){ ?>
+<script type = "text/javascript">
+var myWindow;
+/*Final Submit(F8) | New Mixer(F9) | Print Invoice(F10) | Print POS(F11) | New Entry (F1) */
+ function shortcut() 
+ {
+ `alert(event.keyCode);
+  document.addEventListener("keydown", function(event) {
+		if(event.keyCode==27)
+		{
+			 myWindow.close();
+		}
+	});
+			
+}
+</script>  
+
+
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&display=swap" rel="stylesheet">
 
 <style>
 	.SivaDiv {
-		background-image: url(<?PHP echo BASE_PATH_ADMIN.'uploads/LABEL1.png'; ?>);
+		background-image: url(<?PHP echo BASE_PATH_ADMIN.'uploads/LABEL_EXPERIMENT-1.png'; ?>);
 		background-repeat: no-repeat;
 		width: 40mm;
 		height: 29mm;
+		margin-left: 0;
 		/*border: 1px solid red;*/
 	}
+	.header {
+		width: 40mm;
+		height: 14mm;
+		margin-left: 0;
+		font-size:9px;
+		font-family: Fiona Regular, sans-serif;
+		/*border: 1px solid red;*/
+	}
+	.footer {
+		background-image: url(<?PHP echo BASE_PATH_ADMIN.'uploads/footer.png'; ?>);
+		background-repeat: no-repeat;
+		width: 40mm;
+		height: 15mm;
+		margin-left: 0;
+		/*border: 1px solid red;*/
+	}
+	
+	.style1 {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 10px;
+	font-weight:200;
+	
+	}
+	
 
 	/*@media print {
 		.graph-img img {
@@ -19,7 +64,10 @@
 </style>
 
 
+</head>
+<body onLoad="window.print();" id="myBody" onchange = "shortcut()">
 
+<?php if($PRINTTYPE=='LABEL'){ ?>
 <?php
 	
 	$COMP_ID=$this->session->userdata('COMP_ID');
@@ -49,8 +97,8 @@
 		
 		if($Synonym=='')
 		{$Synonym=$productname;}
-		
-		for($i=1;$i<10;$i++){
+		//$printcount=3;
+		for($i=1;$i<=2;$i++){
 	
 ?>
 	
@@ -75,29 +123,92 @@
 	<tr><td>test</td></tr>
 	
 	</table><?php */?>
+
+	
+	<div class="header"  style="margin-right:0px;" >
+	
+	<table border="0" cellpadding="0" cellspacing="0">
+	
+	<tr>
+		<td align="left" style="text-align:left;
+		font-family: Arial Black; font-size:9px;"><strong>DILUTION</strong>
+	   </td>
+		<td align="right" style="text-align:right;
+		 font-family:Arial Black; font-size:9px;"><strong>10GM</strong>
+		</td>
+	</tr>
+	
+	<tr>
+		<td colspan="2" style="text-align:center;
+		font-family:Bookman Old Style; font-size:9px;"><strong>HOMOEOPATHIC MEDICINE</strong><br />
+		</td>
+	</tr>
+	
+	<tr align="center">
+		<td style="font-family:Bookman Old Style; 
+		font-size:15px;text-align:center;" ><strong>BRYONIA ALB 200</strong>
+		</td>
+	</tr>
+	
+	
+	<!--<tr>
+		<td style="font-family:Arial Black; font-size:9px;"><strong>BRYONIA ALB 200</strong>
+		</td>
+		<td style="text-align:center;
+			font-family: Fiona Regular;font-size: 8px;"><strong>BRYONIA ALB 200</strong>
+		</td>
+	</tr>-->
+	
+	
+	<tr>
+		<td style="text-align:center;
+			font-family: Fiona Regular;font-size: 6px;" colspan="2">
+			
+		</td>
+	
+	</tr>
+	
+	</table>
+	
+	</div>		
+	
+	<?php /*?><?php if ($printcount>1){ ?>
+	<div class="footer"  style="page-break-after: always;">
+	<?php }else{ ?>
+	<div class="footer">
+	<?php } ?><?php */?>
+	
+	<div class="footer"  style="page-break-after: always; margin-right:0px;" >
 		
-	<div id="printdiv<?php echo $i; ?>" class="SivaDiv" style="width:100%;page-break-after: always;">
-       	
-		<!--ABROMA AUG Q 30ML <br />
-		ABROMA AUG Q 30ML <br />
-		ABROMA AUG Q 30ML <br />
-		ABROMA AUG Q 30ML <br />-->
-		<?php /*?>	<p>&nbsp;</p>
-		<p>&nbsp;</p>
-		<p>&nbsp;</p>
-		<p>&nbsp;</p>
-		<div style="margin-left:100px; "><h2>ABROMA AUG Q 30ML </h2></div>
-		<div style="margin-left:100px; "><h2>ABROMA AUG Q 30ML </h2></div>
-		<div style="margin-left:100px; "><h2>ABROMA AUG Q 30ML </h2></div>
-		<div style="margin-left:100px; "><h2>ABROMA AUG Q 30ML </h2></div>
-		<div style="margin-left:100px; "><h2>ABROMA AUG Q 30ML </h2></div><?php */?>
-		
-		
-    </div>
-	<!--<h1>&nbsp;</h1>-->
+	<table border="0" cellpadding="0" cellspacing="0" style="width:100%">
+	
+	<tr >
+		<td align="right" style="font-family:Bookman Old Style;font-size: 7px;">
+		<br /><strong>PKD:21/01/21</strong>
+		</td>
+	</tr>	
+	
+	
+	<tr >
+		<td align="right" style="font-family:Bookman Old Style;font-size: 9px;">
+		<strong>MRP:40.00</strong>
+	   </td>
+	</tr>	
+	
+	
+	</table>
+	
+	</div>
+	
     
 	
 	
-<?php $label_count=$label_count-1;}}  } ?>
+<?php $label_count=$label_count-1;}} } ?>
+
+</body>
+</html>
+
+
+
 
 

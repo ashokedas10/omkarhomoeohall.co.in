@@ -292,7 +292,6 @@ td{
 						<td class="item" style="background-color:#999999"> Qty </td>
 						<td class="Hours" align="right" style="background-color:#999999"> Rate </td>
 						<td class="Rate" align="right" style="background-color:#999999" > Total </td>
-						
 					</tr>
 					<?php }?>
 					
@@ -307,7 +306,8 @@ td{
 				$total_qnty=0;
 				//$grand_total=0;	
 													
-				$sql="select * from invoice_details where  invoice_summary_id=".$table_id." 	order by  id ";
+				$sql="select * from invoice_details where  
+				invoice_summary_id=".$table_id." 	order by  main_group_id,id ";
 				$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
 				$i =0;
 				if(count($rowrecord) > 0){
@@ -319,14 +319,70 @@ td{
 				
 				$product_name=$this->projectmodel->GetSingleVal('productname','productmstr',
 								' id='.$row->product_id);
-			
-						
-			if($row->pack_id>0)
-			{$pack_name=$this->projectmodel->GetSingleVal('name','misc_mstr',' id='.$row->pack_id);}
-			else
-			{ $pack_name='';}
 								
-			 $product_name=$product_name.' '.$row->Synonym.' '.$pack_name;				
+				if($row->product_Synonym<>'')
+				{$product_name=$row->product_Synonym;}
+				
+				//potency
+				if($row->potency_id>0)
+				{
+					$potency_name=
+					$this->projectmodel->GetSingleVal('name','misc_mstr',' id='.$row->potency_id);
+				}
+				else
+				{ $potency_name='';}
+				
+				if($row->Synonym<>'')
+				{$potency_name=$row->Synonym;}
+			
+				//pack			
+				if($row->pack_id>0)
+				{$pack_name=$this->projectmodel->GetSingleVal('name','misc_mstr',' id='.$row->pack_id);}
+				else
+				{ $pack_name='';}
+				
+				if($row->pack_synonym<>'')
+				{$pack_name=$row->pack_synonym;}
+				
+				$no_of_dose='';
+								
+				if($row->main_group_id==50) //MOTHER
+				{$product_name=$product_name.' '.$potency_name.' '.$pack_name;}
+				
+				if($row->main_group_id==52) //TRITURATION
+				{$product_name=$product_name.' '.$pack_name;}
+				
+				if($row->main_group_id==53) //DILUTION
+				{$product_name=$product_name.' '.$potency_name.' '.$pack_name;}
+				
+				if($row->main_group_id==54) //BIOCHEMIC
+				{$product_name=$product_name.' '.$potency_name.' '.$pack_name;}
+				
+				if($row->main_group_id==55) //WATER
+				{$product_name=$product_name.' '.$potency_name.' '.$pack_name;}
+				
+				if($row->main_group_id==56) //SUGAR_OF_MILK
+				{$product_name=$product_name.' '.$potency_name.' '.$no_of_dose;}
+				
+				
+				if($row->main_group_id==57) //MM1
+				{$product_name=$product_name.' '.$potency_name.' '.$no_of_dose;}
+				
+				if($row->main_group_id==57) //MM2
+				{$product_name=$product_name.' '.$potency_name.' '.$no_of_dose;}
+				
+				if($row->main_group_id==57) //MM3
+				{$product_name=$product_name.' '.$potency_name.' '.$no_of_dose;}
+				
+				if($row->main_group_id==57) //MM4
+				{$product_name=$product_name.' '.$potency_name.' '.$no_of_dose;}
+				
+				if($row->main_group_id==57) //MM5
+				{$product_name=$product_name.' '.$potency_name.' '.$no_of_dose;}
+			 	
+				if($row->main_group_id==57) //MM6
+				{$product_name=$product_name.' '.$potency_name.' '.$no_of_dose;}
+				
 								
 				//$product_name=$row->product_name;
 				$total_mrp=$total_mrp+($row->mrp*$row->qnty);
@@ -392,7 +448,6 @@ td{
 								<td class="tableitem" colspan="2"><span class="style1">Taxable Amt</span></td>
 								<td class="tableitem" colspan="3" align="right">
 								<span class="style1"><?PHP echo $total_taxable_amt; ?></span></td>
-								
 							</tr>
 							
 							<tr class="service">
@@ -400,14 +455,12 @@ td{
 								<td class="tableitem" colspan="2"><span class="style1">CGST Amt</span></td>
 								<td class="tableitem" colspan="3" align="right">
 								<span class="style1"><?PHP echo $total_cgst_amt; ?></span></td>
-							
 							</tr>
 							<tr class="service">
 								<td class="tableitem" colspan="2">&nbsp;</td>
 								<td class="tableitem" colspan="2"><span class="style1">SGST Amt</span></td>
 								<td class="tableitem" colspan="3" align="right">
 								<span class="style1"><?PHP echo $total_sgst_amt; ?> </span></td>
-								
 							</tr>
 							<?php }?>
 							
@@ -416,7 +469,6 @@ td{
 								<td class="tableitem" colspan="2"><span class="style1">Grand Total</span></td>
 								<td class="tableitem" colspan="3" align="right">
 								<span class="style1"><?PHP echo $invoice_summary[0]->grandtot; ?> </span></td>
-								
 							</tr>
 							
 							
@@ -424,9 +476,7 @@ td{
 							<tr class="service">
 								<td class="tableitem" colspan="7">
 								[ Rs in Words :<?php echo 
-								'<strong>'.strtoupper($this->numbertowords->convert_digit_to_words(round($invoice_summary[0]->grandtot)).' Only').'</strong>';?> ]
-								</td>
-								
+								'<strong>'.strtoupper($this->numbertowords->convert_digit_to_words(round($invoice_summary[0]->grandtot)).' Only').'</strong>';?> ]								</td>
 							</tr>
 							
 							<?php if($invoice_summary[0]->status=='SALE'){?>						
@@ -441,22 +491,16 @@ td{
 																									
 								echo '<strong>'.
 								strtoupper($this->numbertowords->convert_digit_to_words(
-								round($totmrp-$invoice_summary[0]->grandtot))).'</strong>';?> ]
-								</td>
-								
+								round($totmrp-$invoice_summary[0]->grandtot))).'</strong>';?> ]								</td>
 							</tr>
 							<?php }?>
 							
 							<tr class="service">
 								<td class="tableitem" colspan="7" align="center">
-								<?php /*?><img src="<?php echo $billimg; ?>"/><?php */?>
-								</td>
-								
+								<?php /*?><img src="<?php echo $billimg; ?>"/><?php */?>								</td>
 							</tr>
-							
-
 						</table>
-					</div><!--End Table-->
+	  </div><!--End Table-->
 					
 								
 				<?php if($invoice_summary[0]->status=='SALE'){?>
