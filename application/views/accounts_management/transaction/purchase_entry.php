@@ -18,6 +18,7 @@ $(".modal-wide").on("show.bs.modal", function() {
 
 
 </script>
+
 <style>
 
 div.ex1 {
@@ -216,294 +217,304 @@ function shortcut()
 		 
 </script>   
 
-<div ng-app="Accounts" ng-controller="main_transaction_controller"  >
+<div ng-app="Accounts"   >
 
-<div class="panel panel-primary" id="myBody" onkeypress = "shortcut()" >
+<div ng-controller="main_transaction_controller" class="panel panel-primary" id="myBody" onkeypress = "shortcut()" >
 																
-	<table class="table table-bordered table-striped" >
+		<table class="table table-bordered table-striped" >
+	<!--{{FormInputArray[0]['header'][0]['fields'][0]}}-->
 	
-	<tr>
-		<td  align="center" colspan="2"  class="activeTR">
-		<span class="style3">
-		<button type="button" class="btn btn-danger" ng-click="test()">LOAD PURCHASE ENTRY</button>
-		</span>	</td> 
-		<td  align="left" colspan="4"><strong>Shortcut Keys</strong> :
-		New Entry (<strong>F7</strong>) | Final Submit(<strong>F8</strong>)</strong>) 
-		</td> 	
-	</tr>	
-			
-	<tr>		
-		<td  align="center" colspan="6" style="background-color:#CC6633">
-		<span class="style4"><strong>{{server_msg}}<strong></span>		
-		</td> 	
-	</tr>	
+					<tr>
+						<td  align="center" colspan="2"  class="activeTR">
+						<span class="style3">
+						<button type="button" class="btn btn-danger" ng-click="test()">LOAD PURCHASE ENTRY</button>
+						</span>	</td> 
+						<td  align="left" colspan="4"><strong>Shortcut Keys</strong> :
+						New Entry (<strong>F7</strong>) | Final Submit(<strong>F8</strong>)</strong>) 
+						</td> 	
+					</tr>	
+							
+					<tr>		
+						<td  align="center" colspan="6" style="background-color:#CC6633">
+						<span class="style4"><strong>{{server_msg}}<strong></span>		
+						</td> 	
+					</tr>	
+								
+					
+				<tr>
+						<td  align="left">{{get_field_name(0,'LabelName','invoice_no')}}</td> 
+						<td  align="left" >{{get_field_name(0,'LabelName','invoice_date')}}</td> 
+						<td  align="left">{{get_field_name(0,'LabelName','tbl_party_id')}}</td> 
+						<td  align="left">{{get_field_name(0,'LabelName','BILL_TYPE')}}</td> 
+				</tr>
 				
-	
-<tr>
-		<td  align="left">{{get_field_name(0,'LabelName','invoice_no')}}</td> 
-		<td  align="left" >{{get_field_name(0,'LabelName','invoice_date')}}</td> 
-		<td  align="left">{{get_field_name(0,'LabelName','tbl_party_id')}}</td> 
-		<td  align="left">{{get_field_name(0,'LabelName','BILL_TYPE')}}</td> 
-</tr>
-
-
-<tr>
-			
-<td>		
-
-<input id="{{FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['input_id_index']}}" 
-autofocus type="text" name=""   autocomplete="off" 
-placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['LabelName']}}" 				 
-ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['input_id_index'])" 
-ng-keyup="checkKeyUp($event)" 
-ng-model="FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['Inputvalue']"
-ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['InputName'],0,0,0,0,'search')" 			
-ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['InputName'],0,0,0,0,'search')" 	
-ng-keypress="mainOperation($event,0,0,0,0,
-FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"   />
-
-</td> 
 				
-<td >		
-
-<input id="{{FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['input_id_index']}}" 
-autofocus type="text" name=""   autocomplete="off" 
-placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['LabelName']}}" 				 
-ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['input_id_index'])" 
-ng-keyup="checkKeyUp($event)" 
-ng-model="FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['Inputvalue']"
-ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['InputName'],0,0,0,0,'search')" 			
-ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['InputName'],0,0,0,0,'search')" 	
-ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-</td>
-	
+				<tr>
+							
+				<td>		
 				
-<td>	
-<input id="{{FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['input_id_index']}}" 
-autofocus type="text" name=""   autocomplete="off" 
-placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['LabelName']}}" 				 
-ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['input_id_index'])" 
-ng-keyup="checkKeyUp($event)" 
-ng-model="FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['Inputvalue']"
-ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['InputName'],0,0,0,0,'search')" 			
-ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['InputName'],0,0,0,0,'search')" 	
-ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-
-</td>  
-
-
-<td>				
-<input id="{{FormInputArray[0]['header'][0]['fields'][0]['BILL_TYPE']['input_id_index']}}" 
-autofocus type="text" name=""   autocomplete="off" 
-placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['BILL_TYPE']['LabelName']}}" 				 
-ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['BILL_TYPE']['input_id_index'])" 
-ng-keyup="checkKeyUp($event)" 
-ng-model="FormInputArray[0]['header'][0]['fields'][0]['BILL_TYPE']['Inputvalue']"
-ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['BILL_TYPE']['InputName'],0,0,0,0,'search')" 			
-ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['BILL_TYPE']['InputName'],0,0,0,0,'search')" 	
-ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['BILL_TYPE']['input_id_index'])"
-class="form-control"  onfocus="this.select();" onmouseup="return false;" />
-
-</td>  
-						
-</tr>
-
-
-
-
-<tr>
-		<td  align="left">{{get_field_name(0,'LabelName','challan_no')}}</td> 
-		<td  align="left" >{{get_field_name(0,'LabelName','challan_date')}}</td> 
-		<td  align="left">{{get_field_name(0,'LabelName','orderno')}}</td> 
-		<td  align="left">{{get_field_name(0,'LabelName','orderdate')}}</td> 
-</tr>
-
-
-<tr>
-			
-<td>		
-
-<input id="{{FormInputArray[0]['header'][0]['fields'][0]['challan_no']['input_id_index']}}" 
-autofocus type="text" name=""   autocomplete="off" 
-placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['challan_no']['LabelName']}}" 				 
-ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['challan_no']['input_id_index'])" 
-ng-keyup="checkKeyUp($event)" 
-ng-model="FormInputArray[0]['header'][0]['fields'][0]['challan_no']['Inputvalue']"
-ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['challan_no']['InputName'],0,0,0,0,'search')" 			
-ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['challan_no']['InputName'],0,0,0,0,'search')" 	
-ng-keypress="mainOperation($event,0,0,0,0,
-FormInputArray[0]['header'][0]['fields'][0]['challan_no']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-
-</td> 
+				<input id="{{FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['input_id_index']}}" 
+				autofocus type="text" name=""   autocomplete="off" 
+				placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['LabelName']}}" 				 
+				ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['input_id_index'])" 
+				ng-keyup="checkKeyUp($event)" 
+				ng-model="FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['Inputvalue']" 
+				ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['InputName'],0,0,0,0,'search')"  			
+				ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['InputName'],0,0,0,0,'search')"  	
+				ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['input_id_index'])"
+				class="form-control" onfocus="this.select();" onmouseup="return false;"  />		
+				</td> 
+								
+				<td >		
 				
-<td >		
-
-<input id="{{FormInputArray[0]['header'][0]['fields'][0]['challan_date']['input_id_index']}}" 
-autofocus type="text" name=""   autocomplete="off" 
-placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['challan_date']['LabelName']}}" 				 
-ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['challan_date']['input_id_index'])" 
-ng-keyup="checkKeyUp($event)" 
-ng-model="FormInputArray[0]['header'][0]['fields'][0]['challan_date']['Inputvalue']"
-ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['challan_date']['InputName'],0,0,0,0,'search')" 			
-ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['challan_date']['InputName'],0,0,0,0,'search')" 	
-ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['challan_date']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-</td>
-	
+				<input id="{{FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['input_id_index']}}" 
+				autofocus type="text" name=""   autocomplete="off" 
+				placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['LabelName']}}" 				 
+				ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['input_id_index'])" 
+				ng-keyup="checkKeyUp($event)" 
+				ng-model="FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['Inputvalue']"
+				ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['InputName'],0,0,0,0,'search')" 			
+				ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['InputName'],0,0,0,0,'search')" 	
+				ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['input_id_index'])"
+				class="form-control" onfocus="this.select();" onmouseup="return false;"  />
+				</td>
+					
+								
+				<td>	
+				<input id="{{FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['input_id_index']}}" 
+				autofocus type="text" name=""   autocomplete="off" 
+				placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['LabelName']}}" 				 
+				ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['input_id_index'])" 
+				ng-keyup="checkKeyUp($event)" 
+				ng-model="FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['Inputvalue']"
+				ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['InputName'],0,0,0,0,'search')" 			
+				ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['InputName'],0,0,0,0,'search')" 	
+				ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['tbl_party_id']['input_id_index'])"
+				class="form-control" onfocus="this.select();" onmouseup="return false;"  />
 				
-<td>	
-<input id="{{FormInputArray[0]['header'][0]['fields'][0]['orderno']['input_id_index']}}" 
-autofocus type="text" name=""   autocomplete="off" 
-placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['orderno']['LabelName']}}" 				 
-ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['orderno']['input_id_index'])" 
-ng-keyup="checkKeyUp($event)" 
-ng-model="FormInputArray[0]['header'][0]['fields'][0]['orderno']['Inputvalue']"
-ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['orderno']['InputName'],0,0,0,0,'search')" 			
-ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['orderno']['InputName'],0,0,0,0,'search')" 	
-ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['orderno']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-
-</td>  
-
-
-<td>				
-<input id="{{FormInputArray[0]['header'][0]['fields'][0]['orderdate']['input_id_index']}}" 
-autofocus type="text" name=""   autocomplete="off" 
-placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['orderdate']['LabelName']}}" 				 
-ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['orderdate']['input_id_index'])" 
-ng-keyup="checkKeyUp($event)" 
-ng-model="FormInputArray[0]['header'][0]['fields'][0]['orderdate']['Inputvalue']"
-ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['orderdate']['InputName'],0,0,0,0,'search')" 			
-ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['orderdate']['InputName'],0,0,0,0,'search')" 	
-ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['orderdate']['input_id_index'])"
-class="form-control"  onfocus="this.select();" onmouseup="return false;" />
-
-</td>  
-						
-</tr>
-
-			
+				</td>  
+				
+				
+				<td>				
+				<input id="{{FormInputArray[0]['header'][0]['fields'][0]['BILL_TYPE']['input_id_index']}}" 
+				autofocus type="text" name=""   autocomplete="off" 
+				placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['BILL_TYPE']['LabelName']}}" 				 
+				ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['BILL_TYPE']['input_id_index'])" 
+				ng-keyup="checkKeyUp($event)" 
+				ng-model="FormInputArray[0]['header'][0]['fields'][0]['BILL_TYPE']['Inputvalue']"
+				ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['BILL_TYPE']['InputName'],0,0,0,0,'search')" 			
+				ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['BILL_TYPE']['InputName'],0,0,0,0,'search')" 	
+				ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['BILL_TYPE']['input_id_index'])"
+				class="form-control"  onfocus="this.select();" onmouseup="return false;" />
+				
+				</td>  
+										
+				</tr>
+				
+				
+				
+				
+				<tr>
+						<td  align="left">{{get_field_name(0,'LabelName','challan_no')}}</td> 
+						<td  align="left" >{{get_field_name(0,'LabelName','challan_date')}}</td> 
+						<td  align="left">{{get_field_name(0,'LabelName','orderno')}}</td> 
+						<td  align="left">{{get_field_name(0,'LabelName','orderdate')}}</td> 
+				</tr>
+				
+				
+				<tr>
+							
+				<td>		
+				
+				<input id="{{FormInputArray[0]['header'][0]['fields'][0]['challan_no']['input_id_index']}}" 
+				autofocus type="text" name=""   autocomplete="off" 
+				placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['challan_no']['LabelName']}}" 				 
+				ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['challan_no']['input_id_index'])" 
+				ng-keyup="checkKeyUp($event)" 
+				ng-model="FormInputArray[0]['header'][0]['fields'][0]['challan_no']['Inputvalue']"
+				ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['challan_no']['InputName'],0,0,0,0,'search')" 			
+				ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['challan_no']['InputName'],0,0,0,0,'search')" 	
+				ng-keypress="mainOperation($event,0,0,0,0,
+				FormInputArray[0]['header'][0]['fields'][0]['challan_no']['input_id_index'])"
+				class="form-control" onfocus="this.select();" onmouseup="return false;"  />
+				
+				</td> 
+								
+				<td >		
+				
+				<input id="{{FormInputArray[0]['header'][0]['fields'][0]['challan_date']['input_id_index']}}" 
+				autofocus type="text" name=""   autocomplete="off" 
+				placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['challan_date']['LabelName']}}" 				 
+				ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['challan_date']['input_id_index'])" 
+				ng-keyup="checkKeyUp($event)" 
+				ng-model="FormInputArray[0]['header'][0]['fields'][0]['challan_date']['Inputvalue']"
+				ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['challan_date']['InputName'],0,0,0,0,'search')" 			
+				ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['challan_date']['InputName'],0,0,0,0,'search')" 	
+				ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['challan_date']['input_id_index'])"
+				class="form-control" onfocus="this.select();" onmouseup="return false;"  />
+				</td>
+					
+								
+				<td>	
+				<input id="{{FormInputArray[0]['header'][0]['fields'][0]['orderno']['input_id_index']}}" 
+				autofocus type="text" name=""   autocomplete="off" 
+				placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['orderno']['LabelName']}}" 				 
+				ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['orderno']['input_id_index'])" 
+				ng-keyup="checkKeyUp($event)" 
+				ng-model="FormInputArray[0]['header'][0]['fields'][0]['orderno']['Inputvalue']"
+				ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['orderno']['InputName'],0,0,0,0,'search')" 			
+				ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['orderno']['InputName'],0,0,0,0,'search')" 	
+				ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['orderno']['input_id_index'])"
+				class="form-control" onfocus="this.select();" onmouseup="return false;"  />
+				
+				</td>  
+				
+				
+				<td>				
+				<input id="{{FormInputArray[0]['header'][0]['fields'][0]['orderdate']['input_id_index']}}" 
+				autofocus type="text" name=""   autocomplete="off" 
+				placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['orderdate']['LabelName']}}" 				 
+				ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['orderdate']['input_id_index'])" 
+				ng-keyup="checkKeyUp($event)" 
+				ng-model="FormInputArray[0]['header'][0]['fields'][0]['orderdate']['Inputvalue']"
+				ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['orderdate']['InputName'],0,0,0,0,'search')" 			
+				ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['orderdate']['InputName'],0,0,0,0,'search')" 	
+				ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['orderdate']['input_id_index'])"
+				class="form-control"  onfocus="this.select();" onmouseup="return false;" />
+				
+				</td>  
+										
+				</tr>
+				
+							
 			
 </table>	
-		
-	
-	
-	<div style="overflow:auto">	
-	<table   class="table table-condensed nopadding"  style="overflow:auto">
-												
-		<tr  style="background-color:#999999">
-		<td ng-repeat="steps in FormInputArray[0]['header'][1]['fields'][0]" ng-init="$index==0"
-			   ng-if="steps.InputType != 'hidden'">	
-			{{steps.LabelName}}
-			</td>
-			<td>Save</td>
-		</tr>
 
-		<tr >
-		
-		
-			<td ng-repeat="steps in FormInputArray[0]['header'][1]['fields'][0]"  
-			 ng-if="steps['InputType']!= 'hidden'">	
-			
-				<div ng-if="steps['InputType']== 'text'">
-				<input id="{{steps.input_id_index}}" autofocus type="text" name=""  
-				 placeholder="{{steps.LabelName}}"  
-				ng-keydown="checkKeyDown($event,1,0,0,0,steps.input_id_index)" 
-				ng-keyup="checkKeyUp($event)" ng-model="steps.Inputvalue"
-				ng-change="search(steps.InputName,1,0,0,0)" 
-				ng-focus="search(steps.InputName,1,0,0,0)" 	class="form-control input_field_height"	
-				ng-keypress="mainOperation($event,1,0,0,0,steps.input_id_index)"
-				style="width:{{50*steps.DIVClass}}px;"  autocomplete="off" 
-				onfocus="this.select();" onmouseup="return false;"/>
-				
-				</div>
-				<div ng-if="steps['InputType']== 'LABEL'">
-				
-				<input id="{{steps.input_id_index}}" autofocus type="text" name=""  
-				 placeholder="{{steps.LabelName}}"  
-				ng-keydown="checkKeyDown($event,1,0,0,0,steps.input_id_index)" 
-				ng-keyup="checkKeyUp($event)" ng-model="steps.Inputvalue"
-				ng-change="search(steps.InputName,1,0,0,0)" 
-				ng-focus="search(steps.InputName,1,0,0,0)" 	class="form-control input_field_height"	
-				ng-keypress="mainOperation($event,1,0,0,0,steps.input_id_index)"
-				style="width:{{50*steps.DIVClass}}px;"  autocomplete="off" 
-				onfocus="this.select();" onmouseup="return false;"  readonly="" />
-				
-				</div>
-				 
-			</td>
-			<td><button class="btn-block btn-info" ng-click="save_check()">Save</button></td>
-			
-		</tr>
-		
-	</table>
-	</div>		
+		<div style="overflow:auto">	
+		<table   class="table table-condensed nopadding"  style="overflow:auto">
+													
+			<tr  style="background-color:#999999">
+			<td ng-repeat="steps in FormInputArray[0]['header'][1]['fields'][0]" ng-init="$index==0"
+				   ng-if="steps.InputType != 'hidden'">	
+				{{steps.LabelName}}
+				</td>
+				<td>Save</td>
+			</tr>
 	
+			<tr >
+			
+			
+				<td ng-repeat="steps in FormInputArray[0]['header'][1]['fields'][0]"  
+				 ng-if="steps['InputType']!= 'hidden'">	
+				
+					<div ng-if="steps['InputType']== 'text'">
+					
+						<input id="{{steps.input_id_index}}" autofocus type="text" name=""  
+						 placeholder="{{steps.LabelName}}"  
+						ng-keydown="checkKeyDown($event,1,0,0,0,steps.input_id_index)" 
+						ng-keyup="checkKeyUp($event)" ng-model="steps.Inputvalue"
+						ng-change="search(steps.InputName,1,0,0,0)" 
+						ng-focus="search(steps.InputName,1,0,0,0)" 	class="form-control input_field_height"	
+						ng-keypress="mainOperation($event,1,0,0,0,steps.input_id_index)"
+						style="width:{{50*steps.DIVClass}}px;"  autocomplete="off" 
+						onfocus="this.select();" onmouseup="return false;"/>
+						
+					</div>
+					
+					<div ng-if="steps['InputType']== 'datefield'">
+						<input id="{{steps.input_id_index}}"  data-inputmask="'alias': 'date'" autofocus type="text" name=""  
+						 placeholder="{{steps.LabelName}}"  
+						ng-keydown="checkKeyDown($event,1,0,0,0,steps.input_id_index)" 
+						ng-keyup="checkKeyUp($event)" ng-model="steps.Inputvalue"
+						ng-change="search(steps.InputName,1,0,0,0)" 
+						ng-focus="search(steps.InputName,1,0,0,0)" 	class="form-control input_field_height"	
+						ng-keypress="mainOperation($event,1,0,0,0,steps.input_id_index)"
+						style="width:{{50*steps.DIVClass}}px;"  autocomplete="off" 
+						onfocus="this.select();" onmouseup="return false;" />
+						
+					</div>
+					
+					
+					<div ng-if="steps['InputType']== 'LABEL'">
+					
+					<input id="{{steps.input_id_index}}" autofocus type="text" name=""  
+					 placeholder="{{steps.LabelName}}"  
+					ng-keydown="checkKeyDown($event,1,0,0,0,steps.input_id_index)" 
+					ng-keyup="checkKeyUp($event)" ng-model="steps.Inputvalue"
+					ng-change="search(steps.InputName,1,0,0,0)" 
+					ng-focus="search(steps.InputName,1,0,0,0)" 	class="form-control input_field_height"	
+					ng-keypress="mainOperation($event,1,0,0,0,steps.input_id_index)"
+					style="width:{{50*steps.DIVClass}}px;"  autocomplete="off" 
+					onfocus="this.select();" onmouseup="return false;"  readonly="" />
+					
+					</div>
+					 
+				</td>
+				<td><button class="btn-block btn-info" ng-click="save_check()">Save</button></td>
+				
+			</tr>
+			
+		</table>
+		</div>		
+		
 	
-	<!--SEARCH SECTION-->									
-	<div class="scroll-div" id="anchor" style="display:{{search_div_display}}">
+		<!--SEARCH SECTION-->									
+		<div class="scroll-div" id="anchor" style="display:{{search_div_display}}">
 		<table class="table table-bordered table-hover table-condensed "  >	
 			
-			<tr><td  ng-repeat="(key,value) in suggestions[0]" ng-if="key!='FieldID' ">{{key}}</td></tr>
+			<tr><td  ng-repeat="(key,value) in suggestions[0]" ng-if="key!='FieldID' && key!='Rkid' &&  key!='pid'  ">{{key}}</td></tr>
 						
 			<tr ng-repeat="values in suggestions" ng-class="{'activeTR': selectedIndex == $index}" 
 			ng-click="AssignValueAndHide($index)" id="innerAnchor{{$index}}">
 			
-			<td   ng-repeat="(key,value) in values" ng-if="key!='FieldID'">{{value}}</td>	
+			<td   ng-repeat="(key,value) in values" ng-if="key!='FieldID' && key!='Rkid' && key!='pid'  ">{{value}}</td>	
 			</tr>																									
 		</table>
 	</div>
 				
-	<!--REGULAR SALE SECTION END-->				
+		<!--REGULAR SALE SECTION END-->				
 			
-	<div class="panel panel-primary"  ng-if="dtlist_array.length>0">
-	<div class="panel-body" >
-	<!--{{dtlist_array}}-->
-	
-		<table class="table table-bordered table-hover table-condensed "  >	
-		<!--tt :{{dtlist_array}}-->
-			
-			<tr  style="background-color:#999999">			
-			<td>Srl</td>
-			<td align="center" ng-repeat="(key,value) in dtlist_array[0]" ng-if="key!='id' ">{{value.LabelName}}</td>
-			<td>Edit</td>
-			<td>Delete</td>
-			</tr>	
-										
-			<tr ng-repeat="values in dtlist_array track by $index" >
-			
-				<td  align="right">{{$index+1}}</td>	
-				<td  align="right" ng-repeat="(key,value) in values" ng-if="key!='id'">{{value.Inputvalue}}</td>	
-						
-				<td><button class="btn-block btn-info" ng-click="dtlist_view($index)" >Edit</button></td>
-				<td><button class="btn-block btn-info" ng-click="delete_item(values.id.Inputvalue)" >Delete</button></td>			
-			</tr>	
-			
-			
-			<tr style="background-color:#999999" class="input_field_height">
-				<td colspan="8" align="right" class="input_field_height">Total :</td>	
-				<td  align="right" class="input_field_height">{{dtlist_total_array['total_amt']}}</td>	
-				<td colspan="2" align="right" class="input_field_height">&nbsp;</td>
-				<td align="right" class="input_field_height">{{dtlist_total_array['tot_discount']}}</td>	
-				<td align="right">{{dtlist_total_array['Taxable_Amt']}}</td>	
-				<td  align="right" class="input_field_height" >&nbsp;</td>
-				<td align="right" >{{dtlist_total_array['totvatamt']}}</td>
-				<td align="right">{{dtlist_total_array['Net_Amt']}}</td>	
-				<td align="right" colspan="2">&nbsp;</td>
-		   </tr>	
-																											
-		</table>
-   </div></div>		
-				
-  		
+		<div class="panel panel-primary"  ng-if="dtlist_array.length>0">
+		<div class="panel-body" >
+		<!--{{dtlist_array}}-->
 		
-
+			<table class="table table-bordered table-hover table-condensed "  >	
+			<!--tt :{{dtlist_array}}-->
+				
+				<tr  style="background-color:#999999">			
+				<td>Srl</td>
+				<td align="center" ng-repeat="(key,value) in dtlist_array[0]" ng-if="key!='id' ">{{value.LabelName}}</td>
+				<td>Edit</td>
+				<td>Delete</td>
+				</tr>	
+											
+				<tr ng-repeat="values in dtlist_array track by $index" >
+				
+					<td  align="right">{{$index+1}}</td>	
+					<td  align="right" ng-repeat="(key,value) in values" ng-if="key!='id'">{{value.Inputvalue}}</td>	
+							
+					<td><button class="btn-block btn-info" ng-click="dtlist_view($index)" >Edit</button></td>
+					<td><button class="btn-block btn-info" ng-click="delete_item(values.id.Inputvalue)" >Delete</button></td>			
+				</tr>	
+				
+				
+				<tr style="background-color:#999999" class="input_field_height">
+					<td colspan="8" align="right" class="input_field_height">Total :</td>	
+					<td  align="right" class="input_field_height">{{dtlist_total_array['total_amt']}}</td>	
+					<td   align="right" class="input_field_height">&nbsp;</td>
+					<td align="right" class="input_field_height">{{dtlist_total_array['tot_discount']}}</td>	
+					<td align="right">{{dtlist_total_array['Taxable_Amt']}}</td>	
+					<td  align="right" class="input_field_height" >&nbsp;</td>
+					<td align="right" >{{dtlist_total_array['totvatamt']}}</td>
+					<td align="right">{{dtlist_total_array['Net_Amt']}}</td>	
+					<td align="right" colspan="2">&nbsp;</td>
+			   </tr>	
+																												
+			</table>
+	   </div></div>		
+				
 	
-	<table class="table table-bordered table-striped" >								
+		<table class="table table-bordered table-striped" >								
 		  <tr>
 				<td>Comment</td>
 				<td    colspan="2">
@@ -517,9 +528,9 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 				<button type="button" class="btn btn-success" id="Save" name="Save" 
 				ng-click="final_submit()">Final Submit</button>
 				
-				<button type="button" class="btn btn-success" id="Save" name="Save" 
+				<!--<button type="button" class="btn btn-success" id="Save" name="Save" 
 				ng-click="print_documents('BARCODE_PRINT',
-				FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'])">Barcode</button>
+				FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'])">Barcode</button>-->
 				
 				<!--<a data-toggle="modal" data-target="#shortModal" 
 					class="btn btn-primary"><i class="fa fa-pencil"></i> SHOW BARCODE</a>-->
@@ -528,11 +539,8 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 			</tr>	
 	</table>
 	
-	
-		
-	
 	<!--LIST OF ALL CONSIGNMENT FROM TO WISE SEARCH-->		  
-	<div class="panel panel-primary" >
+		<div class="panel panel-primary" >
 			<div class="panel-body" align="center" style="background-color:#3c8dbc">
 	 <div class="form-row">
 			   
@@ -565,7 +573,6 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 	
 	</div></div>
 	
-		
 	
 		<table class="table table-bordered table-hover table-condensed "  >	
 			
@@ -574,7 +581,7 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 			<td align="center" ng-repeat="(key,value) in main_grid_array[0]" ng-if="key!='id' ">{{key}}</td>
 			<td  >Edit</td>
 			<td  >Delete</td>
-			<td  >Barcode</td>
+			<!--<td  >Barcode</td>-->
 			
 			</tr>	
 											
@@ -586,12 +593,12 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 			</td>
 			
 			<td ng-repeat="(key,value) in values" ng-if="key=='id'" >
-			<button class="btn-block btn-info" ng-click="view_list(value)" >Delete</button>
+			<button class="btn-block btn-info" ng-click="delete_bill(value)"  >Delete</button>
 			</td>
 			
-			<td ng-repeat="(key,value) in values" ng-if="key=='id'" >
+			<!--<td ng-repeat="(key,value) in values" ng-if="key=='id'" >
 			<button class="btn-block btn-info" ng-click="print_documents('BARCODE_PRINT',value)" >Pos Print</button>
-			</td>
+			</td>-->
 			
 			</tr>	
 			
@@ -610,9 +617,14 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 </div>
 
 
+</div>
+
+<script>
+$(":input").inputmask();
+document.getElementById(0).focus();
+</script>
 
 
-<!--{{FormInputArray[0]["header"][1]['fields'][0]['batchno']}}-->
 
 <!--{{FormInputArray[0]["header"][1]['fields'][0]['product_id']['validation_msg']}}
 

@@ -12,7 +12,8 @@ class Accounts_controller  extends CI_Controller {
 			$this->load->library('email');
 			$this->load->model('project_model', 'projectmodel');
 			$this->load->model('modeltree');
-			$this->load->model('accounts_model');			
+			$this->load->model('accounts_model');	
+			$this->load->model('Form_report_create_model', 'FrmRptModel');		
 			$this->load->library(array('form_validation', 'trackback','pagination'));
 			$this->load->library('numbertowords');
 			$this->load->library('general_library');
@@ -3115,7 +3116,7 @@ $id_header='',$id_detail='',$fromdate='',$todate='')
 			$data['param4'] =$param4;
 			$data['param5'] =$param5;
 			$data['user_accounts'] ='';
-			$data['ledger_accounts'] =$data['user_ac']=	'';
+			$data['ledger_accounts'] =$data['user_ac']=	0;
 			$data['ledger_ac']=0;
 			$data['display_report'] ='NO';
 			/* if($REPORT_NAME=='PRODUCT_GROUP' || $REPORT_NAME=='PRODUCT_BATCH' || $REPORT_NAME=='PRODUCT_BATCH_TRANSACTIONS')
@@ -3181,18 +3182,20 @@ $id_header='',$id_detail='',$fromdate='',$todate='')
 					
 			}
 
-			if($REPORT_NAME=='PRODUCT_WISE_PURCHASE' || $REPORT_NAME=='PRODUCT_WISE_SALE' 
-			|| $REPORT_NAME=='TRIAL_BALANCE' || $REPORT_NAME=='PROFIT_LOSS_ACCOUNT' || $REPORT_NAME=='BALANCE_SHEET')
+			if( $REPORT_NAME=='TRIAL_BALANCE' || $REPORT_NAME=='PROFIT_LOSS_ACCOUNT' || $REPORT_NAME=='BALANCE_SHEET')
 			{
 					$data['fromdate']=date('Y-m-d');
 					$data['todate']=date('Y-m-d');				
 			}
 
-			if($REPORT_NAME=='EXPIRY_REGISTER')
+			if($REPORT_NAME=='EXPIRY_REGISTER'  )
 			{	$data['todate']=date('Y-m-d');}
 
+		
 
-			if($REPORT_NAME=='DEBTORS_SUMMARY' )
+			
+
+			if($REPORT_NAME=='DEBTORS_SUMMARY' || $REPORT_NAME=='SALE_REGISTER' )
 			{
 					$data['fromdate']=date('Y-m-d');
 					$data['todate']=date('Y-m-d');
@@ -3200,7 +3203,8 @@ $id_header='',$id_detail='',$fromdate='',$todate='')
 					acc_type='LEDGER' and  status='ACTIVE' order by acc_name ";			
 			  	$data['ledger_accounts'] =$this->projectmodel->get_records_from_sql($sqlinv);
 			}
-			if($REPORT_NAME=='CREDITORS_SUMMARY' )
+
+			if($REPORT_NAME=='CREDITORS_SUMMARY' || $REPORT_NAME=='PURCHASE_REGISTER')
 			{
 					$data['fromdate']=date('Y-m-d');
 					$data['todate']=date('Y-m-d');
@@ -3209,12 +3213,41 @@ $id_header='',$id_detail='',$fromdate='',$todate='')
 			  	$data['ledger_accounts'] =$this->projectmodel->get_records_from_sql($sqlinv);
 			}
 
-			//echo '----- '.$REPORT_NAME;
+			if($REPORT_NAME=='STOCK_REGISTER')
+			{
+				$data['todate']=date('Y-m-d');
+				$sqlinv="select id ,productname 
+				from productmstr where group_id=289 order by productname";			
+				$data['ledger_accounts'] =$this->projectmodel->get_records_from_sql($sqlinv);
+
+			}
+
+			if($REPORT_NAME=='PRODUCT_WISE_PURCHASE' || $REPORT_NAME=='PRODUCT_WISE_SALE')
+			{
+
+				$data['fromdate']=date('Y-m-d');
+				$data['todate']=date('Y-m-d');
+				$sqlinv="select id ,productname 	from productmstr  order by productname ";			
+				$data['ledger_accounts'] =$this->projectmodel->get_records_from_sql($sqlinv);
+
+			}
 
 			if(isset($_POST['Save']))
 			{						 
 				$data['display_report'] ='YES';
 			
+				if($REPORT_NAME=='STOCK_REGISTER')
+				{
+					$data['todate']=$this->input->post('todate');
+					$data['param1']=$this->input->post('param1');	
+				}
+	
+				if($REPORT_NAME=='PRODUCT_WISE_PURCHASE' || $REPORT_NAME=='PRODUCT_WISE_SALE')
+				{
+					$data['fromdate']=$this->input->post('fromdate');
+					$data['todate']=$this->input->post('todate');
+					$data['param1']=$this->input->post('param1');	
+				}
 				
 
 				if($REPORT_NAME=='PRODUCT_GROUP_WISE_LISTING')
@@ -3229,15 +3262,15 @@ $id_header='',$id_detail='',$fromdate='',$todate='')
 				$data['param2']=$this->input->post('param2');
 				}
 
-				if($REPORT_NAME=='HSN_WISE_SALE' || $REPORT_NAME=='HSN_WISE_SUMMARY' || $REPORT_NAME=='GST_REPORT' || 
-				$REPORT_NAME=='PRODUCT_WISE_PURCHASE' || $REPORT_NAME=='PRODUCT_WISE_SALE')
+				if($REPORT_NAME=='HSN_WISE_SALE' || $REPORT_NAME=='HSN_WISE_SUMMARY' || $REPORT_NAME=='GST_REPORT' )
 				{
 					$data['fromdate']=$this->input->post('fromdate');
 					$data['todate']=$this->input->post('todate');					
 				}
 
 				if($REPORT_NAME=='DOCTOR_COMMISSION_SUMMARY' || $REPORT_NAME=='DOCTOR_COMMISSION_DETAILS' || 
-				$REPORT_NAME=='GENERAL_LEDGER' || $REPORT_NAME=='DEBTORS_SUMMARY' || $REPORT_NAME=='CREDITORS_SUMMARY')
+				$REPORT_NAME=='GENERAL_LEDGER' || $REPORT_NAME=='DEBTORS_SUMMARY' || $REPORT_NAME=='CREDITORS_SUMMARY' 
+				|| $REPORT_NAME=='PURCHASE_REGISTER' || $REPORT_NAME=='SALE_REGISTER')
 				{
 					$data['fromdate']=$this->input->post('fromdate');
 					$data['todate']=$this->input->post('todate');
@@ -3267,7 +3300,8 @@ $id_header='',$id_detail='',$fromdate='',$todate='')
 			
 		//	accounts_controller/all_mis_reports/BILL_WISE_PURCHASE/0/0/
 	
-
+		if(	$data['display_report']=='YES')
+		{}
 		$data['report_parameter'] = $this->load->view('accounts_management/MIS_REPORTS/all_mis_reports_parameters',$data, true);			
 		$data['report_data'] =$this->accounts_model->all_mis_report($REPORT_NAME,$data);
 		$view_path_name='accounts_management/MIS_REPORTS/all_mis_reports';

@@ -20,7 +20,6 @@ var app = angular.module('Accounts',['GeneralServices']);
 //************************ACCOUNT PURCHASE START*****************************************//
 
 
-
 app.controller('Product_master',['$scope','$rootScope','$http',
 function($scope,$rootScope,$http)
 {
@@ -340,8 +339,6 @@ function($scope,$rootScope,$http)
 
 
 }]);
-
-
 
 
 //************************PRODUCT MASTER END*****************************************//
@@ -5944,9 +5941,43 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 				if (dt < 10) {	dt = '0' + dt;}
 				if (month < 10) {month = '0' + month;}
 				$scope.tran_date=year+'-' + month + '-'+dt;
-
+				$scope.startdate=$scope.enddate=	$scope.tran_date;
 				//$scope.barcodeimg=domain_name+'uploads/BILL-2.png';
 
+
+
+				// ConfirmDialog('Are you sure');
+
+				// function ConfirmDialog(message) {
+				// 	$('<div></div>').appendTo('body')
+				// 		.html('<div><h6>' + message + '?</h6></div>')
+				// 		.dialog({
+				// 			modal: true,
+				// 			title: 'Delete message',
+				// 			zIndex: 10000,
+				// 			autoOpen: true,
+				// 			width: 'auto',
+				// 			resizable: false,
+				// 			buttons: {
+				// 				Yes: function() {
+				// 					// $(obj).removeAttr('onclick');                                
+				// 					// $(obj).parents('.Parent').remove();
+				
+				// 					$('body').append('<h1>Confirm Dialog Result: <i>Yes</i></h1>');
+				
+				// 					$(this).dialog("close");
+				// 				},
+				// 				No: function() {
+				// 					$('body').append('<h1>Confirm Dialog Result: <i>No</i></h1>');
+				
+				// 					$(this).dialog("close");
+				// 				}
+				// 			},
+				// 			close: function(event, ui) {
+				// 				$(this).remove();
+				// 			}
+				// 		});
+				// };
 
 			//	$cash_total
 
@@ -5992,6 +6023,7 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 					{	
 						$rootScope.grandtotal=0;
 						general_functions.main_grid($rootScope.current_form_report,'main_grid',BaseUrl,id,$scope.startdate,$scope.enddate);
+						
 					}
 
 					$scope.main_grid(1);
@@ -6022,15 +6054,15 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 					{
 
 						//general_functions.dtlist_view(BaseUrl,id);		
-						
-						//id,product_id,batchno,qnty,rate,subtotal,disc_per,disc_per2,disc_amt,
-						//taxable_amt,mrp,srate,exp_monyr,mfg_monyr,tax_ledger_id,taxamt,net_amt
 
-						
+						//,'PURCHASEID'
+						if($rootScope.current_form_report=='issue_entry')
+						{var field_list=['id','product_id','product_Synonym','batchno','rackno','qnty','exp_monyr'];}
+
+							
 						if($rootScope.current_form_report=='purchase_entry')
 						{
-						var field_list=['id','product_id','batchno','qnty','rate','batchno','disc_per','disc_per2','mrp',
-						,'exp_monyr','mfg_monyr','tax_ledger_id'];	
+						var field_list=['id','product_id','batchno','mrp','disc_per','rate','qnty','subtotal','exp_monyr','tax_ledger_id','rackno'];	
 						}
 
 						//id,product_id,batchno,qnty,rate,subtotal,disc_per,disc_per2,disc_amt,taxable_amt,mrp,
@@ -6048,8 +6080,8 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 						angular.forEach(field_list, function (values, key) 
 						{ 
 
-							console.log('values: '+values +' KEY :'+key);
-							console.log(	$rootScope.dtlist_array[0]['tax_ledger_id']['Inputvalue'])
+						//	console.log('values: '+values +' KEY :'+key);
+						//	console.log(	$rootScope.dtlist_array[0]['tax_ledger_id']['Inputvalue'])
 
 							$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['Inputvalue']=
 							$rootScope.dtlist_array[indx][values]['Inputvalue'];
@@ -6062,13 +6094,17 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 						if($rootScope.current_form_report=='purchase_entry'|| $rootScope.current_form_report=='invoice_entry')
 						{document.getElementById(8).focus(); }
 
+
+						if($rootScope.current_form_report=='issue_entry')
+						{document.getElementById(2).focus(); }
 											
 									
 					}
 
 					$scope.other_search=function(id,subtype,header_index,field_index,searchelement)
 					{
-						general_functions.other_search($rootScope.current_form_report,'other_search',BaseUrl,id);										
+						general_functions.other_search($rootScope.current_form_report,'other_search',BaseUrl,id);		
+						$rootScope.suggestions = [];								
 					}
 
 					$scope.view_detail=function(id,subtype,header_index,field_index,searchelement)
@@ -6079,12 +6115,26 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 							
 					$scope.view_list=function(id)
 					{
-						//console.log('view list id :'+id);
+						console.log('view list id :'+id+'  :'+$rootScope.current_form_report);
 						//$scope.server_msg="Data Loading....Please Wait";
 						general_functions.list_items($rootScope.current_form_report,'view_list',BaseUrl,id);	
 						$scope.dtlist(id);
 						$scope.dtlist_total(id);		
 						//$scope.server_msg="All Data Uploaded.";		
+						// if(id>0)
+						// {
+						// 	angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
+						// 	{ 
+						// 		console.log('key :'+key + ' - '+$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['LabelName']);
+						// 		console.log('key :'+key + ' - '+$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']);
+
+						// 			$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
+						// 			 $rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']='';	
+								
+						
+						// 	}); 
+						// }
+					
 
 					}
 					$scope.view_list(0);
@@ -6100,7 +6150,11 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 							$("#"+inputid ).datepicker({changeMonth: true,dateFormat: 'yy-mm-dd',changeYear: true});
 							$("#"+inputid).change(function() {var  trandate = $("#"+inputid).val();
 							$("#"+inputid).val(trandate);});
-						} );		
+						} );	
+						
+						
+
+
 					}
 					$scope.create_date_field('startdate');
 					$scope.create_date_field('enddate');
@@ -6132,51 +6186,88 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 								{
 									var inputid=$rootScope.FormInputArray[0]['header'][indx]['fields'][0][key]['input_id_index'];
 									$scope.create_date_field(inputid);
-
 									$rootScope.FormInputArray[0]['header'][indx]['fields'][0][key]['Inputvalue']=$scope.tran_date;
 									
 								}							
 							}); 
 					 }
+					 
 
-					 if($rootScope.current_form_report=='invoice_entry')
+					 $( function() {			
+						$('#exp_monyr').inputmask("datetime",{
+							mask: "1/y", 
+							placeholder: "mm/yyyy", 
+							leapday: "-02-29", 
+							separator: "/", 
+							alias: "dd/mm/yyyy"
+						});  
+					} );	
+
+					 if($rootScope.current_form_report=='invoice_entry' )
+					 {document.getElementById(4).focus();}
+
+					 if($rootScope.current_form_report=='invoice_entry_wholesale')
 					 {document.getElementById(3).focus();}
 
 					 if($rootScope.current_form_report=='purchase_entry')
 					 {document.getElementById(0).focus();}
+
+					 if($rootScope.current_form_report=='issue_entry')
+					 {document.getElementById(1).focus(); }
 					 
 				 }
 
+				  $scope.delete_bill=function(id)
+					{
+					
+						var r = confirm("Do you want to Delete Bill ?");
+						if (r == true) {
+							general_functions.delete_bill($rootScope.current_form_report,'delete_bill',BaseUrl,id);
+							$scope.main_grid(1);
+							$scope.view_list(0);
+						} 
+					}	
+
 				 $scope.new_entry=function()
 					{	
-					
-						angular.forEach($rootScope.FormInputArray[0]['header'][0]['fields'][0], function (values, key) 
-						{ 
-							$rootScope.FormInputArray[0]['header'][0]['fields'][0][key]['Inputvalue']='';
-							$rootScope.FormInputArray[0]['header'][0]['fields'][0][key]['Inputvalue_id']='';	
-						}); 
 
-						angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
-						{ 								
-								$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
-								$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']='';	
-						}); 
+							var txt;
+							if (confirm("Do you want to create new Entry ?")) 
+							{
 
-						$rootScope.FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['Inputvalue']=$scope.tran_date;
-												
-						$scope.dtlist(0);
-						$scope.test();
+										//CHECKING THE BILL IF BILL_STATUS =NONE THEN DELETE THE BILL 
+
+										$rootScope.indx1=0;
+										$rootScope.index2=0;
+										$rootScope.searchelement='BILL_STATUS_CHECK_FOR_DELETE';
+										var billid=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
+										if(billid>0)
+										{$scope.delete_bill(billid);}						
+									
+										$scope.view_list(0);
+
+										// angular.forEach($rootScope.FormInputArray[0]['header'][0]['fields'][0], function (values, key) 
+										// { 
+										// 	$rootScope.FormInputArray[0]['header'][0]['fields'][0][key]['Inputvalue']='';
+										// 	$rootScope.FormInputArray[0]['header'][0]['fields'][0][key]['Inputvalue_id']='';	
+										// }); 
+
+										// angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
+										// { 								
+										// 		$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
+										// 		$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']='';	
+										// }); 
+
+										// $rootScope.FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['Inputvalue']=$scope.tran_date;
+																
+										// $scope.dtlist(0);
+										// $scope.test();
+										// document.getElementById(0).focus();
+							}
 
 					}
 
-			//GENERAL FUNCTIONS END 
-
-
-			// $scope.batch_search=function(id)
-			// {
-			// 	general_functions.batch_search($rootScope.current_form_report,'batch_search',BaseUrl,id);										
-			// }
- 
+			
 
 				$scope.mainOperation=function(event,header_index,field_index,Index2,index3,input_id_index)
 				{	
@@ -6185,13 +6276,10 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 						{						
 														
 								//CHANGES HERE FORM BASIS
-								if($rootScope.current_form_report=='invoice_entry')
+								if($rootScope.current_form_report=='invoice_entry' || $rootScope.current_form_report=='invoice_entry_wholesale')
 								{
 									
-									// if(input_id_index==20)
-									// {$scope.save_check();}
-
-								
+														
 									if($rootScope.searchelement=='qnty')	
 									{$scope.save_check();}	
 
@@ -6224,16 +6312,28 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 
 								}	
 
-								if($rootScope.current_form_report=='purchase_entry')
+								if($rootScope.current_form_report=='purchase_entry' )
 								{
 								
-									if(input_id_index==17)
+									if($rootScope.searchelement=='qnty')	
+									{$scope.save_check();}	
+
+									//|| $rootScope.searchelement=='batchno'
+									 if($rootScope.searchelement=='tbl_party_id' || $rootScope.searchelement=='product_id' || $rootScope.searchelement=='batchno')	
+									 {$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement);}
+									 
+								}	
+
+								if($rootScope.current_form_report=='issue_entry')
+								{
+								
+									if(input_id_index==5)
 									{$scope.save_check();}
 
 									//|| $rootScope.searchelement=='batchno'
-									 if($rootScope.searchelement=='tbl_party_id' || $rootScope.searchelement=='product_id')	
+									 if($rootScope.searchelement=='tbl_party_id' || $rootScope.searchelement=='product_id' || $rootScope.searchelement=='batchno')	
 									 {$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement);}
-
+									 
 								}	
 							
 								input_id_index=Number(input_id_index+1);			
@@ -6254,13 +6354,14 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 
 				}
 
-				
+				//	$rootScope.search = function(searchelement,indx1,index2,index3,index4,array_name)
 				$rootScope.search = function(searchelement,indx1,index2,index3,index4,array_name)
 				{		
-						// console.log('searchelement '+searchelement+' indx1 '+indx1+' index2 '+index2+
-						// ' index3 '+index3+' index4 '+index4+' array name '+array_name);
+					 //console.log('searchelement '+searchelement+' indx1 '+indx1+' index2 '+index2+' index3 '+index3+' index4 '+index4+' array name '+$rootScope.current_form_report);
 
+					 //console.log('$rootScope.current_form_report '+$rootScope.current_form_report);
 
+						//invoice_no
 						$rootScope.search_div_display='none';
 						$rootScope.searchelement=searchelement;
 						$rootScope.array_name=array_name;							
@@ -6269,23 +6370,69 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 						$rootScope.index3=index3;
 						$rootScope.index3=index4;
 
-						console.log('Input Type :'+$rootScope.FormInputArray[0]['header'][indx1]['fields'][0][searchelement]['InputType']);
-						console.log('Input Inputvalue Inputvalue :'+$rootScope.FormInputArray[0]['header'][indx1]['fields'][0][searchelement]['Inputvalue']);
+
+
+						//console.log('searchelement '+$rootScope.searchelement+' indx1 '+$rootScope.indx1);
+						//console.log('Input Inputvalue :'+$rootScope.FormInputArray[0]['header'][0]['fields'][0]['patient_name']['Inputvalue']);
 						
-						if(searchelement=='qnty')
+
+						if($rootScope.current_form_report=='purchase_entry' )
 						{
-							$rootScope.FormInputArray[0]['header'][1]['fields'][0]['subtotal']['Inputvalue']=
-							Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue'])*
-							Number($rootScope.FormInputArray[0]['header'][1]['fields'][0][searchelement]['Inputvalue']);
+							if(searchelement=='batchno' || searchelement=='disc_per'  || searchelement=='qnty' )
+							{
+								$rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=
+								$rootScope.FormInputArray[0]['header'][1]['fields'][0]['batchno']['Inputvalue'];
+
+									$rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=
+									Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue'])-
+									(Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue'])*
+									Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['disc_per']['Inputvalue'])/100);
+
+									$rootScope.FormInputArray[0]['header'][1]['fields'][0]['subtotal']['Inputvalue']=
+									$rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']*
+									$rootScope.FormInputArray[0]['header'][1]['fields'][0]['qnty']['Inputvalue'];
+
+							}
+						}
+
+
+
+
+						if($rootScope.current_form_report=='invoice_entry' )
+						{
+							if(searchelement=='qnty')
+							{
+								$rootScope.FormInputArray[0]['header'][1]['fields'][0]['subtotal']['Inputvalue']=
+								Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue'])*
+								Number($rootScope.FormInputArray[0]['header'][1]['fields'][0][searchelement]['Inputvalue']);
+							}
+						}
+
+						if($rootScope.current_form_report=='invoice_entry_wholesale' )
+						{
+							
+								if(searchelement=='mrp' || searchelement=='disc_per'  || searchelement=='qnty' )
+								{
+								$rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=
+								Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue'])-
+								(Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue'])*
+								Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['disc_per']['Inputvalue'])/100);
+
+								$rootScope.FormInputArray[0]['header'][1]['fields'][0]['subtotal']['Inputvalue']=
+								$rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']*
+								$rootScope.FormInputArray[0]['header'][1]['fields'][0]['qnty']['Inputvalue'];
+
+								}
 
 						}
 
-						$rootScope.suggestions = [];
+
+					
 						$rootScope.searchItems=[];
 						$rootScope.searchTextSmallLetters='';
 						$rootScope.selectedIndex =0;
 						
-						angular.forEach($rootScope.FormInputArray[0]['header'][indx1]['fields'][$rootScope.index2][$rootScope.searchelement], function (values, key) 
+						angular.forEach($rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement], function (values, key) 
 						{ 
 							
 							if(key=='Inputvalue')
@@ -6303,10 +6450,11 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 							}
 						}); 
 
+
 					
 						//console.log('$rootScope.searchItems'+$rootScope.searchItems);
 						//$rootScope.suggestions=$rootScope.searchItems;
-
+						$rootScope.suggestions = [];
 						$rootScope.searchItems.sort();	
 						var myMaxSuggestionListLength = 0;
 						for(var i=0; i<$rootScope.searchItems.length; i++)
@@ -6331,7 +6479,7 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 						if(val !== -1) 
 						{
 							
-							if($rootScope.FormInputArray[0]['header'][indx1]['fields'][0][searchelement]['Inputvalue']!='')
+							if($rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][0][$rootScope.searchelement]['Inputvalue']!='')
 							{
 								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
 								$rootScope.suggestions[$rootScope.selectedIndex]['FieldVal'];
@@ -6440,94 +6588,176 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 
 							//console.log('mrp mrp' + $rootScope.searchelement + $rootScope.current_form_report);
 
+							if( $rootScope.current_form_report=='issue_entry')
+							{	
+									if($rootScope.searchelement=='batchno' )
+									{		
+										
+									//	console.log('Rack' + $rootScope.suggestions[index]['Rack_No']);
+
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue']
+										= $rootScope.suggestions[index]['Rack_No'];		
+
+										 $rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue_id']
+										 = $rootScope.suggestions[index]['Rkid'];	
+										 
+										 $rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['exp_monyr']['Inputvalue']
+										 = $rootScope.suggestions[index]['exp_monyr'];
+									
+										// // $rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['PURCHASEID']['Inputvalue']
+										// // = $rootScope.suggestions[index]['pid'];
+
+								
+
+																	
+									}
+							}
+
+							if( $rootScope.current_form_report=='purchase_entry')
+							{	
+								if($rootScope.searchelement=='batchno' )
+								{			
+											$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['batchno']['Inputvalue_id']='';
+
+											// $rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue']
+											// = $rootScope.suggestions[index]['Rack_No'];		
+
+											// $rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue_id']
+											// = $rootScope.suggestions[index]['Rkid'];	
+
+											$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['exp_monyr']['Inputvalue']
+											= $rootScope.suggestions[index]['exp_monyr'];
+
+											$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rate']['Inputvalue']
+											= $rootScope.suggestions[index]['Rate'];
+
+											$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['mrp']['Inputvalue']
+											= $rootScope.suggestions[index]['MRP'];
+
+								
+
+							
+								}
+							}
+
 
 							if( $rootScope.current_form_report=='invoice_entry')
 							{	
 								if($rootScope.searchelement=='batchno' )
 								{			
-															
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rate']['Inputvalue']
-									= $rootScope.suggestions[index]['Rate'];
-								
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['mrp']['Inputvalue']
-									= $rootScope.suggestions[index]['MRP'];
+									
+											$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue']
+											= $rootScope.suggestions[index]['Rack_No'];		
 
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['PURCHASEID']['Inputvalue']
-									= $rootScope.suggestions[index]['PID'];
-																
+											$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue_id']
+											= $rootScope.suggestions[index]['Rkid'];	
+
+											$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['exp_monyr']['Inputvalue']
+											= $rootScope.suggestions[index]['exp_monyr'];
+
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rate']['Inputvalue']
+										= $rootScope.suggestions[index]['rate'];
+									
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['mrp']['Inputvalue']
+										= $rootScope.suggestions[index]['MRP'];																
 								}
 							}
 
 
-							
+							if( $rootScope.current_form_report=='invoice_entry_wholesale')
+							{	
+								if($rootScope.searchelement=='batchno' )
+								{			
+										
+											$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue']
+											= $rootScope.suggestions[index]['Rack_No'];		
+
+											$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue_id']
+											= $rootScope.suggestions[index]['Rkid'];	
+
+											$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['exp_monyr']['Inputvalue']
+											= $rootScope.suggestions[index]['exp_monyr'];
+										
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['mrp']['Inputvalue']
+										= $rootScope.suggestions[index]['MRP'];
+
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rate']['Inputvalue']
+										= $rootScope.suggestions[index]['rate'];
+								}
+							}
+
 						$rootScope.suggestions=[];
 						$rootScope.searchItems=[];		
 						$rootScope.selectedIndex = -1;
 					};
 	
 
+				$scope.bill_process_functions=function()
+				{					
+						var txt;
+						if (confirm("Save Bill ?")) {
+							$scope.final_submit();
+
+							if (confirm("Label print ?")) {
+
+								$rootScope.FormInputArray[0]['header'][0]['fields'][0]['BILL_STATUS']['Inputvalue']='LABEL_PRINTED';
+								$scope.save_check();
+								$scope.savedata();
+
+								$scope.print_label();
+							}
+							if (confirm("Bill print ?")) {
+
+								$rootScope.FormInputArray[0]['header'][0]['fields'][0]['BILL_STATUS']['Inputvalue']='BILL_PRINTED';
+								$scope.save_check();
+								$scope.savedata();
+
+								$scope.print_documents();
+							}
+
+						} else {
+							txt = "You pressed Cancel!";
+						}
+					console.log('uou have pressed'+txt);
+						
+				}
+
 
 				$scope.final_submit=function()
 				{					
-					
+						$rootScope.FormInputArray[0]['header'][0]['fields'][0]['BILL_STATUS']['Inputvalue']='BILL_SAVED';
 						$scope.save_check();
-						
-						var data_link=BaseUrl;
-						var success={};		
-						var id=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
-						
-						var data_save = {'form_name':$rootScope.current_form_report,'subtype':'FINAL_SUBMIT','id':id};
-						console.log(data_save);	
-						var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
-						$http.post(data_link,data_save,config).then (function success(response){
-
-							//$scope.new_entry();
-							console.log('header id :'+response.data.id_header);
-
-							$scope.server_msg=response.data.server_msg;
-							$scope.dtlist(response.data.id_header);
-							$scope.dtlist_total(response.data.id_header);
-
-							 if( $rootScope.current_form_report=='invoice_entry')
-							 {$scope.print_documents('POS_INVOICE',response.data.id_header);}
-
-							
-						},
-						function error(response){
-							$scope.errorMessage = 'Error adding user!';
-							$scope.message = '';
-						});						
-						
+						$scope.savedata();						
 				}
 
 				$scope.save_check=function()
 				{	
 
-					$rootScope.final_array=[];
-					$rootScope.final_array = JSON.parse(JSON.stringify($rootScope.FormInputArray));
-					$rootScope.save_status='OK';
+						$rootScope.final_array=[];
+						$rootScope.final_array = JSON.parse(JSON.stringify($rootScope.FormInputArray));
+						$rootScope.save_status='OK';
 
-					for(var i=0;i<2;i++)
-					{
-						angular.forEach($rootScope.final_array[0]['header'][i]['fields'][0], function (values, key) 
-						{ 
-							$rootScope.final_array[0]['header'][i]['fields'][0][key]['datafields']='';	
-
-							if($rootScope.final_array[0]['header'][i]['fields'][0][key]['validation_type']=='NOT_OK' 
-							&& $rootScope.save_status=='OK')
+						for(var i=0;i<2;i++)
+						{
+							angular.forEach($rootScope.final_array[0]['header'][i]['fields'][0], function (values, key) 
 							{ 
-								 $rootScope.save_status='NOT_OK'; 
-								 $scope.server_msg='Record Can Not Be Save! Please Rectify the '+
-								 $rootScope.final_array[0]['header'][i]['fields'][0][key]['LabelName'] +' Related data';
-							}
-							
-						}); 
-					}		
+								$rootScope.final_array[0]['header'][i]['fields'][0][key]['datafields']='';	
 
-					//console.log('$rootScope.save_status :'+$rootScope.save_status);
+								if($rootScope.final_array[0]['header'][i]['fields'][0][key]['validation_type']=='NOT_OK' 
+								&& $rootScope.save_status=='OK')
+								{ 
+									$rootScope.save_status='NOT_OK'; 
+									$scope.server_msg='Record Can Not Be Save! Please Rectify the '+
+									$rootScope.final_array[0]['header'][i]['fields'][0][key]['LabelName'] +' Related data';
+								}
+								
+							}); 
+						}		
 
-					if($rootScope.save_status=='OK' && $rootScope.savedone_status=='SAVE_NOT_DONE')
-					{$rootScope.savedone_status='SAVE_DONE'; $scope.savedata();}
+						//console.log('$rootScope.save_status :'+$rootScope.save_status);
+
+						if($rootScope.save_status=='OK' && $rootScope.savedone_status=='SAVE_NOT_DONE')
+						{$rootScope.savedone_status='SAVE_DONE'; $scope.savedata();}
 					
 				}	
 
@@ -6543,7 +6773,7 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 					var data = JSON.stringify($rootScope.final_array);	
 					var data_save = {'form_name':$scope.current_form_report,'subtype':'SAVE_DATA','raw_data':data};
 
-					//console.log('data_save final : '+data);
+					console.log('data_save final : '+data);
 					
 					var config = {headers : 
 						{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'	}
@@ -6558,7 +6788,8 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 
 							$scope.dtlist(response.data.id_header);
 							$scope.dtlist_total(response.data.id_header);
-							
+							//general_functions.main_grid($rootScope.current_form_report,'main_grid',BaseUrl,1,$scope.tran_date,$scope.tran_date);
+							$scope.main_grid(1);
 
 							angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
 							{ 
@@ -6573,11 +6804,24 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 
 						//CHANGES HERE FORM BASIS
 
-						if($rootScope.current_form_report=='invoice_entry' )
-						{document.getElementById(6).focus();}
+						if($rootScope.current_form_report=='invoice_entry')
+						{
+							document.getElementById(7).focus();
+						
+						}
+
+						if( $rootScope.current_form_report=='invoice_entry_wholesale')
+						{
+							document.getElementById(6).focus();
+						}
 
 						if($rootScope.current_form_report=='purchase_entry' )
 						{document.getElementById(8).focus();}
+
+						if($rootScope.current_form_report=='issue_entry')
+						{
+							document.getElementById(2).focus();
+						}
 
 						$rootScope.savedone_status='SAVE_NOT_DONE';
 				
@@ -6587,17 +6831,16 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 						$scope.message = '';
 					});
 
-					
-
 
 				}
 
 				//SAVE SECTION...
 
 
-
+				//FOR BILL PRINT
 				$scope.print_documents = function(printtype) 
 				{ 
+					var printtype='POS_INVOICE';
 					//var BaseUrl=domain_name+"Project_controller/experimental_form/";
 					var id=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
 					var data_link=domain_name+"Project_controller/print_documents/"+printtype+'/'+id;
@@ -6608,13 +6851,14 @@ app.controller('main_transaction_controller',['$scope','$rootScope','$http','$wi
 				};
 			
 
-				$scope.print_label = function(PRINTTYPE) 
+				$scope.print_label = function() 
 				{ 
+					
 					var PRINTTYPE='LABEL';
 					var id_header=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
 					var BaseUrl=domain_name+"Project_controller/print_all/";
 					var data_link=BaseUrl+id_header+'/'+PRINTTYPE;
-					window.popup(data_link); 
+					window.popup(data_link); 				 
 				};
 			
 
@@ -6683,10 +6927,6 @@ function($scope,$rootScope,general_functions,$http){
 
 
 
-
-
-
-
 app.controller('product_master',['$scope','$rootScope','$http',
 function($scope,$rootScope,$http){
 	"use strict";
@@ -6732,7 +6972,8 @@ function($scope,$rootScope,$http){
 			{	
 					group_id:0,	
 					brand_id:0,
-					list_of_values:[{id_detail:'',productname:'',group_id:'',brand_id:'',sell_discount:'',mrp:'',spl_discount:'',hsncode:'',tax_ledger_id:'',active_inactive:'ACTIVE'}]	
+					list_of_values:[{id_detail:'',productname:'',group_id:'',brand_id:'',sell_discount:'',mrp:'',spl_discount:'',
+					hsncode:'',tax_ledger_id:'',label_print:'',available_qnty:'',minimum_stock:'',exp_mmyy:'',active_inactive:'ACTIVE'}]	
 			};
 			
 			$scope.new_entry=function()
@@ -6741,7 +6982,8 @@ function($scope,$rootScope,$http){
 				{	
 					group_id:0,	
 					brand_id:0,
-					list_of_values:[{id_detail:'',productname:'',group_id:'',brand_id:'',sell_discount:'',mrp:'',spl_discount:'',hsncode:'',tax_ledger_id:'',active_inactive:'ACTIVE'}]				
+					list_of_values:[{id_detail:'',productname:'',group_id:'',brand_id:'',sell_discount:'',mrp:'',spl_discount:'',
+					hsncode:'',tax_ledger_id:'',label_print:'',available_qnty:'',minimum_stock:'',exp_mmyy:'',active_inactive:'ACTIVE'}]				
 				};
 			}
 
@@ -6754,14 +6996,14 @@ function($scope,$rootScope,$http){
 					$scope.FormInputArray[0].list_of_values[length]={id_detail:'',productname:'',
 					group_id:$rootScope.FormInputArray[0].group_id,
 					brand_id:$rootScope.FormInputArray[0].brand_id,
-					sell_discount:'',mrp:'',spl_discount:'',hsncode:'',tax_ledger_id:'',active_inactive:'ACTIVE'};				
+					sell_discount:'',mrp:'',spl_discount:'',hsncode:'',tax_ledger_id:'',label_print:'',available_qnty:'',minimum_stock:'',exp_mmyy:'',active_inactive:'ACTIVE'};				
 
 				}			
 			}
 			
-			$scope.view_list=function(group_id,brand_id)
+			$scope.view_list=function(group_id,brand_id,search)
 			{
-				var data_link=BaseUrl+"VIEWALLVALUE/"+group_id+'/'+brand_id;
+				var data_link=BaseUrl+"VIEWALLVALUE/"+group_id+'/'+brand_id+'/'+search;
 				console.log(data_link);
 				$http.get(data_link).then(function(response) 
 				{
@@ -6814,3 +7056,15 @@ function($scope,$rootScope,$http){
 			}
 	
 }]);
+
+
+
+
+
+/*
+	Masked Input plugin for jQuery
+	Copyright (c) 2007-2013 Josh Bush (digitalbush.com)
+	Licensed under the MIT license (http://digitalbush.com/projects/masked-input-plugin/#license)
+	Version: 1.3.1
+*/
+

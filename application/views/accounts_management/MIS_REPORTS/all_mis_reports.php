@@ -43,6 +43,11 @@ a {
   color:#000000;
   text-decoration: none;
 }
+.style1 {
+	color: #FFFFFF;
+	font-size: 14px;
+	font-weight: bold;
+}
 </style>
 
 <div class="panel panel-primary" >
@@ -67,7 +72,127 @@ a {
   
 <div id="printablediv"  style="overflow:auto" >
 		
-		<?php if($REPORT_NAME=='PRODUCT_GROUP_WISE_LISTING' && $display_report=='YES'){ 
+		
+		<?php if($REPORT_NAME=='PURCHASE_REGISTER' && $display_report=='YES'){
+			if(sizeof($report_data)>0){			
+			 ?>
+			
+			
+			<table   class="table table-bordered table-striped" id="example">
+				<tr >
+				<?php foreach($report_data['header'][0] as $key=>$value){ if($key<>'id'){?>	
+				<td  class="bg-primary" <?php if($key=='Bill Amt' || $key=='Discount Rcv' || $key=='Tax' || $key=='Grand'){ ?>align="right" <?php } ?>> 
+				<?php echo $key; ?></td><?php }} ?>	
+				 </tr>
+				 
+				<?php 
+				
+				$total_amt=0;
+				$tot_discount=0;
+				$totvatamt=0;
+				$grandtot=0;
+				
+				
+				foreach($report_data['header'] as $key=>$array_record){  ?>	
+				<tr>
+				<?php 
+				$total_amt=$total_amt+$array_record['Bill Amt'];
+				$tot_discount=$tot_discount+$array_record['Discount Rcv'];
+				$totvatamt=$totvatamt+$array_record['Tax'];
+				$grandtot=$grandtot+$array_record['Grand'];
+				
+				foreach($array_record as $key2=>$values)
+				{
+					if($key2<>'id'){
+				?>				
+				<td <?php if($key2=='Bill Amt' || $key2=='Discount Rcv' || $key2=='Tax' || $key2=='Grand'){ ?>align="right" <?php } ?> > <?php echo $values; ?></td>
+				<?php }} ?>	
+				 </tr>	
+				<?php } ?>	
+				
+				<tr  style="background-color:#FF3333">
+					<td colspan="3" class="style1">Total </td>
+					<td  align="right" class="style1"><?php echo $total_amt; ?></td>
+					<td align="right" class="style1"><?php echo $tot_discount; ?> </td>
+					<td align="right" class="style1"><?php echo $totvatamt; ?> </td>
+					<td align="right" class="style1"><?php echo $grandtot; ?> </td>
+				</tr>
+								
+				</table>
+			<?php }else{ ?>
+			
+			<table   class="table table-bordered table-striped" id="example">
+				<tr>
+					<td  class="bg-primary" align="center">No data Found</td>
+				 </tr>	
+			</table>
+			
+			<?php }} ?>
+		
+			
+			<?php if($REPORT_NAME=='SALE_REGISTER' && $display_report=='YES'){
+			if(sizeof($report_data)>0){			
+			 ?>
+			 
+			<table   class="table table-bordered table-striped" id="example">
+				<tr >
+				<?php foreach($report_data['header'][0] as $key=>$value){ if($key<>'id'){?>	
+				<td  class="bg-primary" <?php if($key=='Bill Amt' || $key=='Discount Rcv' || $key=='Tax' || $key=='Grand'){ ?>align="right" <?php } ?>> 
+				<?php echo $key; ?></td><?php }} ?>	
+				 </tr>
+				 
+				<?php 
+				
+				$total_amt=0;
+				$tot_discount=0;
+				$totvatamt=0;
+				$grandtot=0;
+				
+				
+				foreach($report_data['header'] as $key=>$array_record){  ?>	
+				<tr>
+				<?php 
+				$total_amt=$total_amt+$array_record['Bill Amt'];
+				/*$tot_discount=$tot_discount+$array_record['Discount Rcv'];
+				$totvatamt=$totvatamt+$array_record['Tax'];
+				$grandtot=$grandtot+$array_record['Grand'];*/
+				
+				foreach($array_record as $key2=>$values)
+				{
+					if($key2<>'id'){
+				?>				
+				<td <?php if($key2=='Bill Amt' || $key2=='Discount Rcv' || $key2=='Tax' || $key2=='Grand'){ ?>align="right" <?php } ?> > <?php echo $values; ?></td>
+				<?php }} ?>	
+				 </tr>	
+				<?php } ?>	
+				
+				<tr  style="background-color:#FF3333">
+					<td colspan="6" class="style1">Total </td>
+					<td  align="right" class="style1"><?php echo $total_amt; ?></td>
+					<?php /*?><td align="right" class="style1"><?php echo $tot_discount; ?> </td>
+					<td align="right" class="style1"><?php echo $totvatamt; ?> </td>
+					<td align="right" class="style1"><?php echo $grandtot; ?> </td><?php */?>
+				</tr>
+								
+				</table>
+			<?php }else{ ?>
+			
+			<table   class="table table-bordered table-striped" id="example">
+				<tr>
+					<td  class="bg-primary" align="center">No data Found</td>
+				 </tr>	
+			</table>
+			
+			<?php }} ?>
+		
+		
+		
+		
+		
+		
+		
+		
+		<?php /*?><?php if($REPORT_NAME=='PRODUCT_GROUP_WISE_LISTING' && $display_report=='YES'){ 
 			$trading_rs=$report_data;
 			//print_r($trading_rs);
 			
@@ -100,7 +225,7 @@ a {
 			
 			
 			
-			<?php } ?>
+			<?php } ?><?php */?>
 		
 		
 		
@@ -984,7 +1109,9 @@ a {
 				</table>
 			<?php } ?>
 			
-			<?php if($REPORT_NAME=='PRODUCT_WISE_PURCHASE' || $REPORT_NAME=='PRODUCT_WISE_SALE'){ ?>
+			<?php 
+			if($display_report=='YES'){
+			if($REPORT_NAME=='PRODUCT_WISE_PURCHASE' || $REPORT_NAME=='PRODUCT_WISE_SALE'){ ?>
 				<table    class="table table-bordered table-striped" id="example">
 			
 				<tr>			
@@ -1046,7 +1173,7 @@ a {
 	
 				
 				</table>
-			<?php } ?>
+			<?php }} ?>
 			
 			
 			<?php if($REPORT_NAME=='DEBTORS_SUMMARY'){ ?>

@@ -31,7 +31,6 @@ class Project_controller  extends CI_Controller {
 			
 			//$this->load->library('excel');
 			$this->load->library('Excel_reader');
-			
 			ini_set('max_execution_time', 0); 
 			ini_set('memory_limit','2048M');
 			
@@ -49,765 +48,109 @@ class Project_controller  extends CI_Controller {
 	
 }
 	
-	
-	public function load_page()
-	{
-		$this->login_validate();	
-		$data_list['pageId'] = $this->input->post('pageId');		
-		$this->load->view('ActiveReport/TemplateForm', $data_list);
-		print_r($data_list);
-		//redirect('Project_controller/TempleteForm/24/list/');
-	}
-	
-
-	public function urgent_codes($frmrpttemplatehdrID=0)
-	{
-		//update stock balance
-		$company_id=1;
-		// $products = "select * from  invoice_summary a, invoice_details b  
-		// where a.id=b.invoice_summary_id and  a.status='PURCHASE'  and a.company_id=1" ;
-		$start=2500;
-		$end=2700;
-		//LIMIT ".$start." , ".$end
-		
-		$products = "select * from   invoice_details where product_id>0 and status='PURCHASE' AND `qty_available`<=0 ";
-		$products = $this->projectmodel->get_records_from_sql($products);
-		if(count($products)>0){foreach ($products as $key=>$product)
-		{		
-			$tot_purchase=$product->qnty;
-			$tot_sale=0;
-
-			// if($product->product_id>0)
-			// {
-				$records = "select sum(qnty) totqnty from invoice_details 
-				where product_id=".$product->product_id." and PURCHASEID='".$product->id."' and  status='SALE' " ;
-				$records = $this->projectmodel->get_records_from_sql($records);
-				$tot_sale=$records[0]->totqnty;
-
-				//if(count($records)>0){foreach ($records as $record){$tot_sale=$record->totqnty;}}
-			// }
-			
-
-			$inv_details['qty_available']=$tot_purchase-$tot_sale;
-
-
-			//echo 'product :'.$product->product_id.' batch :'.$product->batchno.' Available: '.$inv_details['qty_available'];
-			//echo '<br>';
-
-			$this->projectmodel->save_records_model($product->id,'invoice_details',$inv_details);
-			
-			echo 'item :'.$key.'Updated';
-
-			// $inv_details['qty_available']=$tot_purchase-$tot_sale+$SELL_RTN-$PRUCHAR_RTN-$tot_sample;
-			
-			// $this->save_records_model($product->id,'invoice_details',$inv_details);
-						
-			// $this->projectmodel->product_update($product->product_id,'productmstr',$company_id);
-			// $PURCHASEID=$product->PURCHASEID;
-			// $status=$product->status;
-
-			// if( $status=='PURCHASE')			
-			// {$this->projectmodel->product_update($product->id,'invoice_details');}
-			// else
-			// {$this->projectmodel->product_update($PURCHASEID,'invoice_details');}	
-
-		}}
-
-		echo "Process done";
-	}
-
-
-public function TemplateReports($frmrpttemplatehdrID=0)
-{
-	$this->login_validate();
-	if($frmrpttemplatehdrID==29) //STOCK REPORT
-	{	
-	  $data['GridHeader']= array("SysId#-left", "product_id-left","product_name-left","totqnty-left",
-	  "batchno-left","exp_monyr-left","mfg_monyr-left","sale rate-left","MRP-left");
-	}
-	   
-   $data['frmrpttemplatehdrID']=$frmrpttemplatehdrID;
-   
-   $records="select * from frmrpttemplatehdr where id=".$frmrpttemplatehdrID;
-   $records = $this->projectmodel->get_records_from_sql($records);	
-   foreach ($records as $record)
-   {	
-		$data['DisplayGrid']=$record->DisplayGrid;
-		$data['NEWENTRYBUTTON']=$record->NEWENTRYBUTTON;
-		
-		$data['FormRptName']=$record->FormRptName;
-		$data['DataFields']=$record->DataFields;
-		$data['TableName']=$record->TableName;
-		$data['WhereCondition']=$record->WhereCondition;
-		$data['OrderBy']=$record->OrderBy;	
-		$ControllerFunctionLink=$record->ControllerFunctionLink.$frmrpttemplatehdrID.'/';	 
-		$data['tran_link'] = ADMIN_BASE_URL.$ControllerFunctionLink; 
-		$view_path_name=$record->ViewPath; 
-		$data['body']=$this->projectmodel->Activequery($data,'LIST');
-   }
-		   
-   $view_path_name=$view_path_name;
-   $this->page_layout_display($view_path_name,$data);
-}
-
-
-//TEMPLATE FORM REPORT IN ANGULARJS
-
-
-public function load_form_report($TranPageName='',$pagetype='',$form_id=0)
-{
-
-	$output =$data= array();
-	$this->session->set_userdata('form_id', $form_id);
-	$this->session->set_userdata('TranPageName', $TranPageName);
-
-	if($pagetype=='acc_tran')
-	{	$view_path_name='accounts_management/transaction/'.$TranPageName;}
-	else if($pagetype=='report')
-	{
-		$TranPageName='experimental_report';
-		$view_path_name='accounts_management/reports/'.$TranPageName;
-	}
-	else if($pagetype=='master_form')
-	{
-		$TranPageName='template_master_form';
-		$view_path_name='accounts_management/transaction/'.$TranPageName;
-
-		$whr=" id=".$form_id;	
-		$TranPageName=$this->projectmodel->GetSingleVal('FormRptName','frmrpttemplatehdr',$whr);		
-		$this->session->set_userdata('TranPageName', $TranPageName);
-
-	}
-	
-	else
-	{$view_path_name='accounts_management/master/'.$TranPageName;}
-
-	$this->page_layout_display($view_path_name,$data);		
-	
-}
-
-
-
-public function product_master($datatype='',$group_id=0,$brand_id=0)
-{
-
-
-	$output=array();
-
-		if($datatype=='SAVE')
-		{
-			$id_header=$id_detail='';
-			$data=$return_data=$save_details=$save_hdr=array();				
-			$RAW_DATA=file_get_contents("php://input");
-			$form_data=json_decode(file_get_contents("php://input"));
-			$json_array_count=sizeof($form_data);
-						
-			//$id_header=$form_data[0]->id_header;			
-
-			$count=sizeof($form_data[0]->list_of_values);		
-			for($cnt=0;$cnt<=$count-1;$cnt++)
-			{			
-					$id_detail=$form_data[0]->list_of_values[$cnt]->id_detail;
-					$save_details['productname']=$form_data[0]->list_of_values[$cnt]->productname;	
-					$save_details['group_id']=$form_data[0]->list_of_values[$cnt]->group_id;	
-					$save_details['brand_id']=$form_data[0]->list_of_values[$cnt]->brand_id;	
-					$save_details['sell_discount']=$form_data[0]->list_of_values[$cnt]->sell_discount;	
-					$save_details['mrp']=$form_data[0]->list_of_values[$cnt]->mrp;	
-					$save_details['spl_discount']=$form_data[0]->list_of_values[$cnt]->spl_discount;		
-					$save_details['sell_price']=
-					$save_details['mrp']-($save_details['mrp']*$save_details['sell_discount']/100);				
-					
-					$save_details['hsncode']=$form_data[0]->list_of_values[$cnt]->hsncode;	
-					$save_details['tax_ledger_id']=$form_data[0]->list_of_values[$cnt]->tax_ledger_id;	
-					$save_details['active_inactive']=$form_data[0]->list_of_values[$cnt]->active_inactive;	
-												
-					$this->projectmodel->save_records_model($id_detail,'productmstr',$save_details);						
-						
-			}
-
-			$return_data['msg']=$count." Record(s) has been saved!";
-			
-			header('Access-Control-Allow-Origin: *');
-			header("Content-Type: application/json");
-			echo json_encode($return_data);
-
-		}
-
-
-
-
-		if($datatype=='VIEWALLVALUE')
-		{
-						
-					// $acc_tran_details['id_header']=$cond;
-					// $arraindx=0;
-					// $acc_tran_details['list_of_values'][$arraindx]['id_detail']='';
-					// $acc_tran_details['list_of_values'][$arraindx]['FieldVal']=0;				
-					// $acc_tran_details['list_of_values'][$arraindx]['comment']='';								
-					// $acc_tran_details['list_of_values'][$arraindx]['display_order']='';
-					// $acc_tran_details['list_of_values'][$arraindx]['active_inactive']='';		
-				
-					// if($cond>0)
-					// {
-					// 	$sql_bills="select * from  productmstr 
-					// 	where  group_id=".$group_id." and  ORDER BY id";					
-					// 	$sql_bills = $this->projectmodel->get_records_from_sql($sql_bills);	
-					// 	foreach ($sql_bills as $sql_bill)
-					// 	{				
-					// 		$acc_tran_details['list_of_values'][$arraindx]['id_detail']=$sql_bill->id;
-					// 		$acc_tran_details['list_of_values'][$arraindx]['FieldVal']=$sql_bill->FieldVal;		
-					// 		$acc_tran_details['list_of_values'][$arraindx]['comment']=$sql_bill->comment;						
-					// 		$acc_tran_details['list_of_values'][$arraindx]['display_order']=$sql_bill->display_order;
-					// 		$acc_tran_details['list_of_values'][$arraindx]['active_inactive']=$sql_bill->active_inactive;
-
-					// 		$arraindx=$arraindx+1;
-					// 	}
-					// }
-
-					//$records = $this->projectmodel->GetMultipleVal($sql_bills);	
-				
-				$fieldIndex	=0;
-				$return_data['group_id']=$group_id;
-				$return_data['brand_id']=$brand_id;
-
-				$return_data['list_of_values'][$fieldIndex]['id_detail']='';
-				$return_data['list_of_values'][$fieldIndex]['productname']='';
-				$return_data['list_of_values'][$fieldIndex]['group_id']=$group_id;
-				$return_data['list_of_values'][$fieldIndex]['brand_id']=$brand_id;
-				$return_data['list_of_values'][$fieldIndex]['sell_discount']='';
-				$return_data['list_of_values'][$fieldIndex]['mrp']='';
-				$return_data['list_of_values'][$fieldIndex]['spl_discount']='';
-				
-				$return_data['list_of_values'][$fieldIndex]['hsncode']='';
-				$return_data['list_of_values'][$fieldIndex]['tax_ledger_id']='';
-				$return_data['list_of_values'][$fieldIndex]['active_inactive']='';
-
-
-				$whr="group_id=".$group_id." and brand_id=".$brand_id;
-				$rs_result=$this->projectmodel->GetMultipleVal('*','productmstr',$whr ,' productname');
-				$json_array_count=sizeof($rs_result);	 
-				for($fieldIndex=0;$fieldIndex<$json_array_count;$fieldIndex++)
-				{
-					$return_data['list_of_values'][$fieldIndex]['id_detail']=$rs_result[$fieldIndex]['id'];
-					$return_data['list_of_values'][$fieldIndex]['productname']=trim($rs_result[$fieldIndex]['productname']);
-					$return_data['list_of_values'][$fieldIndex]['group_id']=$rs_result[$fieldIndex]['group_id'];
-					$return_data['list_of_values'][$fieldIndex]['brand_id']=$rs_result[$fieldIndex]['brand_id'];
-					$return_data['list_of_values'][$fieldIndex]['sell_discount']=$rs_result[$fieldIndex]['sell_discount'];
-					$return_data['list_of_values'][$fieldIndex]['mrp']=$rs_result[$fieldIndex]['mrp'];
-					$return_data['list_of_values'][$fieldIndex]['spl_discount']=$rs_result[$fieldIndex]['spl_discount'];
-					
-					$return_data['list_of_values'][$fieldIndex]['hsncode']=$rs_result[$fieldIndex]['hsncode'];
-					$return_data['list_of_values'][$fieldIndex]['tax_ledger_id']=$rs_result[$fieldIndex]['tax_ledger_id'];
-					$return_data['list_of_values'][$fieldIndex]['active_inactive']=$rs_result[$fieldIndex]['active_inactive'];
-				
-				}
-			
-				array_push($output,$return_data);
-				header('Access-Control-Allow-Origin: *');
-				header("Content-Type: application/json");
-				echo json_encode($output);
-		}
-
-		
-	
-
-}
-
-
-
-public function list_of_values($datatype='',$cond=0)
-{
-
-
-	$output=array();
-
-		if($datatype=='SAVE')
-		{
-			$id_header=$id_detail='';
-			$data=$return_data=$save_details=$save_hdr=array();				
-			$RAW_DATA=file_get_contents("php://input");
-			$form_data=json_decode(file_get_contents("php://input"));
-			$json_array_count=sizeof($form_data);
-
-						
-			$id_header=$form_data[0]->id_header;			
-
-			$count=sizeof($form_data[0]->list_of_values);		
-			for($cnt=0;$cnt<=$count-1;$cnt++)
-			{			
-					$id_detail=$form_data[0]->list_of_values[$cnt]->id_detail;
-					$save_details['parent_id']=$id_header;
-					$save_details['Status']='LIST';
-					$save_details['active_inactive']=$form_data[0]->list_of_values[$cnt]->active_inactive;
-					$save_details['FieldID']=$save_details['FieldVal']=$form_data[0]->list_of_values[$cnt]->FieldVal;	
-					$save_details['comment']=$form_data[0]->list_of_values[$cnt]->comment;	
-					$save_details['display_order']=$form_data[0]->list_of_values[$cnt]->display_order;	
-					
-					$this->projectmodel->save_records_model($id_detail,'frmrptgeneralmaster',$save_details);						
-						
-			}
-
-			$return_data['id_header']=$id_header;
-			
-			header('Access-Control-Allow-Origin: *');
-			header("Content-Type: application/json");
-			echo json_encode($return_data);
-
-		}
-
-
-
-
-		if($datatype=='VIEWALLVALUE')
-		{
-						
-				$acc_tran_details['id_header']=$cond;
-
-				//delete array elements				
-				// for($bil=0;$bil<=300-1;$bil++)
-				// {unset($acc_tran_details['list_of_values'][$bil]);}
-				
-					$arraindx=0;
-					$acc_tran_details['list_of_values'][$arraindx]['id_detail']='';
-					$acc_tran_details['list_of_values'][$arraindx]['FieldVal']=0;				
-					$acc_tran_details['list_of_values'][$arraindx]['comment']='';								
-					$acc_tran_details['list_of_values'][$arraindx]['display_order']='';
-					$acc_tran_details['list_of_values'][$arraindx]['active_inactive']='';		
-				
-					if($cond>0)
-					{
-						$sql_bills="select * from  frmrptgeneralmaster where 	parent_id=".$cond." ORDER BY id";					
-						$sql_bills = $this->projectmodel->get_records_from_sql($sql_bills);	
-						foreach ($sql_bills as $sql_bill)
-						{				
-							$acc_tran_details['list_of_values'][$arraindx]['id_detail']=$sql_bill->id;
-							$acc_tran_details['list_of_values'][$arraindx]['FieldVal']=$sql_bill->FieldVal;		
-							$acc_tran_details['list_of_values'][$arraindx]['comment']=$sql_bill->comment;						
-							$acc_tran_details['list_of_values'][$arraindx]['display_order']=$sql_bill->display_order;
-							$acc_tran_details['list_of_values'][$arraindx]['active_inactive']=$sql_bill->active_inactive;
-
-							$arraindx=$arraindx+1;
-						}
-					}
-			
-					array_push($output,$acc_tran_details);
-					header('Access-Control-Allow-Origin: *');
-					header("Content-Type: application/json");
-					echo json_encode($output);
-		}
-
-		
-	
-
-}
-
 
 public function experimental_form_grid($datatype='',$hindx=0,$flfindx=0)
 {						
 	
-	//CHECK DATASAVE TABLE
-	// $rs=$resval=$form_structure=$output=$save_details=array();
-	// $whr=" id=1";	
-	// $raw_data=$this->projectmodel->GetSingleVal('test_data','test_table',$whr);
-	// $form_data=json_decode($raw_data);
-	// $headers=json_decode(json_encode($form_data[0]->header), true );
-	// $save_details=$this->FrmRptModel->create_save_array($headers);
+			// $save_comp['product_id']=$id_detail;
+			// $save_comp['company_id']=$company_id;
+			// $save_comp['minimum_stock']=2;
+			// $save_comp['available_qnty']=3;
 
-	
-	// foreach($save_details as $key1=>$tables)
-	// {
-	// 	if($key1<2)
-	// 	{
-	// 		foreach($tables as $key2=>$fields)
-	// 		{
+			// $this->projectmodel->save_records_model($product_balance_companywise_id,'product_balance_companywise',$save_comp);
+			
+			// $form_name='invoice_entry';
+			// $id=22;
+			// $form_structure=$this->form_view($form_name,$id);
+
+			// foreach($form_structure['header'][1]['fields'][1] as $key1=>$tables)
+			// {
+			// 	if($key1<>'invoice_summary_id')
+			// 	{
+			// 		$form_structure['header'][1]['fields'][1][$key1]['Inputvalue']='';
+			// 		$form_structure['header'][1]['fields'][1][$key1]['Inputvalue_id']='';
+			// 	}
+			// 	// $form_structure['header'][1]['fields'][1][$key1]['Inputvalue']='';
+			// 	// echo $key1.' '.$form_structure['header'][1]['fields'][1][$key1]['Inputvalue'];
+			// 	// // print_r($form_structure['header'][1]['fields'][1][$key1]) ;
+			// 	//  echo '<br>';
+			// 	//  echo '<br>';
+			// 	 echo '<br>';
+			// 	echo $key1;
+			// }	
 				
-	// 					$table_name=$key2;		
-	// 					$savedata=array();	
-	// 					$save_statue=true;
+				// echo '<pre>';
+				// print_r($form_structure);
+				// echo '</pre>';
 
-	// 			foreach($fields as $key3=>$value)
-	// 					{
-	// 						//HERE REQUIRE CUSTOMIZATION
-	// 						if($key3=='id' && $table_name=='invoice_summary')
-	// 						{
-	// 							if($value>0)
-	// 							{$header_id=$value;}
-	// 							else 
-	// 							{$header_id='';}  											
-	// 						}
-	// 						else if ($key3<>'id' && $table_name=='invoice_summary')
-	// 						{$savedata[$key3]=$value;}
-	// 						else if ($key3=='id' && $table_name=='invoice_details')
-	// 						{if($value>0){$id=$value;}else {$id='';}   }
-	// 						else if ($key3=='invoice_summary_id' && $table_name=='invoice_details')
-	// 						{$savedata[$key3]=$header_id; }
-	// 						else 
-	// 						{
-	// 							$savedata[$key3]=$value; 
-	// 							//if($savedata['product_id']==0){$save_statue=false;}
+				// $id=1;
+				// $this->projectmodel->product_update($id,'MINUS_STOCK');
 
-	// 						}
+				$dtlist_total=$return_data=$setting=$rs=$resval=$form_structure=$output=array();	
+				$id=13;	
+				$indx=0;
+				
+				$form_id=46;
+				$whr=" id=".$form_id;	
+				$DataFields=$this->projectmodel->GetSingleVal('GridHeader','frmrpttemplatehdr',$whr);									
+				$TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);
+				$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
+				$WhereCondition=$this->projectmodel->GetSingleVal('WhereCondition','frmrpttemplatehdr',$whr);	
+				$WhereCondition=$WhereCondition." and invoice_summary_id=".$id;
 
-	// 						echo $key3.$savedata[$key3].'<br>';
+				$rs[$indx]['section_type']='GRID_ENTRY';	
+				$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
+				$rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
+				$rs[$indx]['fields']=$DataFields;
+				$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']." where ".$WhereCondition;		
+				
+				$resval=$this->FrmRptModel->create_form($rs,$id); 
+				
 
-	// 					}
-
-	// 					//HEADER SECTION
-	// 					if($table_name=='invoice_summary')
-	// 					{
-	// 						// $this->projectmodel->save_records_model($header_id,$table_name,$savedata);
-	// 						// if($key1==0 && $header_id=='')
-	// 						// {$header_id=$this->db->insert_id();$server_msg="Record has been inserted Successfully!";}	
-	// 						// else if($key1==0 && $header_id>0){$server_msg="Record has been Updated Successfully!";}										
+				foreach($resval['header'][0]['fields'] as $key1=>$flds)
+				{
+						foreach($flds as $key2=>$fld)
+						{
 							
-	// 					//	echo $savedata[$key3].'<br>';
-	// 					}
+							$save_details[$fld['InputName']]['LabelName']=$fld['LabelName'];          
+							$save_details[$fld['InputName']]['Inputvalue']=$fld['Inputvalue'];
+							$save_details[$fld['InputName']]['Inputvalue_id']=$fld['Inputvalue_id'];
+							//$save_details[$fld['InputName']]['InputType']=$fld['InputType'];
+							$save_details[$fld['InputName']]['InputType']='text';
+							
+							 if($key2=='id')
+							 {
+								$save_details[$fld['InputName']]['InputType']='hidden';
+							 }
 
-	// 					if($table_name=='invoice_details')
-	// 					{
-	// 						// if($savedata['product_id']>0)
-	// 						// {$this->projectmodel->save_records_model($id,$table_name,$savedata);}
+							// if($key2=='product_id')
+							// {
+							// 	$whr=" id=".$fld['Inputvalue_id'];	
+							// 	$pname=$this->projectmodel->GetSingleVal('productname','productmstr',$whr);
 
-	// 					//	echo $savedata[$key3].'<br>';
-	// 					}
+							// 	$save_details[$fld['InputName']]['LabelName']=$fld['LabelName'];    
+							// 	$save_details[$fld['InputName']]['Inputvalue']=$pname;
+							// 	$save_details[$fld['InputName']]['Inputvalue_id']=$fld['Inputvalue_id'];
+							// 	$save_details[$fld['InputName']]['InputType']=$fld['InputType'];
+							// }
 
+						}							
+						if($save_details['id']['Inputvalue']>0){array_push($output,$save_details);}
+				}
 
+				$return_data['header']=$output;
 
-	// 		}
-	// 	}
-		
+				$resval=$this->FrmRptModel->create_report($rs,$id); 
+				$return_data['header']=$resval;
 
-	// }
-
-	// echo '<pre>';
-	// print_r($save_details);
-	// echo '</pre>';
+				// echo '<pre>';
+				// print_r($return_data);
+				// echo '</pre>';
 
 	
-
-	//CHECK DATASAVE TABLE
-
-	// echo 'test ';
-	// $url="http://122.176.31.190/realitycsapi/api/Leaderboard/GetComparison_SalesRevenueTrunover?StartDate=01%2F01%2F2018&EndDate=01%2F31%2F2018";
-	// $return_data=	$setting=	$rs=$resval=$form_structure=$output=array();			
-	// $form_data1=json_decode($url);
-
-	// echo '<pre>';
-	// print_r($url);
-	// echo '</pre>';
-
-	// $arr['header'][0]['section_type']='FORM';
-	// $arr['header'][0]['id']=0;
-	// $arr['header'][0]['parent_id']='';
-	// $arr['header'][0]['TableName']='invoice_summary';
-	// $arr['header'][0]['fields'][0]['id']['MainTable']='a_import_doctor_master';
-	// $arr['header'][0]['fields'][0]['id']['input_id_index']=1;
-	// $arr['header'][0]['fields'][0]['id']['LabelName']='id';
-	// $arr['header'][0]['fields'][0]['id']['MainTable']='a_import_doctor_master';
-
-
-				 
-
-
-	// $id=0;
-	// $indx=0;
-	// $form_id=36;
-	// $whr=" id=".$form_id;	
-	// $DataFields=$this->projectmodel->GetSingleVal('DataFields','frmrpttemplatehdr',$whr);	
-	// $DataFields2=$this->projectmodel->GetSingleVal('DataFields2','frmrpttemplatehdr',$whr);	
-	// $DataFields3=$this->projectmodel->GetSingleVal('DataFields3','frmrpttemplatehdr',$whr);	
-	// $DataFields4=$this->projectmodel->GetSingleVal('DataFields4','frmrpttemplatehdr',$whr);	
-	// $DataFields5=$this->projectmodel->GetSingleVal('DataFields5','frmrpttemplatehdr',$whr);	
-	// $TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);	
-	// $section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
-	// $rs[$indx]['section_type']=$section_type;	
-	// $rs[$indx]['frmrpttemplatehdr_id']=$form_id;
-	// $rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
-	// $rs[$indx]['fields']=$DataFields;
-	// $rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']." where id=".$id;
-
-
-
-	// $indx=1;
-	// $form_id=37;
-	// $invoice_summary_id=$id;
-	// $whr=" id=".$form_id;	
-	// $DataFields=$this->projectmodel->GetSingleVal('DataFields','frmrpttemplatehdr',$whr);
-	// $TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);	
-	// $section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
-	// $rs[$indx]['section_type']='GRID_ENTRY';		
-	// $rs[$indx]['frmrpttemplatehdr_id']=$form_id;
-	// $rs[$indx]['id']=0;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
-	// //	$rs[$indx]['fields']=$DataFields.$setting['segments'];
-	// $rs[$indx]['fields']=$DataFields;
-	// $rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']."
-	// 	where invoice_summary_id=".$invoice_summary_id;
-
-
-	// $form_structure=$this->FrmRptModel->create_form($rs,$id);
-	// $form_structure=$this->FrmRptModel->re_arrange_input_index($form_structure);
-
-	// echo '<pre>';
-	// print_r($form_structure);
-	// echo '</pre>';
-	
-	//$id=12945;
-	//$this->projectmodel->check_own_company_and_transfer($id);
-
-	//$this->projectmodel->transaction_update($id);
-
-				//CHECK AND TRANSFER STOCK TO OWN COMPANY			
-	//$this->projectmodel->check_own_company_and_transfer($id);	
-	
-
-	// $id=572;
-	// $form_detail_id=35;
-	// $indx=0;
-				
-	// $form_id=$form_detail_id;
-	// $whr=" id=".$form_id;	
-	// $DataFields=$this->projectmodel->GetSingleVal('GridHeader','frmrpttemplatehdr',$whr);									
-	// $TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);
-	// $section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
-	// $WhereCondition=$this->projectmodel->GetSingleVal('WhereCondition','frmrpttemplatehdr',$whr);	
-	// $WhereCondition=$WhereCondition." and invoice_summary_id=".$id;
-
-	// $rs[$indx]['section_type']='GRID_ENTRY';	
-	// $rs[$indx]['frmrpttemplatehdr_id']=$form_id;
-	// $rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
-	// $rs[$indx]['fields']=$DataFields;
-	// $rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']." where ".$WhereCondition;		
-	// $resval=$this->FrmRptModel->create_report($rs,$id); 
-
-		// echo '<pre>';
-		// print_r($form_structure['header']);
-		// echo '</pre>';
-
-
-		// $form_summary_id=34;
-		// $form_detail_id=35;
-		// $id=0;	
-		// $form_name='invoice_entry'	;				
-		// $form_structure=$this->form_view($form_name,$id);
-		//$header_id=1;
-		//$this->projectmodel->transaction_update($header_id);
-
-		$form_detail_id=35;
-		$id=5;	
-		$indx=0;
-		
-		$form_id=$form_detail_id;
-		$whr=" id=".$form_id;	
-		$DataFields=$this->projectmodel->GetSingleVal('GridHeader','frmrpttemplatehdr',$whr);									
-		$TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);
-		$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
-		$WhereCondition=$this->projectmodel->GetSingleVal('WhereCondition','frmrpttemplatehdr',$whr);	
-		$WhereCondition=$WhereCondition." and invoice_summary_id=".$id;
-
-		$rs[$indx]['section_type']='GRID_ENTRY';	
-		$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
-		$rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
-		$rs[$indx]['fields']=$DataFields;
-		$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']." where ".$WhereCondition;		
-		
-
-		$resval=$this->FrmRptModel->create_report($rs,$id); 
-		 echo '<pre>';
-		 print_r($resval);
-		 echo '</pre>';
-
 }	
 
-
-
-public function print_documents($doc_type='',$cond=0)
-{
-
-	//https://stackoverflow.com/questions/8240472/printing-a-web-page-using-just-url-and-without-opening-new-window
 	
-	if($doc_type=='POS_INVOICE')
-	{
-			$this->load->library('zend');
-			$this->zend->load('Zend/Barcode');
-		
-			$barcodetext=$cond;
-			$image='BILL-'.$cond.'.png';
-			$imageResource = Zend_Barcode::factory('code128', 
-			'image', array('text'=>$barcodetext,'barThickWidth'=>6,'barThinWidth'=>2,
-			'drawText' => false), array())->draw();
-
-			imagepng($imageResource, 'uploads/'.$image);
-
-			$data_print['table_name']='invoice_summary';
-			$data_print['table_id']=$cond;		
-			//$data_print['datatype']=$datatype;
-
-			$report_path='accounts_management/report/invoice_print';
-			$this->report_page_layout_display($report_path,$data_print);
-
-			// $report_path='accounts_management/MIS_REPORTS/invoice_print_pos';
-			// $this->report_page_layout_display($report_path,$data_print);
-	}
-
-	//A4 INVOICE
-	if($doc_type=='INVOICE')
-	{
-		
-			$this->load->library('zend');
-			$this->zend->load('Zend/Barcode');
-
-			$barcodetext=$cond;
-			$image='BILL-'.$cond.'.png';
-			$imageResource = Zend_Barcode::factory('code128', 
-		   'image', array('text'=>$barcodetext,'barThickWidth'=>6,'barThinWidth'=>2,
-		   'drawText' => false), array())->draw();
-		   
-			imagepng($imageResource, 'uploads/'.$image);
-		
-			$data_print['table_name']='invoice_summary';
-			$data_print['table_id']=$cond;		
-			//$data_print['datatype']=$datatype;
-		
-			$report_path='accounts_management/report/invoice_print_sell';
-			$this->pdf->load_view($report_path, $data_print);			
-			$this->pdf->render();
-			$this->pdf->stream("uploads/invoice.pdf");				
-			//write_file("uploads/invoice.pdf", $this->pdf->output());				
-	}	
-
-	
-	if($doc_type=='BARCODE_PRINT')
-	{
-		$this->load->library('zend');
-		$this->zend->load('Zend/Barcode');
-		$cnt=1;
-		$sql="select * from  invoice_details where  invoice_summary_id =".$cond;
-		$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
-		foreach ($rowrecord as $row1)
-		{
-				$barcode=$row1->id;
-				$image=$row1->id.'.png';					
-			//DOCUMENT
-			//https://docs.zendframework.com/zend-barcode/objects/								
-			$barcodeOptions = array('text' => $barcode, 'barHeight'=> 16,'barThickWidth'=>6,'barThinWidth'=>2,'drawText' => false);				
-			// No required options
-			$rendererOptions = array();				
-			// Draw the barcode in a new image,
-			$imageResource = Zend_Barcode::factory('code128', 'image', $barcodeOptions, $rendererOptions)->draw();				 				 					 
-			/* $imageResource = Zend_Barcode::factory('code128','image', array('text'=>$barcode,'barHeight' => 30,'drawText' => false), array())->draw();*/				 
-				imagepng($imageResource, 'uploads/purchase_barcode/'.$image);	
-				$cnt=$cnt+1;	
-		}
-
-			$report_path='accounts_management/report/print_purchase_barcode';
-			$data_print['table_name']='invoice_summary';
-			$data_print['table_id']=$cond;		
-			$data_print['PRINTTYPE']=$doc_type;			
-			$this->report_page_layout_display($report_path,$data_print);
-
-	}	
-
-	
-
-}	
-
-
-public function product_rate_master($datatype='',$cond=0)
-{
-	
-
-	$return=$dtlist_total=$output=array();	
-
-	$form_data1=json_decode(file_get_contents("php://input"));	
-	$subtype=$form_data1->subtype;
-	
-
-	if($subtype=='PRODUCT_GROUP')
-	{
-		$id=$form_data1->id;
-
-		$records="select * from misc_mstr where mstr_type='PRODUCT_GROUP' ";
-		$records = $this->projectmodel->get_records_from_sql($records);
-		foreach ($records as $fieldIndex=>$record)
-		{	
-			$dtlist_total['id']=$record->id;
-			$dtlist_total['name']=$record->name;
-			$dtlist_total['name_value']=$record->name_value;
-			array_push($output,$dtlist_total);
-		}
-		
-		 $return['group_list']=$output;
-		$this->FrmRptModel->tranfer_data($return);			
-	}
-
-	if($subtype=='rate_list')
-	{
-		$id=$form_data1->id;
-
-		//MAIN GROUP 
-		$whr=" id=".$id;
-		$main_grp_id=$this->projectmodel->GetSingleVal('parent_id','misc_mstr',$whr);
-
-		$dtlist_total['GROUP_ID']=$id;
-
-		//POTENCY 
-		$potency="select * from misc_mstr where parent_id=".$main_grp_id." 
-		 and mstr_type='POTENCY' and status='ACTIVE'";
-		$potency = $this->projectmodel->get_records_from_sql($potency);
-		foreach ($potency as $potencyIndex=>$pot)
-		{			
-			$dtlist_total['POTENCY_ID']=$pot->id;
-			$dtlist_total['POTENCY_NAME']=$pot->name;
-
-			$packs="select * from misc_mstr where parent_id=".$main_grp_id." 
-			and mstr_type='PACK_SIZE' and status='ACTIVE'";
-			$packs = $this->projectmodel->get_records_from_sql($packs);
-			foreach ($packs as $packIndex=>$pack)
-			{	
-				$dtlist_total['PACK_ID']=$pack->id;
-				$dtlist_total['PACK_NAME']=$pack->name;
-				$product_rate_mstr_id=$RATE=$MRP='';
-
-				$whr=" GROUP_ID=".$id." and POTENCY_ID=".$pot->id." and PACK_ID=".$pack->id;	
-				$product_rate_mstr_id=$this->projectmodel->GetSingleVal('id','product_rate_mstr',$whr);
-				$RATE=$this->projectmodel->GetSingleVal('RATE','product_rate_mstr',$whr);
-				$MRP=$this->projectmodel->GetSingleVal('MRP','product_rate_mstr',$whr);
-
-				$dtlist_total['id']=$product_rate_mstr_id;
-				$dtlist_total['RATE']=$RATE;
-				$dtlist_total['MRP']=$MRP;
-
-				array_push($output,$dtlist_total);
-			}
-		}
-
-		$return['header']=array('Potency','Pack Size','Rate','MRP');
-		$return['body']=$output;
-		$this->FrmRptModel->tranfer_data($return);			
-	}
-	
-
-	if($subtype=='SAVE_DATA')
-	{
-		$save_details2['test_data']=$raw_data=$form_data1->raw_data;
-		$raw_data=json_decode($raw_data);
-		$raw_data=json_decode(json_encode($raw_data), true );	
-		
-		foreach($raw_data as $key1=>$raw_data1)
-		 {
-			$id=$raw_data1['id'];
-			$save_data['GROUP_ID']=$raw_data1['GROUP_ID'];
-			$save_data['POTENCY_ID']=$raw_data1['POTENCY_ID'];
-			$save_data['PACK_ID']=$raw_data1['PACK_ID'];
-			$save_data['RATE']=$raw_data1['RATE'];
-			$save_data['MRP']=$raw_data1['MRP'];
-			$this->projectmodel->save_records_model($id,'product_rate_mstr',$save_data);						
-		 }	
-
-	}
-
-
-}	
 
 public function experimental_form($datatype='',$cond=0)
 {
@@ -819,7 +162,931 @@ public function experimental_form($datatype='',$cond=0)
 	$form_data1=json_decode(file_get_contents("php://input"));	
 	$form_name=$form_data1->form_name;	//PARAMETERS		
 	$subtype=$form_data1->subtype;
-		
+	
+	
+	
+	if($form_name=='purchase_entry')
+	{
+			$form_summary_id=36;
+			$form_detail_id=37;
+
+			if($subtype=='view_list')
+			{			
+								
+				$id=$form_data1->id;						
+				$form_structure=$this->form_view($form_name,$id);
+				$form_structure['header'][0]['fields'][0]['invoice_date']['Inputvalue']=date('Y-m-d');
+
+				// foreach($form_structure['header'][1]['fields'][0] as $key1=>$tables)
+				// {
+				// 	if($key1<>'invoice_summary_id')
+				// 	{
+				// 		$form_structure['header'][1]['fields'][1][$key1]['Inputvalue']='';
+				// 		$form_structure['header'][1]['fields'][1][$key1]['Inputvalue_id']='';
+				// 	}
+				// }	
+
+				//$form_structure['header'][0]['fields'][0]['invoice_no']['Inputvalue']='TEST';
+				// $sql="select a.id FieldID,a.productname FieldVal,b.available_qnty,a.Synonym,a.tax_ledger_id
+				// from productmstr a, product_balance_companywise b 
+				// where a.id=b.product_id and b.company_id=".$company_id;
+
+				// if($id>0)
+				// {
+				// 	$sql="select a.id FieldID,a.productname FieldVal
+				// 	from productmstr where group_id=289 ";
+				// 	$datafields_array =$this->projectmodel->get_records_from_sql($sql);
+				// 	$form_structure["header"][1]['fields'][0]['product_id']['datafields']=
+				// 	json_decode(json_encode($datafields_array), true);
+				// }
+				
+
+			
+
+				array_push($output,$form_structure);
+				header('Access-Control-Allow-Origin: *');
+				header("Content-Type: application/json");
+				echo json_encode($output);
+			}
+			
+
+			//save section
+			if($subtype=='SAVE_DATA')
+			{
+				//$this->projectmodel->save_data($form_data1->raw_data,$form_name);
+
+
+				// $save_details2['test_data']=$form_data1->raw_data;
+				// $this->projectmodel->save_records_model(1,'test_table',$save_details2);
+				// $rs=$resval=$form_structure=$output=$save_details=array();
+				// $whr=" id=1";	
+				// $raw_data=$this->projectmodel->GetSingleVal('test_data','test_table',$whr);
+
+				$raw_data=$form_data1->raw_data;
+				$form_data=json_decode($raw_data);
+				$headers=json_decode(json_encode($form_data[0]->header), true );
+				$save_details=$this->FrmRptModel->create_save_array($headers);
+
+				$VALID_STATUS='VALID';
+				$BILL_SAVED=$invoice_no=$header_id=$id='';
+						
+				foreach($save_details as $key1=>$tables)
+				{
+					if($key1<2)
+					{
+						foreach($tables as $key2=>$fields)
+						{
+							
+									$table_name=$key2;		
+									$savedata=array();	
+									$save_statue=true;
+
+									foreach($fields as $key3=>$value)
+									{
+										//HERE REQUIRE CUSTOMIZATION
+										if($key3=='id' && $table_name=='invoice_summary')
+										{
+											if($value>0)
+											{$header_id=$value;}
+											else 
+											{$header_id='';}  											
+										}
+										else if ($key3<>'id' && $table_name=='invoice_summary')
+										{$savedata[$key3]=$value;}
+										else if ($key3=='id' && $table_name=='invoice_details')
+										{if($value>0){$id=$value;}else {$id='';}   }
+										else if ($key3=='invoice_summary_id' && $table_name=='invoice_details')
+										{$savedata[$key3]=$header_id; }
+										else 
+										{
+											$savedata[$key3]=$value; 
+											//if($savedata['product_id']==0){$save_statue=false;}
+										}
+
+									}
+
+									if($header_id=='')
+									{										
+										// if($savedata['invoice_date']=='')
+										// {$savedata['invoice_date']=date('Y-m-d');}
+										// $tran_no=$this->projectmodel->tran_no_generate('SALE',$savedata['invoice_date']);
+										// $savedata['finyr']=$tran_no['finyr'];
+										// $savedata['srl']=$tran_no['srl'];
+										// $savedata['invoice_no']='BILL/'.$tran_no['srl'].'/'.$savedata['finyr'];
+									}
+
+									$savedata['status']='PURCHASE';
+									
+									//HEADER SECTION
+									if($table_name=='invoice_summary')
+									{																				
+										$BILL_SAVED=$savedata['BILL_STATUS']='BILL_SAVED';
+										$savedata['emp_name']=$this->session->userdata('login_name');
+										$savedata['emp_id']=$this->session->userdata('login_emp_id');
+										$savedata['invoice_time']=date('H:i');
+										$savedata['company_id']=$this->session->userdata('COMP_ID');	
+										$savedata['entry_from_software']='NEW';
+										
+										$this->projectmodel->save_records_model($header_id,$table_name,$savedata);
+										if($key1==0 && $header_id=='')
+										{
+											
+											$header_id=$this->db->insert_id();$server_msg="Record has been inserted Successfully!";
+											$invoice_no=$savedata['invoice_no'];
+										}		
+										else if($key1==0 && $header_id>0)
+										{
+											$server_msg="Record has been Updated Successfully!";
+											$invoice_no=$savedata['invoice_no'];
+										}										
+										
+									}
+
+									// if($table_name=='invoice_details')
+									// {
+									// 	if($savedata['product_id']>0)
+									// 	{$this->projectmodel->save_records_model($id,$table_name,$savedata);}
+									// }
+
+									if($table_name=='invoice_details')
+									{
+										if($savedata['product_id']>0)
+										{
+											if($id>0)
+											{
+												$this->projectmodel->product_update($id,'MINUS_STOCK');
+												$this->projectmodel->save_records_model($id,$table_name,$savedata);
+												$this->projectmodel->product_update($id,'ADD_STOCK');
+												$this->projectmodel->transaction_update($id);
+											}
+											if($id=='')
+											{
+												$this->projectmodel->save_records_model($id,$table_name,$savedata);
+												$id=$this->db->insert_id();
+												$this->projectmodel->transaction_update($id);
+												$this->projectmodel->product_update($id,'ADD_STOCK');
+											}		
+											
+										}
+									}
+
+						}
+					}
+					
+
+				}
+
+							
+				$return_data['id_header']=$header_id;
+				$return_data['server_msg']=$server_msg;		
+				$return_data['invoice_no']=$invoice_no;
+				
+				if($BILL_SAVED=='BILL_SAVED')
+				{$this->accounts_model->ledger_transactions($header_id,'PURCHASE');}
+
+				$this->projectmodel->send_json_output($return_data);
+
+
+			}	
+
+			if($subtype=='FINAL_SUBMIT')
+			{
+				$id=$form_data1->id;	
+				$this->accounts_model->ledger_transactions($id,'PURCHASE');
+				//$this->projectmodel->product_update($id);
+
+				//CHECK AND TRANSFER STOCK TO OWN COMPANY			
+				//$this->projectmodel->check_own_company_and_transfer($id);	
+				
+				$return_data['id_header']=$id;
+				$return_data['server_msg']='Final Submit Completed';
+				$this->projectmodel->send_json_output($return_data);
+
+			}
+
+			if($subtype=='delete_bill')
+			{
+
+				$invoice_summary_id=$form_data1->id;
+				$whr="id=".$invoice_summary_id;
+				$BILL_STATUS=$this->projectmodel->GetSingleVal('BILL_STATUS','invoice_summary',$whr);
+				if($BILL_STATUS=='NONE')
+				{
+					
+					$this->db->query("delete from invoice_details where invoice_summary_id=".$invoice_summary_id);
+					$this->db->query("delete from invoice_summary where id=".$invoice_summary_id);
+					
+					$return_data['server_msg']='TRANSACTION DELETED';	
+					$this->projectmodel->send_json_output($return_data);
+				}
+				else
+				{	
+					
+					$products = "select id 	from invoice_details where main_group_id=51 and  invoice_summary_id=".$invoice_summary_id ;
+					$products = $this->projectmodel->get_records_from_sql($products);
+					foreach ($products as $product)
+					{$this->projectmodel->product_update($product->id,'MINUS_STOCK');}				
+				}
+
+				$this->accounts_model->ledger_transactions_delete($invoice_summary_id,'PURCHASE');
+
+				$this->db->query("delete from invoice_details where invoice_summary_id=".$invoice_summary_id);
+				$this->db->query("delete from invoice_summary where id=".$invoice_summary_id);
+				
+				$return_data['server_msg']='TRANSACTION DELETED';	
+				$this->projectmodel->send_json_output($return_data);
+
+
+			}
+
+
+			if($subtype=='MAIN_GRID')
+			{
+				$startdate=$form_data1->startdate;
+				$enddate=$form_data1->enddate;
+
+				$indx=0;
+				$id=$form_id=$form_summary_id;
+				$whr=" id=".$form_id;	
+				$DataFields=$this->projectmodel->GetSingleVal('GridHeader','frmrpttemplatehdr',$whr);									
+				$TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);
+				$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
+				$WhereCondition=$this->projectmodel->GetSingleVal('WhereCondition','frmrpttemplatehdr',$whr);	
+				$WhereCondition=$WhereCondition." and invoice_date between '$startdate' and '$enddate' and company_id=".$company_id." order by id desc";
+								
+				$rs[$indx]['section_type']='GRID_ENTRY';	
+				$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
+				$rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
+				$rs[$indx]['fields']=$DataFields;
+				$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']." where ".$WhereCondition;		
+				
+				$resval=$this->FrmRptModel->create_report($rs,$id); 
+
+			}
+
+			if($subtype=='dtlist')
+			{
+				
+				$id=$form_data1->id;	
+				$indx=0;
+				
+				$form_id=$form_detail_id;
+				$whr=" id=".$form_id;	
+				$DataFields=$this->projectmodel->GetSingleVal('GridHeader','frmrpttemplatehdr',$whr);									
+				$TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);
+				$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
+				$WhereCondition=$this->projectmodel->GetSingleVal('WhereCondition','frmrpttemplatehdr',$whr);	
+				$WhereCondition=$WhereCondition." and invoice_summary_id=".$id;
+
+				$rs[$indx]['section_type']='GRID_ENTRY';	
+				$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
+				$rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
+				$rs[$indx]['fields']=$DataFields;
+				$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']." where ".$WhereCondition;		
+				
+				$resval=$this->FrmRptModel->create_form($rs,$id); 
+
+				foreach($resval['header'][0]['fields'] as $key1=>$flds)
+				{
+						foreach($flds as $key2=>$fld)
+						{
+							$save_details[$fld['InputName']]['LabelName']=$fld['LabelName'];          
+							$save_details[$fld['InputName']]['Inputvalue']=$fld['Inputvalue'];
+							$save_details[$fld['InputName']]['Inputvalue_id']=$fld['Inputvalue_id'];
+
+							if($key2=='product_id')
+							{
+								$whr=" id=".$fld['Inputvalue_id'];	
+								$pname=$this->projectmodel->GetSingleVal('productname','productmstr',$whr);
+
+								$save_details[$fld['InputName']]['LabelName']=$fld['LabelName'];    
+								$save_details[$fld['InputName']]['Inputvalue']=$pname;
+								$save_details[$fld['InputName']]['Inputvalue_id']=$fld['Inputvalue_id'];
+							}
+
+						}							
+						if($save_details['id']['Inputvalue']>0){array_push($output,$save_details);}
+				}
+				//$return_data['header']=$resval;		
+
+				$return_data['header']=$output;
+
+				header('Access-Control-Allow-Origin: *');
+				header("Content-Type: application/json");
+				echo json_encode($return_data);
+
+			}
+	
+			//DONE
+			if($subtype=='dtlist_view')
+			{	
+
+				$someArray=array();
+
+				$detail_id=$form_data1->id;
+				$someArray = json_decode($form_data1->raw_data, true);
+
+
+				 $indx=1;
+				
+				//  $someArray[0]['header'][$indx]['fields'][0]['id']['Inputvalue_id']=$detail_id;
+				//  $someArray[0]['header'][$indx]['fields'][0]['product_id']['Inputvalue']=$detail_id;
+				//  $someArray[0]['header'][$indx]['fields'][0]['batchno']['Inputvalue']=$detail_id;
+
+				//id,product_id,batchno,mrp,qnty,rate,subtotal,disc_per,disc_per2,disc_amt,taxable_amt,tax_ledger_id,taxamt,net_amt
+
+				 $records="select * from invoice_details where id=".$detail_id;
+				 $records = $this->projectmodel->get_records_from_sql($records);
+				 foreach ($records as $record)
+				 {
+
+					$someArray[0]['header'][$indx]['fields'][0]['id']['Inputvalue_id']=$record->id;
+					$someArray[0]['header'][$indx]['fields'][0]['product_id']['Inputvalue_id']=$record->product_id;
+					
+					$whr="id=".$record->product_id;
+					$val=$this->projectmodel->GetSingleVal('productname','productmstr',$whr);					
+					$someArray[0]['header'][$indx]['fields'][0]['product_id']['Inputvalue']=$val;
+
+					$someArray[0]['header'][$indx]['fields'][0]['batchno']['Inputvalue']=$record->batchno;
+					$someArray[0]['header'][$indx]['fields'][0]['mrp']['Inputvalue']=$record->mrp;
+					$someArray[0]['header'][$indx]['fields'][0]['qnty']['Inputvalue']=$record->qnty;
+					$someArray[0]['header'][$indx]['fields'][0]['rate']['Inputvalue']=$record->rate;
+					$someArray[0]['header'][$indx]['fields'][0]['subtotal']['Inputvalue']=$record->subtotal;
+
+				 }
+
+
+
+				// $indx=1;
+				// foreach($someArray[0]['header'][$indx]['fields'][0] as $key1=>$values)
+				// {
+										
+				// 	if($someArray[0]['header'][$indx]['fields'][0][$key1]['datafields']<>'')
+				// 	{
+				// 		$whr=" id=".$detail_id;	
+				// 		$Inputvalue_id=$this->projectmodel->GetSingleVal($key1,'invoice_details',$whr);
+				// 		$someArray[0]['header'][$indx]['fields'][0][$key1]['Inputvalue_id']=$Inputvalue_id;
+
+				// 		$MainTable=$someArray[0]['header'][$indx]['fields'][0][$key1]['MainTable'];
+				// 		$LinkField=$someArray[0]['header'][$indx]['fields'][0][$key1]['LinkField'];
+						
+				// 		$whr=" id=".$Inputvalue_id;	
+				// 		$Inputvalue=$this->projectmodel->GetSingleVal($LinkField,$MainTable,$whr);
+				// 		$someArray[0]['header'][$indx]['fields'][0][$key1]['Inputvalue']=$Inputvalue;
+
+				// 	}
+				// 	else
+				// 	{
+
+				// 		$whr=" id=".$detail_id;	
+				// 		$Inputvalue=$this->projectmodel->GetSingleVal($key1,'invoice_details',$whr);
+				// 		$someArray[0]['header'][$indx]['fields'][0][$key1]['Inputvalue']=$Inputvalue;
+				// 	}
+										
+							
+				// }
+
+				$this->FrmRptModel->tranfer_data($someArray);
+
+			}
+
+			//DONE
+			if($subtype=='dtlist_total')
+			{
+				
+				$id=$form_data1->id;	
+
+				$dtlist_total['id']=$id;
+				$records="select * from invoice_summary where id=".$id;
+				$records = $this->projectmodel->get_records_from_sql($records);
+				foreach ($records as $fieldIndex=>$record)
+				{	
+						$dtlist_total['total_amt']=$record->total_amt;
+						$dtlist_total['tot_discount']=$record->tot_discount;
+						$dtlist_total['Taxable_Amt']=$record->total_amt;
+						$dtlist_total['totvatamt']=$record->totvatamt;
+						$dtlist_total['Net_Amt']=$record->grandtot;
+
+						//$dtlist_total['total_paid']=$record->total_paid;
+						//$dtlist_total['total_due']=$record->total_due;
+
+				}
+				$output['header']=$dtlist_total;
+
+				$this->FrmRptModel->tranfer_data($output);				
+
+			}
+
+			if($subtype=='other_search')
+			{			
+										
+					$someArray=array();
+
+					$header_index=$form_data1->header_index;
+					$field_index=$form_data1->field_index;
+					$searchelement=$form_data1->searchelement;
+					$someArray = json_decode($form_data1->raw_data, true);
+
+
+					if($searchelement=='tbl_party_id')
+					{							
+						
+						$tbl_party_id=$someArray[0]['header'][0]['fields'][0]['tbl_party_id']['Inputvalue_id'];
+					
+						// $sql="select a.id FieldID,a.productname FieldVal,b.available_qnty,a.Synonym,a.tax_ledger_id
+						// from productmstr a, product_balance_companywise b 
+						// where a.id=b.product_id and a.company_id=".$company_id;
+						//$company_id=1;
+
+						// $sql="select a.id FieldID,a.productname FieldVal,b.available_qnty,a.Synonym,a.tax_ledger_id
+						// from productmstr a, product_balance_companywise b 
+						// where a.id=b.product_id and b.company_id=".$company_id;
+						// $datafields_array =$this->projectmodel->get_records_from_sql($sql);
+						// $someArray[0]["header"][1]['fields'][0]['product_id']['datafields']=
+						// json_decode(json_encode($datafields_array), true);
+
+					
+					   $sql="select a.id FieldID,a.productname FieldVal,b.name_value Company,c.available_qnty	,c.minimum_stock
+					   from productmstr a, misc_mstr b,product_balance_companywise c  where a.brand_id=b.id and a.id=c.product_id and c.company_id=".$company_id;
+					   $datafields_array =$this->projectmodel->get_records_from_sql($sql);
+					   $someArray[0]["header"][1]['fields'][0]['product_id']['datafields']=
+					   json_decode(json_encode($datafields_array), true);
+					   $this->FrmRptModel->tranfer_data($someArray);
+
+					}
+
+					if($searchelement=='product_id')
+					{							
+						
+						$product_id=$someArray[0]['header'][1]['fields'][0]['product_id']['Inputvalue_id'];
+						$tbl_party_id=$someArray[0]['header'][0]['fields'][0]['tbl_party_id']['Inputvalue_id'];
+						$someArray[0]["header"][1]['fields'][0]['batchno']['datafields']='';
+
+						//PRODUCT WISE PARTY WISE LAST SALE RATE .
+
+						$rs = "select max(a.id) maxid from invoice_summary a,invoice_details b 
+						where a.id=b.invoice_summary_id and 
+						b.product_id=".$product_id."  and a.tbl_party_id=".$tbl_party_id." 	
+						and a.company_id=".$company_id." and a.status='PURCHASE'" ;
+						$rs = $this->projectmodel->get_records_from_sql($rs);		
+						$maxid=$rs[0]->maxid;
+
+
+
+						$whr="product_id=".$product_id." and invoice_summary_id=".$maxid;
+						$rate=$this->projectmodel->GetSingleVal('rate','invoice_details',$whr);
+						$disc1=$this->projectmodel->GetSingleVal('disc_per','invoice_details',$whr);
+						$disc2=$this->projectmodel->GetSingleVal('disc_per2','invoice_details',$whr);
+						
+						$someArray[0]["header"][1]['fields'][0]['disc_per']['Inputvalue']=$disc1;
+
+
+						$rs = "select max(a.id) maxid from invoice_summary a,invoice_details b 
+						where a.id=b.invoice_summary_id and 
+						b.product_id=".$product_id."  and a.status='PURCHASE'" ;
+						$rs = $this->projectmodel->get_records_from_sql($rs);		
+						$maxid=$rs[0]->maxid;
+
+						$whr="product_id=".$product_id." and invoice_summary_id=".$maxid;
+						$mrp=$this->projectmodel->GetSingleVal('mrp','invoice_details',$whr);
+						$batchno=$this->projectmodel->GetSingleVal('batchno','invoice_details',$whr);
+						$someArray[0]["header"][1]['fields'][0]['mrp']['Inputvalue']=$mrp;
+						$someArray[0]["header"][1]['fields'][0]['batchno']['Inputvalue']=$batchno;
+
+						//BATCH LIST					
+						//$someArray[0]["header"][1]['fields'][0]['batchno']['Inputvalue']='product :'.$product_id.' comp:'.$company_id;
+
+					
+						$data=array();
+						$data=$this->projectmodel->batch_list($product_id,$company_id);						
+						$someArray[0]["header"][1]['fields'][0]['batchno']['datafields']=$data;
+
+						//RACK LIST
+						$data=array();
+						$data=$this->projectmodel->rack_wise_available_stock();	
+						$someArray[0]["header"][1]['fields'][0]['rackno']['datafields']=$data;
+						//RATE VALIDATION
+
+						
+							
+						//PRODUCT WISE TAX RATE .
+						// $whr=" id=".$product_id;	
+						// $tax_ledger_id=$this->projectmodel->GetSingleVal('tax_ledger_id','productmstr',$whr);
+						// $someArray[0]["header"][1]['fields'][0]['tax_ledger_id']['Inputvalue_id']=$tax_ledger_id;
+
+						// $whr=" id=".$tax_ledger_id;
+						// $tax_ledger_name=$this->projectmodel->GetSingleVal('acc_name','acc_group_ledgers',$whr);
+						// $someArray[0]["header"][1]['fields'][0]['tax_ledger_id']['Inputvalue']=$tax_ledger_name;
+						
+						$this->FrmRptModel->tranfer_data($someArray);
+
+					}
+
+					
+
+			}
+
+	}
+
+	
+	if($form_name=='issue_entry')
+	{
+			$form_summary_id=47;
+			$form_detail_id=48;
+
+			if($subtype=='view_list')
+			{			
+								
+				$id=$form_data1->id;						
+				$form_structure=$this->form_view($form_name,$id);
+				$form_structure['header'][0]['fields'][0]['invoice_date']['Inputvalue']=date('Y-m-d');
+				array_push($output,$form_structure);
+				header('Access-Control-Allow-Origin: *');
+				header("Content-Type: application/json");
+				echo json_encode($output);
+			}
+			
+
+			//save section
+			if($subtype=='SAVE_DATA')
+			{
+				//$this->projectmodel->save_data($form_data1->raw_data,$form_name);
+
+
+				// $save_details2['test_data']=$form_data1->raw_data;
+				// $this->projectmodel->save_records_model(1,'test_table',$save_details2);
+				// $rs=$resval=$form_structure=$output=$save_details=array();
+				// $whr=" id=1";	
+				// $raw_data=$this->projectmodel->GetSingleVal('test_data','test_table',$whr);
+
+				$raw_data=$form_data1->raw_data;
+				$form_data=json_decode($raw_data);
+				$headers=json_decode(json_encode($form_data[0]->header), true );
+				$save_details=$this->FrmRptModel->create_save_array($headers);
+
+				$VALID_STATUS='VALID';
+				$BILL_SAVED=$invoice_no=$header_id=$id='';
+						
+				foreach($save_details as $key1=>$tables)
+				{
+					if($key1<2)
+					{
+						foreach($tables as $key2=>$fields)
+						{
+							
+									$table_name=$key2;		
+									$savedata=array();	
+									$save_statue=true;
+
+									foreach($fields as $key3=>$value)
+									{
+										//HERE REQUIRE CUSTOMIZATION
+										if($key3=='id' && $table_name=='invoice_summary')
+										{
+											if($value>0)
+											{$header_id=$value;}
+											else 
+											{$header_id='';}  											
+										}
+										else if ($key3<>'id' && $table_name=='invoice_summary')
+										{$savedata[$key3]=$value;}
+										else if ($key3=='id' && $table_name=='invoice_details')
+										{if($value>0){$id=$value;}else {$id='';}   }
+										else if ($key3=='invoice_summary_id' && $table_name=='invoice_details')
+										{$savedata[$key3]=$header_id; }
+										else 
+										{
+											$savedata[$key3]=$value; 
+											//if($savedata['product_id']==0){$save_statue=false;}
+										}
+
+									}
+
+									if($header_id=='')
+									{										
+										if($savedata['invoice_date']=='')
+										{$savedata['invoice_date']=date('Y-m-d');}
+										$tran_no=$this->projectmodel->tran_no_generate('ISSUE',$savedata['invoice_date']);
+										$savedata['finyr']=$tran_no['finyr'];
+										$savedata['srl']=$tran_no['srl'];
+										$savedata['invoice_no']='ISSUE/'.$tran_no['srl'].'/'.$savedata['finyr'];
+									}
+
+									$savedata['status']='ISSUE';
+									//HEADER SECTION
+									if($table_name=='invoice_summary')
+									{		
+										$BILL_SAVED=$savedata['BILL_STATUS']='BILL_SAVED';																		
+										$savedata['emp_name']=$this->session->userdata('login_name');
+										$savedata['emp_id']=$this->session->userdata('login_emp_id');
+										$savedata['invoice_time']=date('H:i');
+										$savedata['company_id']=$this->session->userdata('COMP_ID');	
+										$savedata['entry_from_software']='NEW';
+										$this->projectmodel->save_records_model($header_id,$table_name,$savedata);
+
+										if($key1==0 && $header_id=='')
+										{
+											$header_id=$this->db->insert_id();
+											$server_msg="Record has been inserted Successfully!";
+											$invoice_no=$savedata['invoice_no'];
+										}		
+										else if($key1==0 && $header_id>0)
+										{
+											$server_msg="Record has been Updated Successfully!";
+											$invoice_no=$savedata['invoice_no'];
+										}										
+										
+									}
+
+									// if($table_name=='invoice_details')
+									// {
+									// 	if($savedata['product_id']>0)
+									// 	{$this->projectmodel->save_records_model($id,$table_name,$savedata);}
+									// }
+
+									if($table_name=='invoice_details')
+									{
+										if($savedata['product_id']>0)
+										{
+											
+											if($id>0)
+											{
+												$this->projectmodel->product_update($id,'MINUS_STOCK');
+												$this->projectmodel->save_records_model($id,$table_name,$savedata);
+												$this->projectmodel->product_update($id,'ADD_STOCK');
+												$this->projectmodel->transaction_update($id);
+											}
+											if($id=='')
+											{
+												$this->projectmodel->save_records_model($id,$table_name,$savedata);
+												$id=$this->db->insert_id();
+												$this->projectmodel->transaction_update($id);
+												$this->projectmodel->product_update($id,'ADD_STOCK');
+											}
+
+										}
+									}
+
+						}
+					}
+					
+
+				}
+
+				
+							
+				$return_data['id_header']=$header_id;
+				$return_data['server_msg']=$server_msg;		
+				$return_data['invoice_no']=$invoice_no;
+
+				if($BILL_SAVED=='BILL_SAVED')
+				{$this->projectmodel->product_update($header_id);}
+
+				$this->projectmodel->send_json_output($return_data);
+
+
+			}	
+
+			if($subtype=='FINAL_SUBMIT')
+			{
+				$id=$form_data1->id;	
+				
+				$this->projectmodel->transaction_update($id);
+
+				//CHECK AND TRANSFER STOCK TO OWN COMPANY			
+				//$this->projectmodel->check_own_company_and_transfer($id);	
+				
+				$return_data['id_header']=$id;
+				$return_data['server_msg']='Final Submit Completed';
+				$this->projectmodel->send_json_output($return_data);
+			
+
+			}
+			if($subtype=='delete_bill')
+			{
+
+				$invoice_summary_id=$form_data1->id;
+				$whr="id=".$invoice_summary_id;
+				$BILL_STATUS=$this->projectmodel->GetSingleVal('BILL_STATUS','invoice_summary',$whr);
+				if($BILL_STATUS=='NONE')
+				{
+					
+					$this->db->query("delete from invoice_details where invoice_summary_id=".$invoice_summary_id);
+					$this->db->query("delete from invoice_summary where id=".$invoice_summary_id);
+					
+					$return_data['server_msg']='TRANSACTION DELETED';	
+					$this->projectmodel->send_json_output($return_data);
+				}
+				else
+				{	
+					
+					$products = "select id 	from invoice_details where main_group_id=51 and  invoice_summary_id=".$invoice_summary_id ;
+					$products = $this->projectmodel->get_records_from_sql($products);
+					foreach ($products as $product)
+					{$this->projectmodel->product_update($product->id,'MINUS_STOCK');}				
+				}
+
+				$this->accounts_model->ledger_transactions_delete($invoice_summary_id,'ISSUE');
+
+				$this->db->query("delete from invoice_details where invoice_summary_id=".$invoice_summary_id);
+				$this->db->query("delete from invoice_summary where id=".$invoice_summary_id);
+				
+				$return_data['server_msg']='TRANSACTION DELETED';	
+				$this->projectmodel->send_json_output($return_data);
+
+
+			}
+
+
+			if($subtype=='MAIN_GRID')
+			{
+				$startdate=$form_data1->startdate;
+				$enddate=$form_data1->enddate;
+
+				$indx=0;
+				$id=$form_id=$form_summary_id;
+				$whr=" id=".$form_id;	
+				$DataFields=$this->projectmodel->GetSingleVal('GridHeader','frmrpttemplatehdr',$whr);									
+				$TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);
+				$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
+				$WhereCondition=$this->projectmodel->GetSingleVal('WhereCondition','frmrpttemplatehdr',$whr);	
+				$WhereCondition=$WhereCondition." and invoice_date between '$startdate' and '$enddate' and company_id=".$company_id." order by id desc";
+								
+				$rs[$indx]['section_type']='GRID_ENTRY';	
+				$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
+				$rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
+				$rs[$indx]['fields']=$DataFields;
+				$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']." where ".$WhereCondition;		
+				
+				$resval=$this->FrmRptModel->create_report($rs,$id); 
+
+			}
+
+			if($subtype=='dtlist')
+			{
+				
+				$id=$form_data1->id;	
+				$indx=0;
+				
+				$form_id=$form_detail_id;
+				$whr=" id=".$form_id;	
+				$DataFields=$this->projectmodel->GetSingleVal('GridHeader','frmrpttemplatehdr',$whr);									
+				$TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);
+				$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
+				$WhereCondition=$this->projectmodel->GetSingleVal('WhereCondition','frmrpttemplatehdr',$whr);	
+				$WhereCondition=$WhereCondition." and invoice_summary_id=".$id;
+
+				$rs[$indx]['section_type']='GRID_ENTRY';	
+				$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
+				$rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
+				$rs[$indx]['fields']=$DataFields;
+				$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']." where ".$WhereCondition;		
+				
+				$resval=$this->FrmRptModel->create_form($rs,$id); 
+
+				foreach($resval['header'][0]['fields'] as $key1=>$flds)
+				{
+						foreach($flds as $key2=>$fld)
+						{
+							$save_details[$fld['InputName']]['LabelName']=$fld['LabelName'];          
+							$save_details[$fld['InputName']]['Inputvalue']=$fld['Inputvalue'];
+							$save_details[$fld['InputName']]['Inputvalue_id']=$fld['Inputvalue_id'];
+
+							if($key2=='product_id')
+							{
+								$whr=" id=".$fld['Inputvalue_id'];	
+								$pname=$this->projectmodel->GetSingleVal('productname','productmstr',$whr);
+
+								$save_details[$fld['InputName']]['LabelName']=$fld['LabelName'];    
+								$save_details[$fld['InputName']]['Inputvalue']=$pname;
+								$save_details[$fld['InputName']]['Inputvalue_id']=$fld['Inputvalue_id'];
+							}
+
+						}							
+						if($save_details['id']['Inputvalue']>0){array_push($output,$save_details);}
+				}
+				//$return_data['header']=$resval;		
+
+				$return_data['header']=$output;
+
+				header('Access-Control-Allow-Origin: *');
+				header("Content-Type: application/json");
+				echo json_encode($return_data);
+
+			}
+	
+			//DONE
+			if($subtype=='dtlist_view')
+			{	
+
+				$someArray=array();
+
+				$detail_id=$form_data1->id;
+				$someArray = json_decode($form_data1->raw_data, true);
+
+
+				 $indx=1;
+				
+				//  $someArray[0]['header'][$indx]['fields'][0]['id']['Inputvalue_id']=$detail_id;
+				//  $someArray[0]['header'][$indx]['fields'][0]['product_id']['Inputvalue']=$detail_id;
+				//  $someArray[0]['header'][$indx]['fields'][0]['batchno']['Inputvalue']=$detail_id;
+
+				//id,product_id,batchno,mrp,qnty,rate,subtotal,disc_per,disc_per2,disc_amt,taxable_amt,tax_ledger_id,taxamt,net_amt
+
+				 $records="select * from invoice_details where id=".$detail_id;
+				 $records = $this->projectmodel->get_records_from_sql($records);
+				 foreach ($records as $record)
+				 {
+
+					$someArray[0]['header'][$indx]['fields'][0]['id']['Inputvalue_id']=$record->id;
+					$someArray[0]['header'][$indx]['fields'][0]['product_id']['Inputvalue_id']=$record->product_id;
+					
+					$whr="id=".$record->product_id;
+					$val=$this->projectmodel->GetSingleVal('productname','productmstr',$whr);					
+					$someArray[0]['header'][$indx]['fields'][0]['product_id']['Inputvalue']=$val;
+
+					$someArray[0]['header'][$indx]['fields'][0]['batchno']['Inputvalue']=$record->batchno;
+					$someArray[0]['header'][$indx]['fields'][0]['mrp']['Inputvalue']=$record->mrp;
+					$someArray[0]['header'][$indx]['fields'][0]['qnty']['Inputvalue']=$record->qnty;
+					$someArray[0]['header'][$indx]['fields'][0]['rate']['Inputvalue']=$record->rate;
+					$someArray[0]['header'][$indx]['fields'][0]['subtotal']['Inputvalue']=$record->subtotal;
+
+				 }
+
+
+
+				$this->FrmRptModel->tranfer_data($someArray);
+
+			}
+
+			//DONE
+			if($subtype=='dtlist_total')
+			{
+				
+				$id=$form_data1->id;	
+
+				$dtlist_total['id']=$id;
+				$records="select * from invoice_summary where id=".$id;
+				$records = $this->projectmodel->get_records_from_sql($records);
+				foreach ($records as $fieldIndex=>$record)
+				{	
+						$dtlist_total['total_amt']=$record->total_amt;
+						$dtlist_total['tot_discount']=$record->tot_discount;
+						$dtlist_total['Taxable_Amt']=$record->total_amt;
+						$dtlist_total['totvatamt']=$record->totvatamt;
+						$dtlist_total['Net_Amt']=$record->grandtot;
+
+						//$dtlist_total['total_paid']=$record->total_paid;
+						//$dtlist_total['total_due']=$record->total_due;
+
+				}
+				$output['header']=$dtlist_total;
+
+				$this->FrmRptModel->tranfer_data($output);				
+
+			}
+
+			if($subtype=='other_search')
+			{			
+										
+					$someArray=array();
+
+					$header_index=$form_data1->header_index;
+					$field_index=$form_data1->field_index;
+					$searchelement=$form_data1->searchelement;
+					$someArray = json_decode($form_data1->raw_data, true);
+
+
+
+					if($searchelement=='product_id')
+					{							
+						
+						$product_id=$someArray[0]['header'][1]['fields'][0]['product_id']['Inputvalue_id'];
+						
+						$someArray[0]["header"][1]['fields'][0]['batchno']['datafields']='';
+
+						//BATCH LIST					
+						//$someArray[0]["header"][1]['fields'][0]['batchno']['Inputvalue']='product :'.$product_id.' comp:'.$company_id;
+					
+						$data=array();
+						$data=$this->projectmodel->batch_list($product_id,$company_id);						
+						$someArray[0]["header"][1]['fields'][0]['batchno']['datafields']=$data;
+
+						//RACK LIST
+						// $data=array();
+						// $data=$this->projectmodel->rack_wise_available_stock();	
+						// $someArray[0]["header"][1]['fields'][0]['rackno']['datafields']=$data;
+						
+						$this->FrmRptModel->tranfer_data($someArray);
+
+					}
+
+					
+
+			}
+
+	}
+
 
 	if($form_name=='invoice_entry')
 	{
@@ -832,6 +1099,16 @@ public function experimental_form($datatype='',$cond=0)
 				$id=$form_data1->id;						
 				$form_structure=$this->form_view($form_name,$id);
 				$form_structure['header'][0]['fields'][0]['invoice_date']['Inputvalue']=date('Y-m-d');
+
+				// foreach($form_structure['header'][1]['fields'][1] as $key1=>$tables)
+				// {
+				// 	if($key1<>'invoice_summary_id')
+				// 	{
+				// 		$form_structure['header'][1]['fields'][1][$key1]['Inputvalue']='';
+				// 		$form_structure['header'][1]['fields'][1][$key1]['Inputvalue_id']='';
+				// 	}
+				// }	
+
 				
 				//$form_structure['header'][0]['fields'][0]['tbl_party_id']['Inputvalue_id']=317;
 				//$form_structure['header'][0]['fields'][0]['tbl_party_id']['Inputvalue']=317;
@@ -898,8 +1175,12 @@ public function experimental_form($datatype='',$cond=0)
 										}
 										else if ($key3<>'id' && $table_name=='invoice_summary')
 										{$savedata[$key3]=$value;}
+
 										else if ($key3=='id' && $table_name=='invoice_details')
-										{if($value>0){$id=$value;}else {$id='';}   }
+										{
+											if($value>0){$id=$value;}else {$id='';}   
+											
+										}
 										else if ($key3=='invoice_summary_id' && $table_name=='invoice_details')
 										{$savedata[$key3]=$header_id; }
 										else 
@@ -921,7 +1202,6 @@ public function experimental_form($datatype='',$cond=0)
 										$savedata['invoice_no']=$tran_no['srl'].'/'.$savedata['finyr'];
 										$savedata['status']='SALE';
 										$savedata['invoice_time']=date('H:i');	
-																		
 									}
 
 									$savedata['status']='SALE';
@@ -939,8 +1219,6 @@ public function experimental_form($datatype='',$cond=0)
 										$this->projectmodel->save_records_model($header_id,$table_name,$savedata);
 										if($key1==0 && $header_id=='')
 										{
-											
-
 											$header_id=$this->db->insert_id();$server_msg="Record has been inserted Successfully!";
 											$invoice_no=$savedata['invoice_no'];
 										}		
@@ -955,7 +1233,22 @@ public function experimental_form($datatype='',$cond=0)
 									if($table_name=='invoice_details')
 									{
 										if($savedata['product_id']>0)
-										{$this->projectmodel->save_records_model($id,$table_name,$savedata);}
+										{
+											if($id>0)
+											{
+												$this->projectmodel->product_update($id,'MINUS_STOCK');
+												$this->projectmodel->save_records_model($id,$table_name,$savedata);
+												$this->projectmodel->product_update($id,'ADD_STOCK');
+												$this->projectmodel->transaction_update($id);
+											}
+											if($id=='')
+											{
+												$this->projectmodel->save_records_model($id,$table_name,$savedata);
+												$id=$this->db->insert_id();
+												$this->projectmodel->transaction_update($id);
+												$this->projectmodel->product_update($id,'ADD_STOCK');
+											}
+										}
 									}
 
 						}
@@ -970,8 +1263,7 @@ public function experimental_form($datatype='',$cond=0)
 				$return_data['server_msg']=$server_msg;		
 				$return_data['invoice_no']=$invoice_no;
 
-				$this->projectmodel->transaction_update($header_id);
-				
+				$this->projectmodel->product_update($header_id);
 
 				$this->projectmodel->send_json_output($return_data);
 
@@ -983,9 +1275,9 @@ public function experimental_form($datatype='',$cond=0)
 				$id=$form_data1->id;	
 				
 				$this->projectmodel->transaction_update($id);
-
+				
 				//CHECK AND TRANSFER STOCK TO OWN COMPANY			
-				$this->projectmodel->check_own_company_and_transfer($id);	
+				//$this->projectmodel->check_own_company_and_transfer($id);	
 				
 				$return_data['id_header']=$id;
 				$return_data['server_msg']='Final Submit Completed';		
@@ -997,6 +1289,40 @@ public function experimental_form($datatype='',$cond=0)
 
 			}
 
+			if($subtype=='delete_bill')
+			{
+
+				$invoice_summary_id=$form_data1->id;
+				$whr="id=".$invoice_summary_id;
+				$BILL_STATUS=$this->projectmodel->GetSingleVal('BILL_STATUS','invoice_summary',$whr);
+				if($BILL_STATUS=='NONE')
+				{
+					
+					$this->db->query("delete from invoice_details where invoice_summary_id=".$invoice_summary_id);
+					$this->db->query("delete from invoice_summary where id=".$invoice_summary_id);
+					
+					$return_data['server_msg']='TRANSACTION DELETED';	
+					$this->projectmodel->send_json_output($return_data);
+				}
+				else
+				{	
+					
+					$products = "select id 	from invoice_details where main_group_id=51 and  invoice_summary_id=".$invoice_summary_id ;
+					$products = $this->projectmodel->get_records_from_sql($products);
+					foreach ($products as $product)
+					{$this->projectmodel->product_update($product->id,'MINUS_STOCK');}				
+				}
+
+				$this->accounts_model->ledger_transactions_delete($invoice_summary_id,'SALE');
+
+				$this->db->query("delete from invoice_details where invoice_summary_id=".$invoice_summary_id);
+				$this->db->query("delete from invoice_summary where id=".$invoice_summary_id);
+				
+				$return_data['server_msg']='TRANSACTION DELETED';	
+				$this->projectmodel->send_json_output($return_data);
+
+
+			}
 
 			if($subtype=='MAIN_GRID')
 			{
@@ -1011,14 +1337,13 @@ public function experimental_form($datatype='',$cond=0)
 				$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
 				$WhereCondition=$this->projectmodel->GetSingleVal('WhereCondition','frmrpttemplatehdr',$whr);	
 				$WhereCondition=$WhereCondition." and invoice_date between '$startdate' and '$enddate' 
-				and company_id=".$company_id;
+				and company_id=".$company_id." order by id desc";;
 								
 				$rs[$indx]['section_type']='GRID_ENTRY';	
 				$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
 				$rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
 				$rs[$indx]['fields']=$DataFields;
-				$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." 
-				from ".$rs[$indx]['TableName']." where ".$WhereCondition;		
+				$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']." where ".$WhereCondition;		
 				
 				$resval=$this->FrmRptModel->create_report($rs,$id); 
 
@@ -1158,7 +1483,7 @@ public function experimental_form($datatype='',$cond=0)
 				{	
 						$dtlist_total['total_amt']=$record->total_amt;
 						$dtlist_total['tot_discount']=$record->tot_discount;
-						$dtlist_total['Taxable_Amt']=$record->total_amt-$record->tot_discount;
+						$dtlist_total['Taxable_Amt']=$record->total_amt;
 						$dtlist_total['totvatamt']=$record->totvatamt;
 						$dtlist_total['Net_Amt']=$record->grandtot;
 
@@ -1172,6 +1497,9 @@ public function experimental_form($datatype='',$cond=0)
 
 			}
 
+			
+			
+
 			if($subtype=='other_search')
 			{			
 										
@@ -1182,6 +1510,8 @@ public function experimental_form($datatype='',$cond=0)
 					$searchelement=$form_data1->searchelement;
 					$someArray = json_decode($form_data1->raw_data, true);
 
+				
+
 					if($searchelement=='patient_name')
 					{							
 						$patient_id=$doctor_mstr_id=0;		
@@ -1189,8 +1519,6 @@ public function experimental_form($datatype='',$cond=0)
 						$someArray[0]['header'][0]['fields'][0]['patient_address']['Inputvalue']='';
 						$someArray[0]['header'][0]['fields'][0]['doctor_ledger_id']['Inputvalue_id']=0;
 						$someArray[0]['header'][0]['fields'][0]['doctor_ledger_id']['Inputvalue']='';
-
-
 						$patient_name=$someArray[0]['header'][0]['fields'][0]['patient_name']['Inputvalue'];						
 						$patient_id=(int)$patient_name;
 						
@@ -1254,6 +1582,1360 @@ public function experimental_form($datatype='',$cond=0)
 						$MAIN_PRODUCT_GROUP=$this->projectmodel->GetSingleVal('FieldVal','frmrptgeneralmaster','id='.$main_group_id);
 						
 						$someArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue_id']=$main_group_id;
+						$someArray[0]['header'][1]['fields'][0]['main_group_name']['Inputvalue']=$MAIN_PRODUCT_GROUP;
+
+						if($main_group_val=='MM1' | $main_group_val=='MM2' | $main_group_val=='MM3' 
+						| $main_group_val=='MM4' | $main_group_val=='MM5' | $main_group_val=='MM6')
+						{
+							$whr="Status='MAIN_PRODUCT_GROUP' and FieldID='".trim($main_group_val)."'";
+							$main_group_id=$this->projectmodel->GetSingleVal('id','frmrptgeneralmaster',$whr);
+							if($main_group_id==0)
+							{$main_group_id=$someArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue_id'];}	
+							$someArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue_id']=$main_group_id;
+							
+							$main_group_val='M';
+							$whr="Status='MAIN_PRODUCT_GROUP' and FieldID='".trim($main_group_val)."'";
+							$main_group_id=$this->projectmodel->GetSingleVal('id','frmrptgeneralmaster',$whr);
+							$MAIN_PRODUCT_GROUP=$this->projectmodel->GetSingleVal('FieldVal','frmrptgeneralmaster','id='.$main_group_id);
+
+
+						}
+						
+					
+						//$main_group_id=$this->projectmodel->GetSingleVal('parent_id','misc_mstr','id='.$product_group_id);
+						
+						$product_group_id='0';
+						$records="select * from misc_mstr 
+						where  parent_id=".$main_group_id." and mstr_type='PRODUCT_GROUP' and status='ACTIVE'";			
+						$records = $this->projectmodel->get_records_from_sql($records);	
+						foreach ($records as $record)
+						{$product_group_id=$product_group_id.','.$record->id;}
+
+
+						//TEST
+						//$someArray[0]['header'][1]['fields'][0]['potency_id']['Inputvalue']=$MAIN_PRODUCT_GROUP;
+
+						// $someArray[0]['header'][1]['fields'][0]['batchno']['InputType']='text';
+						// $someArray[0]['header'][1]['fields'][0]['potency_id']['InputType']='text';
+						// $someArray[0]['header'][1]['fields'][0]['no_of_dose']['InputType']='text';
+						
+						//$someArray[0]["header"][1]['fields'][0]['product_id']['Inputvalue']=$product_group_id;
+
+						//$someArray[0]['header'][1]['fields'][0]['product_id']['Inputvalue']=$product_group_id;
+
+						
+						$records="select * from frmrpttemplatedetails 
+						where  frmrpttemplatehdrID=".$form_detail_id." 	and InputType='hidden' ";			
+						$records = $this->projectmodel->get_records_from_sql($records);	
+						foreach ($records as $record)
+						{
+							$someArray[0]['header'][1]['fields'][0][$record->InputName]['InputType']='hidden';
+							$someArray[0]['header'][1]['fields'][0][$record->InputName]['input_id_index']=9000;
+						}
+					
+
+						//UPDATE PRODUCT
+						if($MAIN_PRODUCT_GROUP=='PATENT')
+						{
+							// $sql="select a.id FieldID,a.productname FieldVal,b.name_value Company,c.available_qnty	,c.minimum_stock
+							// from productmstr a, misc_mstr b,product_balance_companywise c  where 
+							// a.group_id in (".$product_group_id.") and  a.group_id=b.id 
+							// and b.mstr_type='PRODUCT_GROUP' and b.status='ACTIVE'						
+							// a.brand_id=b.id and a.id=c.product_id and c.company_id=".$company_id;
+							// $datafields_array =$this->projectmodel->get_records_from_sql($sql);
+							// $someArray[0]["header"][1]['fields'][0]['product_id']['datafields']=
+							// json_decode(json_encode($datafields_array), true);
+							// $this->FrmRptModel->tranfer_data($someArray);
+
+							$sql="select a.id FieldID,a.productname FieldVal,b.name_value Company,c.available_qnty	,c.minimum_stock
+							from productmstr a, misc_mstr b,product_balance_companywise c  where a.brand_id=b.id and a.id=c.product_id and c.company_id=".$company_id;
+							$datafields_array =$this->projectmodel->get_records_from_sql($sql);
+							$someArray[0]["header"][1]['fields'][0]['product_id']['datafields']=
+							json_decode(json_encode($datafields_array), true);							
+
+						}
+						else
+						{
+							$sql="select a.id FieldID,TRIM(a.productname) FieldVal from productmstr a,misc_mstr b
+							where a.group_id in (".$product_group_id.") and  a.group_id=b.id 
+							and b.mstr_type='PRODUCT_GROUP' and b.status='ACTIVE'";
+							$datafields_array =$this->projectmodel->get_records_from_sql($sql);
+							$someArray[0]["header"][1]['fields'][0]['product_id']['datafields']=
+							json_decode(json_encode($datafields_array), true);
+
+						}
+
+
+						 //UPDATE potency_id
+						 if($MAIN_PRODUCT_GROUP=='MOTHER_TINCTURE' || $MAIN_PRODUCT_GROUP=='TRITURATION' || 
+						  $MAIN_PRODUCT_GROUP=='BIOCHEMIC' || $MAIN_PRODUCT_GROUP=='DILUTION' 
+						  || $MAIN_PRODUCT_GROUP=='WATER'  || $MAIN_PRODUCT_GROUP=='SUGAR_OF_MILK') 
+						 {
+							
+							 $sql="select id FieldID,name FieldVal from misc_mstr
+							 where parent_id=".$main_group_id." and mstr_type='POTENCY' and status='ACTIVE' ";
+							 $datafields_array =$this->projectmodel->get_records_from_sql($sql);
+							 $someArray[0]["header"][1]['fields'][0]['potency_id']['datafields']=
+							 json_decode(json_encode($datafields_array), true);							
+						 }	
+
+
+						 //UPDATE PACK
+						 if($MAIN_PRODUCT_GROUP=='MOTHER_TINCTURE' || $MAIN_PRODUCT_GROUP=='TRITURATION' || 
+						  $MAIN_PRODUCT_GROUP=='BIOCHEMIC' || $MAIN_PRODUCT_GROUP=='DILUTION' 
+						  || $MAIN_PRODUCT_GROUP=='WATER' || $MAIN_PRODUCT_GROUP=='SUGAR_OF_MILK') 
+						 {
+							 $sql="select id FieldID,name FieldVal from misc_mstr
+							 where parent_id=".$main_group_id." and mstr_type='PACK_SIZE' and status='ACTIVE' ";
+							 $datafields_array =$this->projectmodel->get_records_from_sql($sql);
+							 $someArray[0]["header"][1]['fields'][0]['pack_id']['datafields']=
+							 json_decode(json_encode($datafields_array), true);							
+						 }	
+
+
+						//FIELD OPEN OR HIDE GROUP WISE
+
+						if($MAIN_PRODUCT_GROUP=='MOTHER_TINCTURE' ||
+						 $MAIN_PRODUCT_GROUP=='TRITURATION' || 
+						 $MAIN_PRODUCT_GROUP=='BIOCHEMIC' ) 
+						{
+							// $someArray[0]['header'][1]['fields'][0]['batchno']['InputType']='hidden';
+							// $someArray[0]['header'][1]['fields'][0]['batchno']['input_id_index']=9000;		
+							
+							// $someArray[0]['header'][1]['fields'][0]['no_of_dose']['InputType']='hidden';
+							// $someArray[0]['header'][1]['fields'][0]['no_of_dose']['input_id_index']=9000;
+							
+							
+							$someArray[0]['header'][1]['fields'][0]['product_Synonym']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['potency_id']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['Synonym']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['pack_id']['InputType']='text';	
+							$someArray[0]['header'][1]['fields'][0]['label_print']['Inputvalue']='Y';	
+							$someArray[0]['header'][1]['fields'][0]['qnty']['Inputvalue']=1;					
+							
+						}
+						else if($MAIN_PRODUCT_GROUP=='DILUTION')
+						{						
+							$someArray[0]['header'][1]['fields'][0]['product_Synonym']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['pack_synonym']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['potency_id']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['Synonym']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['pack_id']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['label_print']['Inputvalue']='Y';
+							$someArray[0]['header'][1]['fields'][0]['qnty']['Inputvalue']=1;	
+							
+						}
+
+						else if($MAIN_PRODUCT_GROUP=='WATER')
+						{	
+							 $someArray[0]['header'][1]['fields'][0]['product_Synonym']['InputType']='text';
+							 $someArray[0]['header'][1]['fields'][0]['potency_id']['InputType']='text';
+							 $someArray[0]['header'][1]['fields'][0]['Synonym']['InputType']='text';
+							 $someArray[0]['header'][1]['fields'][0]['pack_id']['InputType']='text';
+							
+							 $someArray[0]['header'][1]['fields'][0]['label_print']['Inputvalue']='Y';
+							  $someArray[0]['header'][1]['fields'][0]['no_of_dose']['InputType']='text';
+							 $someArray[0]['header'][1]['fields'][0]['no_of_dose']['Inputvalue']=1;
+							 $someArray[0]['header'][1]['fields'][0]['qnty']['Inputvalue']=1;			
+						}
+						else if($MAIN_PRODUCT_GROUP=='SUGAR_OF_MILK')
+						{
+							$someArray[0]['header'][1]['fields'][0]['product_Synonym']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['potency_id']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['Synonym']['InputType']='text';
+
+							//$someArray[0]['header'][1]['fields'][0]['pack_id']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['no_of_dose']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['dose_Synonym']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['label_print']['Inputvalue']='Y';	
+							$someArray[0]['header'][1]['fields'][0]['no_of_dose']['Inputvalue']=1;	
+							$someArray[0]['header'][1]['fields'][0]['qnty']['Inputvalue']=1;
+							
+							$someArray[0]['header'][1]['fields'][0]['pack_id']['Inputvalue']=249;
+							$someArray[0]['header'][1]['fields'][0]['pack_id']['Inputvalue_id']=249;
+							
+
+						}
+						else if($MAIN_PRODUCT_GROUP=='PATENT')
+						{
+							$someArray[0]['header'][1]['fields'][0]['product_Synonym']['InputType']='text';
+							
+							$someArray[0]['header'][1]['fields'][0]['batchno']['InputType']='text';
+							//$someArray[0]['header'][1]['fields'][0]['rackno']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['label_print']['Inputvalue']='';
+							$someArray[0]['header'][1]['fields'][0]['qnty']['Inputvalue']=1;	
+						}
+						else 
+						{
+							// $someArray[0]['header'][1]['fields'][0]['batchno']['InputType']='text';
+							// $someArray[0]['header'][1]['fields'][0]['no_of_dose']['InputType']='text';
+							// $someArray[0]['header'][1]['fields'][0]['potency_id']['InputType']='text';
+						}
+
+						$someArray=$this->FrmRptModel->re_arrange_input_index_type2($someArray);
+
+						$this->FrmRptModel->tranfer_data($someArray);
+
+					}	
+
+					if($searchelement=='product_id')
+					{							
+																
+						$product_id=$someArray[0]['header'][1]['fields'][0]['product_id']['Inputvalue_id'];
+						$whr="id=".$product_id."";
+						$product_group_id=$this->projectmodel->GetSingleVal('group_id','productmstr',$whr);
+						
+						$someArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue_id']=$product_group_id;
+						$someArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue']=$product_group_id;
+
+						$main_group_id=intval($this->projectmodel->GetSingleVal('parent_id','misc_mstr','id='.$product_group_id));
+						$MAIN_PRODUCT_GROUP=$this->projectmodel->GetSingleVal('FieldVal','frmrptgeneralmaster','id='.$main_group_id);
+						
+
+						if($MAIN_PRODUCT_GROUP=='PATENT' ) 
+						{
+							$whr="id=".$product_id;
+							$disc_per=$this->projectmodel->GetSingleVal('sell_discount','productmstr',$whr);	
+							$label_print=$this->projectmodel->GetSingleVal('label_print','productmstr',$whr);							
+							//$mrp=$this->projectmodel->GetSingleVal('mrp','productmstr',$whr);
+							$someArray[0]['header'][1]['fields'][0]['disc_per']['Inputvalue']=$disc_per;
+							$someArray[0]['header'][1]['fields'][0]['label_print']['Inputvalue']=$label_print;
+						
+							//RACK LIST
+							$data=array();
+							$data=$this->projectmodel->rack_wise_available_stock();	
+							$someArray[0]["header"][1]['fields'][0]['rackno']['datafields']=$data;
+								
+
+							$data=array();
+							$data=$this->projectmodel->batch_list($product_id,$company_id);						
+							$someArray[0]["header"][1]['fields'][0]['batchno']['datafields']=$data;
+
+						}
+						
+						// $sql = "select b.batchno FieldID,CONCAT(b.batchno, '=')  as FieldVal,b.rackno RackNo,b.qty_available AvailbQnty 
+						// ,(b.taxable_amt+b.cgst_amt+b.sgst_amt+b.igst_amt)/b.qnty PurRate ,
+						// b.srate Rate ,b.mrp MRP,b.exp_monyr ExpDate ,b.mfg_monyr MfgDate,b.id PID
+						// from invoice_summary a,invoice_details b where a.id=b.invoice_summary_id and 
+						// (a.status='OPEN_BALANCE' or a.status='PURCHASE' or a.status='SALE_RTN') 
+						// and b.product_id=".$product_id." and a.company_id=".$company_id."  order by b.qty_available desc ";
+						// $datafields_array =$this->projectmodel->get_records_from_sql($sql);
+						// $someArray[0]["header"][1]['fields'][0]['batchno']['datafields']=
+						// json_decode(json_encode($datafields_array), true);
+
+
+						$this->FrmRptModel->tranfer_data($someArray);
+
+					}
+
+
+					if($searchelement=='potency_id' || $searchelement=='pack_id' || $searchelement=='no_of_dose' )
+					{	
+						$product_id=$someArray[0]['header'][1]['fields'][0]['product_id']['Inputvalue_id'];
+						$whr="id=".$product_id."";
+						$product_group_id=intval($this->projectmodel->GetSingleVal('group_id','productmstr',$whr));
+						
+						$someArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue_id']=$product_group_id;
+						$someArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue']=$product_group_id;
+
+						$main_group_id=$this->projectmodel->GetSingleVal('parent_id','misc_mstr','id='.$product_group_id);
+						$MAIN_PRODUCT_GROUP=$this->projectmodel->GetSingleVal('FieldVal','frmrptgeneralmaster','id='.$main_group_id);
+
+						$potency_id=intval($someArray[0]['header'][1]['fields'][0]['potency_id']['Inputvalue_id']);
+						$pack_id=intval($someArray[0]['header'][1]['fields'][0]['pack_id']['Inputvalue_id']);
+						$no_of_dose=intval($someArray[0]['header'][1]['fields'][0]['no_of_dose']['Inputvalue']);
+						$rate=$mrp=0;
+						
+						//  $product_name=$this->projectmodel->GetSingleVal('productname','productmstr','id='.$product_id);
+						//  $potency_name=$this->projectmodel->GetSingleVal('name','misc_mstr','id='.$potency_id);
+						//  $pack_name=$this->projectmodel->GetSingleVal('name','misc_mstr','id='.$pack_id);
+
+						
+						//  $msg="Product id:".$product_id." PGROUP: ".$group_id.
+						//  " potency_id: ".$potency_id." pack_id:".$pack_id;
+						 //$someArray[0]['header'][1]['fields'][0]['Synonym']['Inputvalue']=trim($msg);
+						
+						if($MAIN_PRODUCT_GROUP=='MOTHER_TINCTURE' ||
+						 $MAIN_PRODUCT_GROUP=='TRITURATION' || 
+						 $MAIN_PRODUCT_GROUP=='BIOCHEMIC' || 
+						 $MAIN_PRODUCT_GROUP=='DILUTION') 
+						{
+							$whr="GROUP_ID=".$product_group_id." 
+							and POTENCY_ID=".$potency_id." and PACK_ID=".$pack_id;
+							$rate=$this->projectmodel->GetSingleVal('RATE','product_rate_mstr',$whr);	
+							$mrp=$this->projectmodel->GetSingleVal('MRP','product_rate_mstr',$whr);
+
+							$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$rate;
+							$someArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=$mrp;
+
+							
+						}
+						else if($MAIN_PRODUCT_GROUP=='WATER')
+						{
+							$whr="GROUP_ID=".$product_group_id." 
+							and POTENCY_ID=".$potency_id." and PACK_ID=".$pack_id;
+							$rate=intval($this->projectmodel->GetSingleVal('RATE','product_rate_mstr',$whr));								
+							$mrp=intval($this->projectmodel->GetSingleVal('MRP','product_rate_mstr',$whr));
+
+							$dose2_rate=intval($this->projectmodel->GetSingleVal('dose2_rate','product_rate_mstr',$whr));								
+							$dose2_mrp=intval($this->projectmodel->GetSingleVal('dose2_mrp','product_rate_mstr',$whr));
+
+							$dose3_rate=intval($this->projectmodel->GetSingleVal('dose3_rate','product_rate_mstr',$whr));								
+							$dose3_mrp=intval($this->projectmodel->GetSingleVal('dose3_mrp','product_rate_mstr',$whr));
+
+							$dose4_rate=intval($this->projectmodel->GetSingleVal('dose4_rate','product_rate_mstr',$whr));								
+							$dose4_mrp=intval($this->projectmodel->GetSingleVal('dose4_mrp','product_rate_mstr',$whr));
+
+							$dose5_rate=intval($this->projectmodel->GetSingleVal('dose5_rate','product_rate_mstr',$whr));								
+							$dose5_mrp=intval($this->projectmodel->GetSingleVal('dose5_mrp','product_rate_mstr',$whr));
+
+							if($no_of_dose==1)
+							{
+								$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$rate;
+								$someArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=$mrp;	
+							}
+							else if($no_of_dose==2)
+							{
+								$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$dose2_rate*$no_of_dose;
+								$someArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=$dose2_mrp*$no_of_dose;	
+							}
+							else if($no_of_dose==3)
+							{
+								$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$dose3_rate*$no_of_dose;
+								$someArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=$dose3_mrp*$no_of_dose;	
+							}
+							else if($no_of_dose==4)
+							{
+								$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$dose4_rate*$no_of_dose;
+								$someArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=$dose4_mrp*$no_of_dose;	
+							}
+							else if($no_of_dose>4)
+							{
+								$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$dose5_rate*$no_of_dose;
+								$someArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=$dose5_mrp*$no_of_dose;	
+							}
+
+
+							
+							
+							
+							// if($no_of_dose>0)
+							// {
+							// 	$whr=" parent_id=".$main_group_id." 
+							// 	and name='".$no_of_dose."' and mstr_type='DOSE_DISCOUNT' and status='ACTIVE' ";
+							// 	$discount_per=$this->projectmodel->GetSingleVal('name_value','misc_mstr',$whr);	
+							// 	$rate=($rate-round(($rate*$discount_per/100)))*$no_of_dose;								
+							// 	$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$rate;	
+							// }
+
+						}
+						else if($MAIN_PRODUCT_GROUP=='SUGAR_OF_MILK')
+						{
+							$whr="GROUP_ID=".$product_group_id." and  POTENCY_ID=".$potency_id;
+							$rate=$this->projectmodel->GetSingleVal('RATE','product_rate_mstr',$whr);								
+							$mrp=$this->projectmodel->GetSingleVal('MRP','product_rate_mstr',$whr);
+
+							if($no_of_dose>1)
+							{
+								$rate=$rate*$no_of_dose;
+								$mrp=$mrp*$no_of_dose;
+							}
+							$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$rate;
+							$someArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=$mrp;
+
+						
+							// if($no_of_dose>0)
+							// {
+							// 	$whr=" parent_id=".$main_group_id." 
+							// 	and name='".$no_of_dose."' and mstr_type='DOSE_DISCOUNT' and status='ACTIVE' ";
+							// 	$discount_per=$this->projectmodel->GetSingleVal('name_value','misc_mstr',$whr);	
+							// 	$rate=($rate-round(($rate*$discount_per/100)))*$no_of_dose;								
+							// 	$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$rate;	
+							// }
+						}
+
+						$this->FrmRptModel->tranfer_data($someArray);
+
+					}
+					
+
+					//$searchelement=='batchno' || 
+					if($searchelement=='rate' || $searchelement=='disc_per' || $searchelement=='disc_per2')
+					{
+					
+						// $product_group_id=$someArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue_id'];
+						// $main_group_id=$this->projectmodel->GetSingleVal('parent_id','misc_mstr','id='.$product_group_id);
+						// $MAIN_PRODUCT_GROUP=$this->projectmodel->GetSingleVal('FieldVal','frmrptgeneralmaster','id='.$main_group_id);
+					
+						// if($MAIN_PRODUCT_GROUP=='PATENT')
+						// {
+
+						// 	$product_id=$someArray[0]['header'][1]['fields'][0]['product_id']['Inputvalue_id'];
+						// 	$batchno=$someArray[0]['header'][1]['fields'][0]['batchno']['Inputvalue'];
+
+						// 	$PURCHASEID=$someArray[0]['header'][1]['fields'][0]['PURCHASEID']['Inputvalue'];
+						// 	$rate=$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue'];
+						// 	$disc_per=$someArray[0]['header'][1]['fields'][0]['disc_per']['Inputvalue'];
+						// 	$disc_per2=$someArray[0]['header'][1]['fields'][0]['disc_per2']['Inputvalue'];
+
+						// 	$price_after_disc1=$rate -($rate*$disc_per/100) ;
+						// 	$disc_per2_amt=$price_after_disc1*$disc_per2/100;
+
+						// 	$effective_amt=$price_after_disc1-$disc_per2_amt;
+
+						// 	$whr=" id=".$PURCHASEID;
+						// 	$taxable_amt=$this->projectmodel->GetSingleVal('taxable_amt','invoice_details',$whr);
+						// 	$qnty=$this->projectmodel->GetSingleVal('qnty','invoice_details',$whr);
+						// 	$purchase_rate=ceil($taxable_amt/$qnty);	
+							
+						// 	$profit=$effective_amt-$purchase_rate;
+
+						// 	if($profit<=0)
+						// 	{
+						// 		$return_msg='Your Purchase Rate:'.$purchase_rate.' | Your Sale rate '.$effective_amt;
+						// 		$validation_type='NOT_OK';
+						// 	}
+						// 	else
+						// 	{	
+						// 		$profit=$effective_amt-$purchase_rate;
+						// 		$return_msg='You are in profit.Which is : '.$profit;							
+						// 	}
+							
+						// 	$someArray[0]["header"][1]['fields'][0]['batchno']['validation_type']=$validation_type;						
+						// 	$someArray[0]["header"][1]['fields'][0]['batchno']['validation_msg']=$return_msg;
+						// 	$this->FrmRptModel->tranfer_data($someArray);
+
+						// 	}
+						
+
+					}	
+
+
+			 }
+
+	
+	
+	}
+	
+	
+	if($form_name=='invoice_entry_wholesale')
+	{
+			$form_summary_id=45;
+			$form_detail_id=46;
+
+			if($subtype=='view_list')
+			{			
+			
+				$id=$form_data1->id;						
+				$form_structure=$this->form_view($form_name,$id);
+				$form_structure['header'][0]['fields'][0]['invoice_date']['Inputvalue']=date('Y-m-d');
+				
+				//$form_structure['header'][0]['fields'][0]['tbl_party_id']['Inputvalue_id']=317;
+				//$form_structure['header'][0]['fields'][0]['tbl_party_id']['Inputvalue']=317;
+
+				// $sql="select a.id FieldID,a.productname FieldVal,b.available_qnty,a.Synonym,a.tax_ledger_id
+				// from productmstr a, product_balance_companywise b 
+				// where a.id=b.product_id and b.company_id=".$company_id;
+
+				// if($id>0)
+				// {
+				// 	$sql="select a.id FieldID,a.productname FieldVal,b.available_qnty,a.Synonym,a.tax_ledger_id
+				// 	from productmstr a, product_balance_companywise b 
+				// 	where a.id=b.product_id ";
+				// 	$datafields_array =$this->projectmodel->get_records_from_sql($sql);
+				// 	$form_structure["header"][1]['fields'][0]['product_id']['datafields']=
+				// 	json_decode(json_encode($datafields_array), true);
+				// }
+				
+
+				array_push($output,$form_structure);
+				header('Access-Control-Allow-Origin: *');
+				header("Content-Type: application/json");
+				echo json_encode($output);
+			}
+			
+			//save section
+			if($subtype=='SAVE_DATA')
+			{
+				
+				// $save_details2['test_data']=$form_data1->raw_data;
+				// $this->projectmodel->save_records_model(1,'test_table',$save_details2);
+				// $rs=$resval=$form_structure=$output=$save_details=array();
+				// $whr=" id=1";	
+				// $raw_data=$this->projectmodel->GetSingleVal('test_data','test_table',$whr);
+
+				$raw_data=$form_data1->raw_data;
+				$form_data=json_decode($raw_data);
+				$headers=json_decode(json_encode($form_data[0]->header), true );
+				$save_details=$this->FrmRptModel->create_save_array($headers);
+
+				$VALID_STATUS='VALID';
+				$invoice_no=$header_id=$id='';
+										
+				foreach($save_details as $key1=>$tables)
+				{
+					if($key1<2)
+					{
+						foreach($tables as $key2=>$fields)
+						{
+							
+									$table_name=$key2;		
+									$savedata=array();	
+									$save_statue=true;
+
+									foreach($fields as $key3=>$value)
+									{
+										//HERE REQUIRE CUSTOMIZATION
+										if($key3=='id' && $table_name=='invoice_summary')
+										{
+											if($value>0)
+											{$header_id=$value;}
+											else 
+											{$header_id='';}  											
+										}
+										else if ($key3<>'id' && $table_name=='invoice_summary')
+										{$savedata[$key3]=$value;}
+
+										else if ($key3=='id' && $table_name=='invoice_details')
+										{
+											if($value>0){$id=$value;}else {$id='';}   
+											
+										}
+										else if ($key3=='invoice_summary_id' && $table_name=='invoice_details')
+										{$savedata[$key3]=$header_id; }
+										else 
+										{
+											$savedata[$key3]=$value; 
+											//if($savedata['product_id']==0){$save_statue=false;}
+
+										}
+
+									}
+
+									if($header_id=='')
+									{										
+										if($savedata['invoice_date']=='')
+										{$savedata['invoice_date']=date('Y-m-d');}
+										$tran_no=$this->projectmodel->tran_no_generate('SALE',$savedata['invoice_date']);
+										$savedata['finyr']=$tran_no['finyr'];
+										$savedata['srl']=$tran_no['srl'];
+										$savedata['invoice_no']=$tran_no['srl'].'/'.$savedata['finyr'];
+										$savedata['status']='SALE';
+										$savedata['BILL_FROM']='WHOLE_SALE';										
+										$savedata['invoice_time']=date('H:i');	
+									}
+
+									$savedata['status']='SALE';
+									
+
+									//HEADER SECTION
+									if($table_name=='invoice_summary')
+									{																				
+										$savedata['emp_name']=$this->session->userdata('login_name');
+										$savedata['emp_id']=$this->session->userdata('login_emp_id');
+										$savedata['entry_from_software']='NEW';
+										$savedata['company_id']=$this->session->userdata('COMP_ID');		
+										$savedata['BILL_FROM']='WHOLE_SALE';
+										
+										$this->projectmodel->save_records_model($header_id,$table_name,$savedata);
+										if($key1==0 && $header_id=='')
+										{
+											$header_id=$this->db->insert_id();$server_msg="Record has been inserted Successfully!";
+											$invoice_no=$savedata['invoice_no'];
+										}		
+										else if($key1==0 && $header_id>0)
+										{
+											$server_msg="Record has been Updated Successfully!";
+											$invoice_no=$savedata['invoice_no'];
+										}										
+										
+									}
+
+									if($table_name=='invoice_details')
+									{
+										if($savedata['product_id']>0)
+										{
+											if($id>0)
+											{
+												$this->projectmodel->product_update($id,'MINUS_STOCK');
+												$this->projectmodel->save_records_model($id,$table_name,$savedata);
+												$this->projectmodel->product_update($id,'ADD_STOCK');
+												$this->projectmodel->transaction_update($id);
+											}
+											if($id=='')
+											{
+												$this->projectmodel->save_records_model($id,$table_name,$savedata);
+												$id=$this->db->insert_id();
+												$this->projectmodel->transaction_update($id);
+												$this->projectmodel->product_update($id,'ADD_STOCK');
+											}
+										}
+									}
+
+						}
+					}
+					
+
+				}
+
+				
+							
+				$return_data['id_header']=$header_id;
+				$return_data['server_msg']=$server_msg;		
+				$return_data['invoice_no']=$invoice_no;
+
+				$this->projectmodel->send_json_output($return_data);
+
+
+			}	
+
+			if($subtype=='FINAL_SUBMIT')
+			{
+				$id=$form_data1->id;	
+				
+				$this->projectmodel->transaction_update($id);
+
+				//CHECK AND TRANSFER STOCK TO OWN COMPANY			
+				//$this->projectmodel->check_own_company_and_transfer($id);	
+				
+				$return_data['id_header']=$id;
+				$return_data['server_msg']='Final Submit Completed';		
+				
+
+				$this->projectmodel->send_json_output($return_data);
+
+				//$this->print_documents('POS_INVOICE',$id);	
+
+			}
+
+			if($subtype=='delete_bill')
+			{
+
+				$invoice_summary_id=$form_data1->id;
+				$whr="id=".$invoice_summary_id;
+				$BILL_STATUS=$this->projectmodel->GetSingleVal('BILL_STATUS','invoice_summary',$whr);
+				if($BILL_STATUS=='NONE')
+				{
+					
+					$this->db->query("delete from invoice_details where invoice_summary_id=".$invoice_summary_id);
+					$this->db->query("delete from invoice_summary where id=".$invoice_summary_id);
+					
+					$return_data['server_msg']='TRANSACTION DELETED';	
+					$this->projectmodel->send_json_output($return_data);
+				}
+				else
+				{	
+					
+					$products = "select id 	from invoice_details where main_group_id=51 and  invoice_summary_id=".$invoice_summary_id ;
+					$products = $this->projectmodel->get_records_from_sql($products);
+					foreach ($products as $product)
+					{$this->projectmodel->product_update($product->id,'MINUS_STOCK');}				
+				}
+
+				$this->accounts_model->ledger_transactions_delete($invoice_summary_id,'SALE');
+
+				$this->db->query("delete from invoice_details where invoice_summary_id=".$invoice_summary_id);
+				$this->db->query("delete from invoice_summary where id=".$invoice_summary_id);
+				
+				$return_data['server_msg']='TRANSACTION DELETED';	
+				$this->projectmodel->send_json_output($return_data);
+
+
+			}
+
+
+			if($subtype=='MAIN_GRID')
+			{
+				$startdate=$form_data1->startdate;
+				$enddate=$form_data1->enddate;
+
+				$indx=0;
+				$id=$form_id=$form_summary_id;
+				$whr=" id=".$form_id;	
+				$DataFields=$this->projectmodel->GetSingleVal('GridHeader','frmrpttemplatehdr',$whr);									
+				$TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);
+				$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
+				$WhereCondition=$this->projectmodel->GetSingleVal('WhereCondition','frmrpttemplatehdr',$whr);	
+				$WhereCondition=$WhereCondition." and invoice_date between '$startdate' and '$enddate' 
+				and company_id=".$company_id." order by id desc";;
+								
+				$rs[$indx]['section_type']='GRID_ENTRY';	
+				$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
+				$rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
+				$rs[$indx]['fields']=$DataFields;
+				$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." 
+				from ".$rs[$indx]['TableName']." where ".$WhereCondition;		
+				
+				$resval=$this->FrmRptModel->create_report($rs,$id); 
+
+			}
+
+			if($subtype=='dtlist')
+			{
+				
+				$id=$form_data1->id;	
+				$indx=0;
+				
+				$form_id=$form_detail_id;
+				$whr=" id=".$form_id;	
+				$DataFields=$this->projectmodel->GetSingleVal('GridHeader','frmrpttemplatehdr',$whr);									
+				$TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);
+				$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
+				$WhereCondition=$this->projectmodel->GetSingleVal('WhereCondition','frmrpttemplatehdr',$whr);	
+				$WhereCondition=$WhereCondition." and invoice_summary_id=".$id;
+
+				$rs[$indx]['section_type']='GRID_ENTRY';	
+				$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
+				$rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
+				$rs[$indx]['fields']=$DataFields;
+				$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']." where ".$WhereCondition;		
+				
+				$resval=$this->FrmRptModel->create_form($rs,$id); 
+				
+
+				foreach($resval['header'][0]['fields'] as $key1=>$flds)
+				{
+						foreach($flds as $key2=>$fld)
+						{
+							
+							$save_details[$fld['InputName']]['LabelName']=$fld['LabelName'];          
+							$save_details[$fld['InputName']]['Inputvalue']=$fld['Inputvalue'];
+							$save_details[$fld['InputName']]['Inputvalue_id']=$fld['Inputvalue_id'];
+							//$save_details[$fld['InputName']]['InputType']=$fld['InputType'];
+							$save_details[$fld['InputName']]['InputType']='text';
+							
+							 if($key2=='id')
+							 {
+								$save_details[$fld['InputName']]['InputType']='hidden';
+							 }
+
+							// if($key2=='product_id')
+							// {
+							// 	$whr=" id=".$fld['Inputvalue_id'];	
+							// 	$pname=$this->projectmodel->GetSingleVal('productname','productmstr',$whr);
+
+							// 	$save_details[$fld['InputName']]['LabelName']=$fld['LabelName'];    
+							// 	$save_details[$fld['InputName']]['Inputvalue']=$pname;
+							// 	$save_details[$fld['InputName']]['Inputvalue_id']=$fld['Inputvalue_id'];
+							// 	$save_details[$fld['InputName']]['InputType']=$fld['InputType'];
+							// }
+
+						}							
+						if($save_details['id']['Inputvalue']>0){array_push($output,$save_details);}
+				}
+
+				$return_data['header']=$output;
+
+				// $resval=$this->FrmRptModel->create_report($rs,$id); 
+				// $return_data['header']=$resval;
+
+
+				header('Access-Control-Allow-Origin: *');
+				header("Content-Type: application/json");
+				echo json_encode($return_data);
+
+			}
+
+			//DONE
+			if($subtype=='dtlist_view')
+			{	
+
+				$someArray=array();
+
+				$detail_id=$form_data1->id;
+				$someArray = json_decode($form_data1->raw_data, true);
+
+				$indx=1;
+				foreach($someArray[0]['header'][$indx]['fields'][0] as $key1=>$values)
+				{
+										
+					if($someArray[0]['header'][$indx]['fields'][0][$key1]['datafields']<>'')
+					{
+						$whr=" id=".$detail_id;	
+						$Inputvalue_id=$this->projectmodel->GetSingleVal($key1,'invoice_details',$whr);
+						$someArray[0]['header'][$indx]['fields'][0][$key1]['Inputvalue_id']=$Inputvalue_id;
+
+						$MainTable=$someArray[0]['header'][$indx]['fields'][0][$key1]['MainTable'];
+						$LinkField=$someArray[0]['header'][$indx]['fields'][0][$key1]['LinkField'];
+						
+						$whr=" id=".$Inputvalue_id;	
+						$Inputvalue=$this->projectmodel->GetSingleVal($LinkField,$MainTable,$whr);
+						$someArray[0]['header'][$indx]['fields'][0][$key1]['Inputvalue']=$Inputvalue;
+
+					}
+					else
+					{
+
+						$whr=" id=".$detail_id;	
+						$Inputvalue=$this->projectmodel->GetSingleVal($key1,'invoice_details',$whr);
+						$someArray[0]['header'][$indx]['fields'][0][$key1]['Inputvalue']=$Inputvalue;
+
+						// if($key1=='product_id')
+						// {
+						// 	$someArray[0]['header'][$indx]['fields'][0][$key1]['Inputvalue_id']=$Inputvalue;
+						// 	$whr=" id=".$Inputvalue;	
+						// 	$pname=$this->projectmodel->GetSingleVal('productname','productmstr',$whr);
+
+						// 	$someArray[0]['header'][$indx]['fields'][0][$key1]['Inputvalue']=$Inputvalue;
+						// }
+						// else
+						// {$someArray[0]['header'][$indx]['fields'][0][$key1]['Inputvalue']=$Inputvalue;}
+
+
+					}
+										
+							
+				}
+
+				$this->FrmRptModel->tranfer_data($someArray);
+
+			}
+
+			//DONE
+			if($subtype=='dtlist_total')
+			{
+				
+				$id=$form_data1->id;	
+
+				$dtlist_total['id']=$id;
+				$records="select * from invoice_summary where id=".$id;
+				$records = $this->projectmodel->get_records_from_sql($records);
+				foreach ($records as $fieldIndex=>$record)
+				{	
+						$dtlist_total['total_amt']=$record->total_amt;
+						$dtlist_total['tot_discount']=$record->tot_discount;
+						$dtlist_total['Taxable_Amt']=$record->total_amt;
+						$dtlist_total['totvatamt']=$record->totvatamt;
+						$dtlist_total['Net_Amt']=$record->grandtot;
+
+						//$dtlist_total['total_paid']=$record->total_paid;
+						//$dtlist_total['total_due']=$record->total_due;
+
+				}
+				$output['header']=$dtlist_total;
+
+				$this->FrmRptModel->tranfer_data($output);				
+
+			}
+
+			
+			
+			
+
+			if($subtype=='other_search')
+			{			
+										
+					$someArray=array();
+
+					$header_index=$form_data1->header_index;
+					$field_index=$form_data1->field_index;
+					$searchelement=$form_data1->searchelement;
+					$someArray = json_decode($form_data1->raw_data, true);
+
+				
+
+					if($searchelement=='patient_name')
+					{							
+						$patient_id=$doctor_mstr_id=0;		
+						$doctor_name=$patient_name=	$address='';	
+						$someArray[0]['header'][0]['fields'][0]['patient_address']['Inputvalue']='';
+						$someArray[0]['header'][0]['fields'][0]['doctor_ledger_id']['Inputvalue_id']=0;
+						$someArray[0]['header'][0]['fields'][0]['doctor_ledger_id']['Inputvalue']='';
+						$patient_name=$someArray[0]['header'][0]['fields'][0]['patient_name']['Inputvalue'];						
+						$patient_id=(int)$patient_name;
+						
+
+						if($patient_id>0)
+						{
+							$whr="id=".$patient_id."";
+							$patient_name=$this->projectmodel->GetSingleVal('party_name','patient_registration',$whr);
+							$address=$this->projectmodel->GetSingleVal('address','patient_registration',$whr);	
+							$doctor_mstr_id=$this->projectmodel->GetSingleVal('doctor_mstr_id','patient_registration',$whr);
+							if($doctor_mstr_id>0)
+							{
+								$whr="id=".$doctor_mstr_id."";
+								$doctor_name=$this->projectmodel->GetSingleVal('name','doctor_mstr',$whr);
+							}	
+
+						}
+							
+							$someArray[0]['header'][0]['fields'][0]['patient_id']['Inputvalue']=$patient_id;
+							$someArray[0]['header'][0]['fields'][0]['patient_name']['Inputvalue']=$patient_name;
+							$someArray[0]['header'][0]['fields'][0]['patient_address']['Inputvalue']=$address;	
+							$someArray[0]['header'][0]['fields'][0]['doctor_ledger_id']['Inputvalue_id']=$doctor_mstr_id;
+							$someArray[0]['header'][0]['fields'][0]['doctor_ledger_id']['Inputvalue']=$doctor_name;
+						
+
+						 $this->FrmRptModel->tranfer_data($someArray);
+
+					}
+
+
+					if($searchelement=='main_group_id')
+					{	
+						$someArray[0]["header"][1]['fields'][0]['potency_id']['datafields']='';
+						$someArray[0]["header"][1]['fields'][0]['pack_id']['datafields']='';
+						$someArray[0]["header"][1]['fields'][0]['product_id']['datafields']='';
+
+						
+						$main_group_val=$someArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue'];
+
+						$whr="Status='MAIN_PRODUCT_GROUP' and FieldID='".trim($main_group_val)."'";
+						$main_group_id=$this->projectmodel->GetSingleVal('id','frmrptgeneralmaster',$whr);
+						if($main_group_id==0)
+						{$main_group_id=$someArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue_id'];}						
+						$MAIN_PRODUCT_GROUP=$this->projectmodel->GetSingleVal('FieldVal','frmrptgeneralmaster','id='.$main_group_id);
+						
+						$someArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue_id']=$main_group_id;
+						$someArray[0]['header'][1]['fields'][0]['main_group_name']['Inputvalue']=$MAIN_PRODUCT_GROUP;
+
+						if($main_group_val=='MM1' | $main_group_val=='MM2' | $main_group_val=='MM3' 
+						| $main_group_val=='MM4' | $main_group_val=='MM5' | $main_group_val=='MM6')
+						{
+							$whr="Status='MAIN_PRODUCT_GROUP' and FieldID='".trim($main_group_val)."'";
+							$main_group_id=$this->projectmodel->GetSingleVal('id','frmrptgeneralmaster',$whr);
+							if($main_group_id==0)
+							{$main_group_id=$someArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue_id'];}	
+							$someArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue_id']=$main_group_id;
+							
+							$main_group_val='M';
+							$whr="Status='MAIN_PRODUCT_GROUP' and FieldID='".trim($main_group_val)."'";
+							$main_group_id=$this->projectmodel->GetSingleVal('id','frmrptgeneralmaster',$whr);
+							$MAIN_PRODUCT_GROUP=$this->projectmodel->GetSingleVal('FieldVal','frmrptgeneralmaster','id='.$main_group_id);
+
+
+						}
+						
+					
+						//$main_group_id=$this->projectmodel->GetSingleVal('parent_id','misc_mstr','id='.$product_group_id);
+						
+						$product_group_id='0';
+						$records="select * from misc_mstr 
+						where  parent_id=".$main_group_id." and mstr_type='PRODUCT_GROUP' and status='ACTIVE'";			
+						$records = $this->projectmodel->get_records_from_sql($records);	
+						foreach ($records as $record)
+						{$product_group_id=$product_group_id.','.$record->id;}
+
+
+						//TEST
+						//$someArray[0]['header'][1]['fields'][0]['potency_id']['Inputvalue']=$MAIN_PRODUCT_GROUP;
+
+						// $someArray[0]['header'][1]['fields'][0]['batchno']['InputType']='text';
+						// $someArray[0]['header'][1]['fields'][0]['potency_id']['InputType']='text';
+						// $someArray[0]['header'][1]['fields'][0]['no_of_dose']['InputType']='text';
+						
+						//$someArray[0]["header"][1]['fields'][0]['product_id']['Inputvalue']=$product_group_id;
+
+						//$someArray[0]['header'][1]['fields'][0]['product_id']['Inputvalue']=$product_group_id;
+
+						
+						$records="select * from frmrpttemplatedetails 
+						where  frmrpttemplatehdrID=".$form_detail_id." 	and InputType='hidden' ";			
+						$records = $this->projectmodel->get_records_from_sql($records);	
+						foreach ($records as $record)
+						{
+							$someArray[0]['header'][1]['fields'][0][$record->InputName]['InputType']='hidden';
+							$someArray[0]['header'][1]['fields'][0][$record->InputName]['input_id_index']=9000;
+						}
+					
+
+						//UPDATE PRODUCT
+						if($MAIN_PRODUCT_GROUP=='PATENT')
+						{
+							// $sql="select a.id FieldID,a.productname FieldVal,b.name_value Company,c.available_qnty	,c.minimum_stock
+							// from productmstr a, misc_mstr b,product_balance_companywise c  where 
+							// a.group_id in (".$product_group_id.") and  a.group_id=b.id 
+							// and b.mstr_type='PRODUCT_GROUP' and b.status='ACTIVE'						
+							// a.brand_id=b.id and a.id=c.product_id and c.company_id=".$company_id;
+							// $datafields_array =$this->projectmodel->get_records_from_sql($sql);
+							// $someArray[0]["header"][1]['fields'][0]['product_id']['datafields']=
+							// json_decode(json_encode($datafields_array), true);
+							// $this->FrmRptModel->tranfer_data($someArray);
+
+							$sql="select a.id FieldID,a.productname FieldVal,b.name_value Company,c.available_qnty	,c.minimum_stock
+							from productmstr a, misc_mstr b,product_balance_companywise c  where a.brand_id=b.id and a.id=c.product_id and c.company_id=".$company_id;
+							$datafields_array =$this->projectmodel->get_records_from_sql($sql);
+							$someArray[0]["header"][1]['fields'][0]['product_id']['datafields']=
+							json_decode(json_encode($datafields_array), true);							
+
+						}
+						else
+						{
+							$sql="select a.id FieldID,TRIM(a.productname) FieldVal from productmstr a,misc_mstr b
+							where a.group_id in (".$product_group_id.") and  a.group_id=b.id 
+							and b.mstr_type='PRODUCT_GROUP' and b.status='ACTIVE'";
+							$datafields_array =$this->projectmodel->get_records_from_sql($sql);
+							$someArray[0]["header"][1]['fields'][0]['product_id']['datafields']=
+							json_decode(json_encode($datafields_array), true);
+
+						}
+
+
+						 //UPDATE potency_id
+						 if($MAIN_PRODUCT_GROUP=='MOTHER_TINCTURE' || $MAIN_PRODUCT_GROUP=='TRITURATION' || 
+						  $MAIN_PRODUCT_GROUP=='BIOCHEMIC' || $MAIN_PRODUCT_GROUP=='DILUTION' 
+						  || $MAIN_PRODUCT_GROUP=='WATER'  || $MAIN_PRODUCT_GROUP=='SUGAR_OF_MILK') 
+						 {
+							
+							 $sql="select id FieldID,name FieldVal from misc_mstr
+							 where parent_id=".$main_group_id." and mstr_type='POTENCY' and status='ACTIVE' ";
+							 $datafields_array =$this->projectmodel->get_records_from_sql($sql);
+							 $someArray[0]["header"][1]['fields'][0]['potency_id']['datafields']=
+							 json_decode(json_encode($datafields_array), true);							
+						 }	
+
+
+						 //UPDATE PACK
+						 if($MAIN_PRODUCT_GROUP=='MOTHER_TINCTURE' || $MAIN_PRODUCT_GROUP=='TRITURATION' || 
+						  $MAIN_PRODUCT_GROUP=='BIOCHEMIC' || $MAIN_PRODUCT_GROUP=='DILUTION' 
+						  || $MAIN_PRODUCT_GROUP=='WATER' || $MAIN_PRODUCT_GROUP=='SUGAR_OF_MILK') 
+						 {
+							 $sql="select id FieldID,name FieldVal from misc_mstr
+							 where parent_id=".$main_group_id." and mstr_type='PACK_SIZE' and status='ACTIVE' ";
+							 $datafields_array =$this->projectmodel->get_records_from_sql($sql);
+							 $someArray[0]["header"][1]['fields'][0]['pack_id']['datafields']=
+							 json_decode(json_encode($datafields_array), true);							
+						 }	
+
+
+						//FIELD OPEN OR HIDE GROUP WISE
+
+						if($MAIN_PRODUCT_GROUP=='MOTHER_TINCTURE' ||
+						 $MAIN_PRODUCT_GROUP=='TRITURATION' || 
+						 $MAIN_PRODUCT_GROUP=='BIOCHEMIC' ) 
+						{
+							// $someArray[0]['header'][1]['fields'][0]['batchno']['InputType']='hidden';
+							// $someArray[0]['header'][1]['fields'][0]['batchno']['input_id_index']=9000;		
+							
+							// $someArray[0]['header'][1]['fields'][0]['no_of_dose']['InputType']='hidden';
+							// $someArray[0]['header'][1]['fields'][0]['no_of_dose']['input_id_index']=9000;
+							
+							
+							$someArray[0]['header'][1]['fields'][0]['product_Synonym']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['potency_id']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['Synonym']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['pack_id']['InputType']='text';	
+							$someArray[0]['header'][1]['fields'][0]['label_print']['Inputvalue']='Y';	
+							$someArray[0]['header'][1]['fields'][0]['qnty']['Inputvalue']=1;					
+							
+						}
+						else if($MAIN_PRODUCT_GROUP=='DILUTION')
+						{						
+							$someArray[0]['header'][1]['fields'][0]['product_Synonym']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['pack_synonym']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['potency_id']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['Synonym']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['pack_id']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['label_print']['Inputvalue']='Y';
+							$someArray[0]['header'][1]['fields'][0]['qnty']['Inputvalue']=1;	
+							
+						}
+
+						else if($MAIN_PRODUCT_GROUP=='WATER')
+						{	
+							 $someArray[0]['header'][1]['fields'][0]['product_Synonym']['InputType']='text';
+							 $someArray[0]['header'][1]['fields'][0]['potency_id']['InputType']='text';
+							 $someArray[0]['header'][1]['fields'][0]['Synonym']['InputType']='text';
+							 $someArray[0]['header'][1]['fields'][0]['pack_id']['InputType']='text';
+							
+							 $someArray[0]['header'][1]['fields'][0]['label_print']['Inputvalue']='Y';
+							  $someArray[0]['header'][1]['fields'][0]['no_of_dose']['InputType']='text';
+							 $someArray[0]['header'][1]['fields'][0]['no_of_dose']['Inputvalue']=1;
+							 $someArray[0]['header'][1]['fields'][0]['qnty']['Inputvalue']=1;			
+						}
+						else if($MAIN_PRODUCT_GROUP=='SUGAR_OF_MILK')
+						{
+							$someArray[0]['header'][1]['fields'][0]['product_Synonym']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['potency_id']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['Synonym']['InputType']='text';
+
+							//$someArray[0]['header'][1]['fields'][0]['pack_id']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['no_of_dose']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['dose_Synonym']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['label_print']['Inputvalue']='Y';	
+							$someArray[0]['header'][1]['fields'][0]['no_of_dose']['Inputvalue']=1;	
+							$someArray[0]['header'][1]['fields'][0]['qnty']['Inputvalue']=1;
+							
+							$someArray[0]['header'][1]['fields'][0]['pack_id']['Inputvalue']=249;
+							$someArray[0]['header'][1]['fields'][0]['pack_id']['Inputvalue_id']=249;
+							
+
+						}
+						else if($MAIN_PRODUCT_GROUP=='PATENT')
+						{
+							$someArray[0]['header'][1]['fields'][0]['product_Synonym']['InputType']='text';
+							
+							$someArray[0]['header'][1]['fields'][0]['batchno']['InputType']='text';
+							//$someArray[0]['header'][1]['fields'][0]['rackno']['InputType']='text';
+							$someArray[0]['header'][1]['fields'][0]['label_print']['Inputvalue']='';
+							$someArray[0]['header'][1]['fields'][0]['qnty']['Inputvalue']=1;	
+						}
+						else 
+						{
+							// $someArray[0]['header'][1]['fields'][0]['batchno']['InputType']='text';
+							// $someArray[0]['header'][1]['fields'][0]['no_of_dose']['InputType']='text';
+							// $someArray[0]['header'][1]['fields'][0]['potency_id']['InputType']='text';
+						}
+
+						$someArray=$this->FrmRptModel->re_arrange_input_index_type2($someArray);
+
+						$this->FrmRptModel->tranfer_data($someArray);
+
+					}	
+
+					if($searchelement=='product_id')
+					{							
+																
+						$product_id=$someArray[0]['header'][1]['fields'][0]['product_id']['Inputvalue_id'];
+						$whr="id=".$product_id."";
+						$product_group_id=$this->projectmodel->GetSingleVal('group_id','productmstr',$whr);
+						
+						$someArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue_id']=$product_group_id;
+						$someArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue']=$product_group_id;
+
+						$main_group_id=intval($this->projectmodel->GetSingleVal('parent_id','misc_mstr','id='.$product_group_id));
+						$MAIN_PRODUCT_GROUP=$this->projectmodel->GetSingleVal('FieldVal','frmrptgeneralmaster','id='.$main_group_id);
+						
+
+						if($MAIN_PRODUCT_GROUP=='PATENT' ) 
+						{
+							$whr="id=".$product_id;
+							$disc_per=$this->projectmodel->GetSingleVal('sell_discount','productmstr',$whr);	
+							$label_print=$this->projectmodel->GetSingleVal('label_print','productmstr',$whr);							
+							//$mrp=$this->projectmodel->GetSingleVal('mrp','productmstr',$whr);
+							$someArray[0]['header'][1]['fields'][0]['disc_per']['Inputvalue']=$disc_per;
+							$someArray[0]['header'][1]['fields'][0]['label_print']['Inputvalue']=$label_print;
+						
+							//RACK LIST
+							$data=array();
+							$data=$this->projectmodel->rack_wise_available_stock();	
+							$someArray[0]["header"][1]['fields'][0]['rackno']['datafields']=$data;
+								
+
+							$data=array();
+							$data=$this->projectmodel->batch_list($product_id,$company_id);						
+							$someArray[0]["header"][1]['fields'][0]['batchno']['datafields']=$data;
+
+						}
+						
+						// $sql = "select b.batchno FieldID,CONCAT(b.batchno, '=')  as FieldVal,b.rackno RackNo,b.qty_available AvailbQnty 
+						// ,(b.taxable_amt+b.cgst_amt+b.sgst_amt+b.igst_amt)/b.qnty PurRate ,
+						// b.srate Rate ,b.mrp MRP,b.exp_monyr ExpDate ,b.mfg_monyr MfgDate,b.id PID
+						// from invoice_summary a,invoice_details b where a.id=b.invoice_summary_id and 
+						// (a.status='OPEN_BALANCE' or a.status='PURCHASE' or a.status='SALE_RTN') 
+						// and b.product_id=".$product_id." and a.company_id=".$company_id."  order by b.qty_available desc ";
+						// $datafields_array =$this->projectmodel->get_records_from_sql($sql);
+						// $someArray[0]["header"][1]['fields'][0]['batchno']['datafields']=
+						// json_decode(json_encode($datafields_array), true);
+
+
+						$this->FrmRptModel->tranfer_data($someArray);
+
+					}
+
+
+					if($searchelement=='potency_id' || $searchelement=='pack_id' || $searchelement=='no_of_dose' )
+					{	
+						$product_id=$someArray[0]['header'][1]['fields'][0]['product_id']['Inputvalue_id'];
+						$whr="id=".$product_id."";
+						$product_group_id=intval($this->projectmodel->GetSingleVal('group_id','productmstr',$whr));
+						
+						$someArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue_id']=$product_group_id;
+						$someArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue']=$product_group_id;
+
+						$main_group_id=$this->projectmodel->GetSingleVal('parent_id','misc_mstr','id='.$product_group_id);
+						$MAIN_PRODUCT_GROUP=$this->projectmodel->GetSingleVal('FieldVal','frmrptgeneralmaster','id='.$main_group_id);
+
+						$potency_id=intval($someArray[0]['header'][1]['fields'][0]['potency_id']['Inputvalue_id']);
+						$pack_id=intval($someArray[0]['header'][1]['fields'][0]['pack_id']['Inputvalue_id']);
+						$no_of_dose=intval($someArray[0]['header'][1]['fields'][0]['no_of_dose']['Inputvalue']);
+						$rate=$mrp=0;
+						
+						//  $product_name=$this->projectmodel->GetSingleVal('productname','productmstr','id='.$product_id);
+						//  $potency_name=$this->projectmodel->GetSingleVal('name','misc_mstr','id='.$potency_id);
+						//  $pack_name=$this->projectmodel->GetSingleVal('name','misc_mstr','id='.$pack_id);
+
+						
+						//  $msg="Product id:".$product_id." PGROUP: ".$group_id.
+						//  " potency_id: ".$potency_id." pack_id:".$pack_id;
+						 //$someArray[0]['header'][1]['fields'][0]['Synonym']['Inputvalue']=trim($msg);
+						
+						if($MAIN_PRODUCT_GROUP=='MOTHER_TINCTURE' ||
+						 $MAIN_PRODUCT_GROUP=='TRITURATION' || 
+						 $MAIN_PRODUCT_GROUP=='BIOCHEMIC' || 
+						 $MAIN_PRODUCT_GROUP=='DILUTION') 
+						{
+							$whr="GROUP_ID=".$product_group_id." 
+							and POTENCY_ID=".$potency_id." and PACK_ID=".$pack_id;
+							$rate=$this->projectmodel->GetSingleVal('RATE','product_rate_mstr',$whr);	
+							$mrp=$this->projectmodel->GetSingleVal('MRP','product_rate_mstr',$whr);
+
+							$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$rate;
+							$someArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=$mrp;
+
+							
+						}
+						else if($MAIN_PRODUCT_GROUP=='WATER')
+						{
+							$whr="GROUP_ID=".$product_group_id." 
+							and POTENCY_ID=".$potency_id." and PACK_ID=".$pack_id;
+							$rate=intval($this->projectmodel->GetSingleVal('RATE','product_rate_mstr',$whr));								
+							$mrp=intval($this->projectmodel->GetSingleVal('MRP','product_rate_mstr',$whr));
+
+							$dose2_rate=intval($this->projectmodel->GetSingleVal('dose2_rate','product_rate_mstr',$whr));								
+							$dose2_mrp=intval($this->projectmodel->GetSingleVal('dose2_mrp','product_rate_mstr',$whr));
+
+							$dose3_rate=intval($this->projectmodel->GetSingleVal('dose3_rate','product_rate_mstr',$whr));								
+							$dose3_mrp=intval($this->projectmodel->GetSingleVal('dose3_mrp','product_rate_mstr',$whr));
+
+							$dose4_rate=intval($this->projectmodel->GetSingleVal('dose4_rate','product_rate_mstr',$whr));								
+							$dose4_mrp=intval($this->projectmodel->GetSingleVal('dose4_mrp','product_rate_mstr',$whr));
+
+							$dose5_rate=intval($this->projectmodel->GetSingleVal('dose5_rate','product_rate_mstr',$whr));								
+							$dose5_mrp=intval($this->projectmodel->GetSingleVal('dose5_mrp','product_rate_mstr',$whr));
+
+							if($no_of_dose==1)
+							{
+								$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$rate;
+								$someArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=$mrp;	
+							}
+							else if($no_of_dose==2)
+							{
+								$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$dose2_rate*$no_of_dose;
+								$someArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=$dose2_mrp*$no_of_dose;	
+							}
+							else if($no_of_dose==3)
+							{
+								$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$dose3_rate*$no_of_dose;
+								$someArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=$dose3_mrp*$no_of_dose;	
+							}
+							else if($no_of_dose==4)
+							{
+								$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$dose4_rate*$no_of_dose;
+								$someArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=$dose4_mrp*$no_of_dose;	
+							}
+							else if($no_of_dose>4)
+							{
+								$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$dose5_rate*$no_of_dose;
+								$someArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=$dose5_mrp*$no_of_dose;	
+							}
+
+
+							
+							
+							
+							// if($no_of_dose>0)
+							// {
+							// 	$whr=" parent_id=".$main_group_id." 
+							// 	and name='".$no_of_dose."' and mstr_type='DOSE_DISCOUNT' and status='ACTIVE' ";
+							// 	$discount_per=$this->projectmodel->GetSingleVal('name_value','misc_mstr',$whr);	
+							// 	$rate=($rate-round(($rate*$discount_per/100)))*$no_of_dose;								
+							// 	$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$rate;	
+							// }
+
+						}
+						else if($MAIN_PRODUCT_GROUP=='SUGAR_OF_MILK')
+						{
+							$whr="GROUP_ID=".$product_group_id." and  POTENCY_ID=".$potency_id;
+							$rate=$this->projectmodel->GetSingleVal('RATE','product_rate_mstr',$whr);								
+							$mrp=$this->projectmodel->GetSingleVal('MRP','product_rate_mstr',$whr);
+
+							if($no_of_dose>1)
+							{
+								$rate=$rate*$no_of_dose;
+								$mrp=$mrp*$no_of_dose;
+							}
+							$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$rate;
+							$someArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=$mrp;
+
+						
+							// if($no_of_dose>0)
+							// {
+							// 	$whr=" parent_id=".$main_group_id." 
+							// 	and name='".$no_of_dose."' and mstr_type='DOSE_DISCOUNT' and status='ACTIVE' ";
+							// 	$discount_per=$this->projectmodel->GetSingleVal('name_value','misc_mstr',$whr);	
+							// 	$rate=($rate-round(($rate*$discount_per/100)))*$no_of_dose;								
+							// 	$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$rate;	
+							// }
+						}
+
+						$this->FrmRptModel->tranfer_data($someArray);
+
+					}
+					
+
+					//$searchelement=='batchno' || 
+					if($searchelement=='rate' || $searchelement=='disc_per' || $searchelement=='disc_per2')
+					{
+					
+						// $product_group_id=$someArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue_id'];
+						// $main_group_id=$this->projectmodel->GetSingleVal('parent_id','misc_mstr','id='.$product_group_id);
+						// $MAIN_PRODUCT_GROUP=$this->projectmodel->GetSingleVal('FieldVal','frmrptgeneralmaster','id='.$main_group_id);
+					
+						// if($MAIN_PRODUCT_GROUP=='PATENT')
+						// {
+
+						// 	$product_id=$someArray[0]['header'][1]['fields'][0]['product_id']['Inputvalue_id'];
+						// 	$batchno=$someArray[0]['header'][1]['fields'][0]['batchno']['Inputvalue'];
+
+						// 	$PURCHASEID=$someArray[0]['header'][1]['fields'][0]['PURCHASEID']['Inputvalue'];
+						// 	$rate=$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue'];
+						// 	$disc_per=$someArray[0]['header'][1]['fields'][0]['disc_per']['Inputvalue'];
+						// 	$disc_per2=$someArray[0]['header'][1]['fields'][0]['disc_per2']['Inputvalue'];
+
+						// 	$price_after_disc1=$rate -($rate*$disc_per/100) ;
+						// 	$disc_per2_amt=$price_after_disc1*$disc_per2/100;
+
+						// 	$effective_amt=$price_after_disc1-$disc_per2_amt;
+
+						// 	$whr=" id=".$PURCHASEID;
+						// 	$taxable_amt=$this->projectmodel->GetSingleVal('taxable_amt','invoice_details',$whr);
+						// 	$qnty=$this->projectmodel->GetSingleVal('qnty','invoice_details',$whr);
+						// 	$purchase_rate=ceil($taxable_amt/$qnty);	
+							
+						// 	$profit=$effective_amt-$purchase_rate;
+
+						// 	if($profit<=0)
+						// 	{
+						// 		$return_msg='Your Purchase Rate:'.$purchase_rate.' | Your Sale rate '.$effective_amt;
+						// 		$validation_type='NOT_OK';
+						// 	}
+						// 	else
+						// 	{	
+						// 		$profit=$effective_amt-$purchase_rate;
+						// 		$return_msg='You are in profit.Which is : '.$profit;							
+						// 	}
+							
+						// 	$someArray[0]["header"][1]['fields'][0]['batchno']['validation_type']=$validation_type;						
+						// 	$someArray[0]["header"][1]['fields'][0]['batchno']['validation_msg']=$return_msg;
+						// 	$this->FrmRptModel->tranfer_data($someArray);
+
+						// 	}
+						
+
+					}	
+
+					
+
+					//OLD SECTION
+					/*
+					if($searchelement=='main_group_id')
+					{	
+						$someArray[0]["header"][1]['fields'][0]['potency_id']['datafields']='';
+						$someArray[0]["header"][1]['fields'][0]['pack_id']['datafields']='';
+						$someArray[0]["header"][1]['fields'][0]['product_id']['datafields']='';
+
+						
+						$main_group_val=$someArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue'];
+
+						$whr="Status='MAIN_PRODUCT_GROUP' and FieldID='".trim($main_group_val)."'";
+						$main_group_id=$this->projectmodel->GetSingleVal('id','frmrptgeneralmaster',$whr);
+						if($main_group_id==0)
+						{$main_group_id=$someArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue_id'];}						
+						$MAIN_PRODUCT_GROUP=$this->projectmodel->GetSingleVal('FieldVal','frmrptgeneralmaster','id='.$main_group_id);
+						
+						$someArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue_id']=$main_group_id;
+						$someArray[0]['header'][1]['fields'][0]['main_group_name']['Inputvalue']=$MAIN_PRODUCT_GROUP;
 
 						if($main_group_val=='MM1' | $main_group_val=='MM2' | $main_group_val=='MM3' 
 						| $main_group_val=='MM4' | $main_group_val=='MM5' | $main_group_val=='MM6')
@@ -1406,7 +3088,9 @@ public function experimental_form($datatype='',$cond=0)
 						}
 						else if($MAIN_PRODUCT_GROUP=='PATENT')
 						{
+							$someArray[0]['header'][1]['fields'][0]['product_Synonym']['InputType']='text';
 							$someArray[0]['header'][1]['fields'][0]['batchno']['InputType']='text';
+							//$someArray[0]['header'][1]['fields'][0]['rackno']['InputType']='text';
 							$someArray[0]['header'][1]['fields'][0]['label_print']['Inputvalue']='';
 							$someArray[0]['header'][1]['fields'][0]['qnty']['Inputvalue']=1;	
 						}
@@ -1425,7 +3109,7 @@ public function experimental_form($datatype='',$cond=0)
 
 					if($searchelement=='product_id')
 					{							
-																
+						$tbl_party_id=$someArray[0]['header'][0]['fields'][0]['tbl_party_id']['Inputvalue_id'];										
 						$product_id=$someArray[0]['header'][1]['fields'][0]['product_id']['Inputvalue_id'];
 						$whr="id=".$product_id."";
 						$product_group_id=$this->projectmodel->GetSingleVal('group_id','productmstr',$whr);
@@ -1437,61 +3121,53 @@ public function experimental_form($datatype='',$cond=0)
 						$MAIN_PRODUCT_GROUP=$this->projectmodel->GetSingleVal('FieldVal','frmrptgeneralmaster','id='.$main_group_id);
 						
 
+
 						if($MAIN_PRODUCT_GROUP=='PATENT' ) 
 						{
-							$whr="id=".$product_id;
-							$rate=$this->projectmodel->GetSingleVal('sell_price','productmstr',$whr);	
-							$mrp=$this->projectmodel->GetSingleVal('mrp','productmstr',$whr);
-							$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=$rate;
-							$someArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=$mrp;
+							$maxid=0;
+							$rs = "select max(a.id) maxid from invoice_summary a,invoice_details b 
+							where a.id=b.invoice_summary_id and 
+							b.product_id=".$product_id."  and a.tbl_party_id=".$tbl_party_id." 	
+							and a.company_id=".$company_id ;
+							$rs = $this->projectmodel->get_records_from_sql($rs);		
+							$maxid=$rs[0]->maxid;
+	
+							$whr="product_id=".$product_id." and invoice_summary_id=".$maxid;
+							$rate=$this->projectmodel->GetSingleVal('rate','invoice_details',$whr);
+							$disc1=$this->projectmodel->GetSingleVal('disc_per','invoice_details',$whr);
+							//$disc2=$this->projectmodel->GetSingleVal('disc_per2','invoice_details',$whr);
+							$someArray[0]["header"][1]['fields'][0]['disc_per']['Inputvalue']=$disc1;
+
+
+							$data=array();
+							$data=$this->projectmodel->batch_list($product_id,$company_id);						
+							$someArray[0]["header"][1]['fields'][0]['batchno']['datafields']=$data;
+
+							//RACK LIST
+							$data=array();
+							$data=$this->projectmodel->rack_wise_available_stock();	
+							$someArray[0]["header"][1]['fields'][0]['rackno']['datafields']=$data;
+
+
 						}
+						else
+						{
 
 
+							$rs = "select max(a.id) maxid from invoice_summary a,invoice_details b 
+							where a.id=b.invoice_summary_id and 
+							b.main_group_id=".$main_group_id."  and a.tbl_party_id=".$tbl_party_id." 	
+							and a.company_id=".$company_id ;
+							$rs = $this->projectmodel->get_records_from_sql($rs);		
+							$maxid=$rs[0]->maxid;
+	
+							$whr="main_group_id=".$main_group_id." and invoice_summary_id=".$maxid;
+							$rate=$this->projectmodel->GetSingleVal('rate','invoice_details',$whr);
+							$disc1=$this->projectmodel->GetSingleVal('disc_per','invoice_details',$whr);
+							//$disc2=$this->projectmodel->GetSingleVal('disc_per2','invoice_details',$whr);
+							$someArray[0]["header"][1]['fields'][0]['disc_per']['Inputvalue']=$disc1;
 
-
-						//PRODUCT WISE PARTY WISE LAST SALE RATE .
-
-						// $rs = "select max(a.id) maxid from invoice_summary a,invoice_details b where a.id=b.invoice_summary_id and 
-						// b.product_id=".$product_id."  and a.tbl_party_id=".$tbl_party_id." 	and a.company_id=".$company_id ;
-						// $rs = $this->projectmodel->get_records_from_sql($rs);		
-						// $maxid=$rs[0]->maxid;
-
-						// $whr="product_id=".$product_id." and invoice_summary_id=".$maxid;
-						// $rate=$this->projectmodel->GetSingleVal('rate','invoice_details',$whr);
-						// $disc1=$this->projectmodel->GetSingleVal('disc_per','invoice_details',$whr);
-						// $disc2=$this->projectmodel->GetSingleVal('disc_per2','invoice_details',$whr);
-					
-						// $tbl_party_id=$this->projectmodel->GetSingleVal('tbl_party_id','invoice_summary','id='.$maxid);
-						// $invoice_date=$this->projectmodel->GetSingleVal('invoice_date','invoice_summary','id='.$maxid);
-						// $party_name=$this->projectmodel->GetSingleVal('acc_name','acc_group_ledgers','id='.$tbl_party_id);
-			
-						// $someArray[0]["header"][1]['fields'][0]['product_id']['validation_msg']=
-						// 'Last Sale To '.$party_name.' Date:'.$invoice_date.' @ Rs'.$rate.' Disc1= '.$disc1.'% Disc2= '.$disc2.'%';
-							
-						//RATE VALIDATION
-
-						// $whr=" id=".$product_id;	
-						// $someArray[0]["header"][1]['fields'][0]['Synonym']['Inputvalue']=
-						// $this->projectmodel->GetSingleVal('Synonym','productmstr',$whr);
-
-						// $tax_ledger_id=$this->projectmodel->GetSingleVal('tax_ledger_id','productmstr',$whr);
-						// $someArray[0]["header"][1]['fields'][0]['tax_ledger_id']['Inputvalue_id']=$tax_ledger_id;
-
-						// $whr=" id=".$tax_ledger_id;
-						// $tax_ledger_name=$this->projectmodel->GetSingleVal('acc_name','acc_group_ledgers',$whr);
-						// $someArray[0]["header"][1]['fields'][0]['tax_ledger_id']['Inputvalue']=$tax_ledger_name;
-
-					
-						// $sql = "select b.batchno FieldID,CONCAT(b.batchno, '=')  as FieldVal,b.rackno RackNo,b.qty_available AvailbQnty 
-						// ,(b.taxable_amt+b.cgst_amt+b.sgst_amt+b.igst_amt)/b.qnty PurRate ,
-						// b.srate Rate ,b.mrp MRP,b.exp_monyr ExpDate ,b.mfg_monyr MfgDate,b.id PID
-						// from invoice_summary a,invoice_details b where a.id=b.invoice_summary_id and 
-						// (a.status='OPEN_BALANCE' or a.status='PURCHASE' or a.status='SALE_RTN') 
-						// and b.product_id=".$product_id." and a.company_id=".$company_id."  order by b.qty_available desc ";
-						// $datafields_array =$this->projectmodel->get_records_from_sql($sql);
-						// $someArray[0]["header"][1]['fields'][0]['batchno']['datafields']=
-						// json_decode(json_encode($datafields_array), true);
-
+						}
 
 						$this->FrmRptModel->tranfer_data($someArray);
 
@@ -1588,524 +3264,19 @@ public function experimental_form($datatype='',$cond=0)
 
 					}
 					
+					*/
 
-					//$searchelement=='batchno' || 
-					if($searchelement=='rate' || $searchelement=='disc_per' || $searchelement=='disc_per2')
-					{
-					
-						// $product_group_id=$someArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue_id'];
-						// $main_group_id=$this->projectmodel->GetSingleVal('parent_id','misc_mstr','id='.$product_group_id);
-						// $MAIN_PRODUCT_GROUP=$this->projectmodel->GetSingleVal('FieldVal','frmrptgeneralmaster','id='.$main_group_id);
-					
-						// if($MAIN_PRODUCT_GROUP=='PATENT')
-						// {
 
-						// 	$product_id=$someArray[0]['header'][1]['fields'][0]['product_id']['Inputvalue_id'];
-						// 	$batchno=$someArray[0]['header'][1]['fields'][0]['batchno']['Inputvalue'];
-
-						// 	$PURCHASEID=$someArray[0]['header'][1]['fields'][0]['PURCHASEID']['Inputvalue'];
-						// 	$rate=$someArray[0]['header'][1]['fields'][0]['rate']['Inputvalue'];
-						// 	$disc_per=$someArray[0]['header'][1]['fields'][0]['disc_per']['Inputvalue'];
-						// 	$disc_per2=$someArray[0]['header'][1]['fields'][0]['disc_per2']['Inputvalue'];
-
-						// 	$price_after_disc1=$rate -($rate*$disc_per/100) ;
-						// 	$disc_per2_amt=$price_after_disc1*$disc_per2/100;
-
-						// 	$effective_amt=$price_after_disc1-$disc_per2_amt;
-
-						// 	$whr=" id=".$PURCHASEID;
-						// 	$taxable_amt=$this->projectmodel->GetSingleVal('taxable_amt','invoice_details',$whr);
-						// 	$qnty=$this->projectmodel->GetSingleVal('qnty','invoice_details',$whr);
-						// 	$purchase_rate=ceil($taxable_amt/$qnty);	
-							
-						// 	$profit=$effective_amt-$purchase_rate;
-
-						// 	if($profit<=0)
-						// 	{
-						// 		$return_msg='Your Purchase Rate:'.$purchase_rate.' | Your Sale rate '.$effective_amt;
-						// 		$validation_type='NOT_OK';
-						// 	}
-						// 	else
-						// 	{	
-						// 		$profit=$effective_amt-$purchase_rate;
-						// 		$return_msg='You are in profit.Which is : '.$profit;							
-						// 	}
-							
-						// 	$someArray[0]["header"][1]['fields'][0]['batchno']['validation_type']=$validation_type;						
-						// 	$someArray[0]["header"][1]['fields'][0]['batchno']['validation_msg']=$return_msg;
-						// 	$this->FrmRptModel->tranfer_data($someArray);
-
-						// 	}
-						
-
-					}	
 
 
 			 }
 
+	
+	
+	
 	}
 
-
-	if($form_name=='purchase_entry')
-	{
-			$form_summary_id=36;
-			$form_detail_id=37;
-
-			if($subtype=='view_list')
-			{			
-				
-				// $products = "select * from productmstr ";
-				// $products = $this->projectmodel->get_records_from_sql($products);
-				// foreach ($products as $product)
-				// {
-
-				// 	$companys = "select * from company_details ";
-				// 	$companys = $this->projectmodel->get_records_from_sql($companys);
-				// 	foreach ($companys as $company)
-				// 	{
-				// 		$comp['product_id']=$product->id;
-				// 		$comp['company_id']=$company->id;
-				// 		$this->projectmodel->save_records_model('','product_balance_companywise',$comp);					
-				// 	}
-				// }
-
-				$id=$form_data1->id;						
-				$form_structure=$this->form_view($form_name,$id);
-				$form_structure['header'][0]['fields'][0]['invoice_date']['Inputvalue']=date('Y-m-d');
-
-				// $sql="select a.id FieldID,a.productname FieldVal,b.available_qnty,a.Synonym,a.tax_ledger_id
-				// from productmstr a, product_balance_companywise b 
-				// where a.id=b.product_id and b.company_id=".$company_id;
-
-				if($id>0)
-				{
-					$sql="select a.id FieldID,a.productname FieldVal
-					from productmstr where group_id=289 ";
-					$datafields_array =$this->projectmodel->get_records_from_sql($sql);
-					$form_structure["header"][1]['fields'][0]['product_id']['datafields']=
-					json_decode(json_encode($datafields_array), true);
-				}
-				
-
-				// if($id>0)
-				// {
-				// 	$sql="select a.id FieldID,a.productname FieldVal,b.available_qnty,a.Synonym,a.tax_ledger_id
-				// 	from productmstr a, product_balance_companywise b 
-				// 	where a.id=b.product_id ";
-				// 	$datafields_array =$this->projectmodel->get_records_from_sql($sql);
-				// 	$form_structure["header"][1]['fields'][0]['product_id']['datafields']=
-				// 	json_decode(json_encode($datafields_array), true);
-				// }
-
-				array_push($output,$form_structure);
-				header('Access-Control-Allow-Origin: *');
-				header("Content-Type: application/json");
-				echo json_encode($output);
-			}
-			
-
-			//save section
-			if($subtype=='SAVE_DATA')
-			{
-				//$this->projectmodel->save_data($form_data1->raw_data,$form_name);
-
-
-				// $save_details2['test_data']=$form_data1->raw_data;
-				// $this->projectmodel->save_records_model(1,'test_table',$save_details2);
-				// $rs=$resval=$form_structure=$output=$save_details=array();
-				// $whr=" id=1";	
-				// $raw_data=$this->projectmodel->GetSingleVal('test_data','test_table',$whr);
-
-				$raw_data=$form_data1->raw_data;
-				$form_data=json_decode($raw_data);
-				$headers=json_decode(json_encode($form_data[0]->header), true );
-				$save_details=$this->FrmRptModel->create_save_array($headers);
-
-				$VALID_STATUS='VALID';
-				$invoice_no=$header_id=$id='';
-						
-				foreach($save_details as $key1=>$tables)
-				{
-					if($key1<2)
-					{
-						foreach($tables as $key2=>$fields)
-						{
-							
-									$table_name=$key2;		
-									$savedata=array();	
-									$save_statue=true;
-
-									foreach($fields as $key3=>$value)
-									{
-										//HERE REQUIRE CUSTOMIZATION
-										if($key3=='id' && $table_name=='invoice_summary')
-										{
-											if($value>0)
-											{$header_id=$value;}
-											else 
-											{$header_id='';}  											
-										}
-										else if ($key3<>'id' && $table_name=='invoice_summary')
-										{$savedata[$key3]=$value;}
-										else if ($key3=='id' && $table_name=='invoice_details')
-										{if($value>0){$id=$value;}else {$id='';}   }
-										else if ($key3=='invoice_summary_id' && $table_name=='invoice_details')
-										{$savedata[$key3]=$header_id; }
-										else 
-										{
-											$savedata[$key3]=$value; 
-											//if($savedata['product_id']==0){$save_statue=false;}
-										}
-
-									}
-
-									if($header_id=='')
-									{										
-										// if($savedata['invoice_date']=='')
-										// {$savedata['invoice_date']=date('Y-m-d');}
-										// $tran_no=$this->projectmodel->tran_no_generate('SALE',$savedata['invoice_date']);
-										// $savedata['finyr']=$tran_no['finyr'];
-										// $savedata['srl']=$tran_no['srl'];
-										// $savedata['invoice_no']='BILL/'.$tran_no['srl'].'/'.$savedata['finyr'];
-									}
-
-									$savedata['status']='PURCHASE';
-									//HEADER SECTION
-									if($table_name=='invoice_summary')
-									{																				
-										$savedata['emp_name']=$this->session->userdata('login_name');
-										$savedata['emp_id']=$this->session->userdata('login_emp_id');
-										$savedata['invoice_time']=date('H:i');
-										$savedata['company_id']=$this->session->userdata('COMP_ID');	
-										$savedata['entry_from_software']='NEW';
-										
-										$this->projectmodel->save_records_model($header_id,$table_name,$savedata);
-										if($key1==0 && $header_id=='')
-										{
-											
-											$header_id=$this->db->insert_id();$server_msg="Record has been inserted Successfully!";
-											$invoice_no=$savedata['invoice_no'];
-										}		
-										else if($key1==0 && $header_id>0)
-										{
-											$server_msg="Record has been Updated Successfully!";
-											$invoice_no=$savedata['invoice_no'];
-										}										
-										
-									}
-
-									if($table_name=='invoice_details')
-									{
-										if($savedata['product_id']>0)
-										{$this->projectmodel->save_records_model($id,$table_name,$savedata);}
-									}
-
-						}
-					}
-					
-
-				}
-
-				
-							
-				$return_data['id_header']=$header_id;
-				$return_data['server_msg']=$server_msg;		
-				$return_data['invoice_no']=$invoice_no;
-
-				//$this->projectmodel->update_transactions($header_id,$form_name);
-				
-
-				$this->projectmodel->send_json_output($return_data);
-
-
-			}	
-
-			if($subtype=='FINAL_SUBMIT')
-			{
-				$id=$form_data1->id;	
-				
-				$this->projectmodel->transaction_update($id);
-
-				//CHECK AND TRANSFER STOCK TO OWN COMPANY			
-				//$this->projectmodel->check_own_company_and_transfer($id);	
-				
-				$return_data['id_header']=$id;
-				$return_data['server_msg']='Final Submit Completed';
-				$this->projectmodel->send_json_output($return_data);
-			
-
-			}
-
-
-			if($subtype=='MAIN_GRID')
-			{
-				$startdate=$form_data1->startdate;
-				$enddate=$form_data1->enddate;
-
-				$indx=0;
-				$id=$form_id=$form_summary_id;
-				$whr=" id=".$form_id;	
-				$DataFields=$this->projectmodel->GetSingleVal('GridHeader','frmrpttemplatehdr',$whr);									
-				$TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);
-				$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
-				$WhereCondition=$this->projectmodel->GetSingleVal('WhereCondition','frmrpttemplatehdr',$whr);	
-				$WhereCondition=$WhereCondition." and invoice_date between '$startdate' and '$enddate' ";
-								
-				$rs[$indx]['section_type']='GRID_ENTRY';	
-				$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
-				$rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
-				$rs[$indx]['fields']=$DataFields;
-				$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']." where ".$WhereCondition;		
-				
-				$resval=$this->FrmRptModel->create_report($rs,$id); 
-
-			}
-
-			if($subtype=='dtlist')
-			{
-				
-				$id=$form_data1->id;	
-				$indx=0;
-				
-				$form_id=$form_detail_id;
-				$whr=" id=".$form_id;	
-				$DataFields=$this->projectmodel->GetSingleVal('GridHeader','frmrpttemplatehdr',$whr);									
-				$TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);
-				$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
-				$WhereCondition=$this->projectmodel->GetSingleVal('WhereCondition','frmrpttemplatehdr',$whr);	
-				$WhereCondition=$WhereCondition." and invoice_summary_id=".$id;
-
-				$rs[$indx]['section_type']='GRID_ENTRY';	
-				$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
-				$rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
-				$rs[$indx]['fields']=$DataFields;
-				$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']." where ".$WhereCondition;		
-				
-				$resval=$this->FrmRptModel->create_form($rs,$id); 
-
-				foreach($resval['header'][0]['fields'] as $key1=>$flds)
-				{
-						foreach($flds as $key2=>$fld)
-						{
-							$save_details[$fld['InputName']]['LabelName']=$fld['LabelName'];          
-							$save_details[$fld['InputName']]['Inputvalue']=$fld['Inputvalue'];
-							$save_details[$fld['InputName']]['Inputvalue_id']=$fld['Inputvalue_id'];
-
-							if($key2=='product_id')
-							{
-								$whr=" id=".$fld['Inputvalue_id'];	
-								$pname=$this->projectmodel->GetSingleVal('productname','productmstr',$whr);
-
-								$save_details[$fld['InputName']]['LabelName']=$fld['LabelName'];    
-								$save_details[$fld['InputName']]['Inputvalue']=$pname;
-								$save_details[$fld['InputName']]['Inputvalue_id']=$fld['Inputvalue_id'];
-							}
-
-						}							
-						if($save_details['id']['Inputvalue']>0){array_push($output,$save_details);}
-				}
-				//$return_data['header']=$resval;		
-
-				$return_data['header']=$output;
-
-				header('Access-Control-Allow-Origin: *');
-				header("Content-Type: application/json");
-				echo json_encode($return_data);
-
-			}
-	
-			//DONE
-			if($subtype=='dtlist_view')
-			{	
-
-				$someArray=array();
-
-				$detail_id=$form_data1->id;
-				$someArray = json_decode($form_data1->raw_data, true);
-
-
-				 $indx=1;
-				
-				//  $someArray[0]['header'][$indx]['fields'][0]['id']['Inputvalue_id']=$detail_id;
-				//  $someArray[0]['header'][$indx]['fields'][0]['product_id']['Inputvalue']=$detail_id;
-				//  $someArray[0]['header'][$indx]['fields'][0]['batchno']['Inputvalue']=$detail_id;
-
-				//id,product_id,batchno,mrp,qnty,rate,subtotal,disc_per,disc_per2,disc_amt,taxable_amt,tax_ledger_id,taxamt,net_amt
-
-				 $records="select * from invoice_details where id=".$detail_id;
-				 $records = $this->projectmodel->get_records_from_sql($records);
-				 foreach ($records as $record)
-				 {
-
-					$someArray[0]['header'][$indx]['fields'][0]['id']['Inputvalue_id']=$record->id;
-					$someArray[0]['header'][$indx]['fields'][0]['product_id']['Inputvalue_id']=$record->product_id;
-					
-					$whr="id=".$record->product_id;
-					$val=$this->projectmodel->GetSingleVal('productname','productmstr',$whr);					
-					$someArray[0]['header'][$indx]['fields'][0]['product_id']['Inputvalue']=$val;
-
-					$someArray[0]['header'][$indx]['fields'][0]['batchno']['Inputvalue']=$record->batchno;
-					$someArray[0]['header'][$indx]['fields'][0]['mrp']['Inputvalue']=$record->mrp;
-					$someArray[0]['header'][$indx]['fields'][0]['qnty']['Inputvalue']=$record->qnty;
-					$someArray[0]['header'][$indx]['fields'][0]['rate']['Inputvalue']=$record->rate;
-					$someArray[0]['header'][$indx]['fields'][0]['subtotal']['Inputvalue']=$record->subtotal;
-
-				 }
-
-
-
-				// $indx=1;
-				// foreach($someArray[0]['header'][$indx]['fields'][0] as $key1=>$values)
-				// {
-										
-				// 	if($someArray[0]['header'][$indx]['fields'][0][$key1]['datafields']<>'')
-				// 	{
-				// 		$whr=" id=".$detail_id;	
-				// 		$Inputvalue_id=$this->projectmodel->GetSingleVal($key1,'invoice_details',$whr);
-				// 		$someArray[0]['header'][$indx]['fields'][0][$key1]['Inputvalue_id']=$Inputvalue_id;
-
-				// 		$MainTable=$someArray[0]['header'][$indx]['fields'][0][$key1]['MainTable'];
-				// 		$LinkField=$someArray[0]['header'][$indx]['fields'][0][$key1]['LinkField'];
-						
-				// 		$whr=" id=".$Inputvalue_id;	
-				// 		$Inputvalue=$this->projectmodel->GetSingleVal($LinkField,$MainTable,$whr);
-				// 		$someArray[0]['header'][$indx]['fields'][0][$key1]['Inputvalue']=$Inputvalue;
-
-				// 	}
-				// 	else
-				// 	{
-
-				// 		$whr=" id=".$detail_id;	
-				// 		$Inputvalue=$this->projectmodel->GetSingleVal($key1,'invoice_details',$whr);
-				// 		$someArray[0]['header'][$indx]['fields'][0][$key1]['Inputvalue']=$Inputvalue;
-				// 	}
-										
-							
-				// }
-
-				$this->FrmRptModel->tranfer_data($someArray);
-
-			}
-
-			//DONE
-			if($subtype=='dtlist_total')
-			{
-				
-				$id=$form_data1->id;	
-
-				$dtlist_total['id']=$id;
-				$records="select * from invoice_summary where id=".$id;
-				$records = $this->projectmodel->get_records_from_sql($records);
-				foreach ($records as $fieldIndex=>$record)
-				{	
-						$dtlist_total['total_amt']=$record->total_amt;
-						$dtlist_total['tot_discount']=$record->tot_discount;
-						$dtlist_total['Taxable_Amt']=$record->total_amt-$record->tot_discount;
-						$dtlist_total['totvatamt']=$record->totvatamt;
-						$dtlist_total['Net_Amt']=$record->grandtot;
-
-						//$dtlist_total['total_paid']=$record->total_paid;
-						//$dtlist_total['total_due']=$record->total_due;
-
-				}
-				$output['header']=$dtlist_total;
-
-				$this->FrmRptModel->tranfer_data($output);				
-
-			}
-
-			if($subtype=='other_search')
-			{			
-										
-					$someArray=array();
-
-					$header_index=$form_data1->header_index;
-					$field_index=$form_data1->field_index;
-					$searchelement=$form_data1->searchelement;
-					$someArray = json_decode($form_data1->raw_data, true);
-
-
-					if($searchelement=='tbl_party_id')
-					{							
-						
-						$tbl_party_id=$someArray[0]['header'][0]['fields'][0]['tbl_party_id']['Inputvalue_id'];
-					
-						// $sql="select a.id FieldID,a.productname FieldVal,b.available_qnty,a.Synonym,a.tax_ledger_id
-						// from productmstr a, product_balance_companywise b 
-						// where a.id=b.product_id and a.company_id=".$company_id;
-						//$company_id=1;
-
-						// $sql="select a.id FieldID,a.productname FieldVal,b.available_qnty,a.Synonym,a.tax_ledger_id
-						// from productmstr a, product_balance_companywise b 
-						// where a.id=b.product_id and b.company_id=".$company_id;
-						// $datafields_array =$this->projectmodel->get_records_from_sql($sql);
-						// $someArray[0]["header"][1]['fields'][0]['product_id']['datafields']=
-						// json_decode(json_encode($datafields_array), true);
-
-
-						$sql="select a.id FieldID,a.productname FieldVal,a.available_qnty,
-						a.tax_ledger_id,b.name brandname
-						from productmstr a, misc_mstr b 
-						where a.brand_id=b.id ";
-						$datafields_array =$this->projectmodel->get_records_from_sql($sql);
-						$someArray[0]["header"][1]['fields'][0]['product_id']['datafields']=
-						json_decode(json_encode($datafields_array), true);
-
-
-						$this->FrmRptModel->tranfer_data($someArray);
-
-					}
-
-					if($searchelement=='product_id')
-					{							
-						
-						$product_id=$someArray[0]['header'][1]['fields'][0]['product_id']['Inputvalue_id'];
-						$tbl_party_id=$someArray[0]['header'][0]['fields'][0]['tbl_party_id']['Inputvalue_id'];
-
-						//PRODUCT WISE PARTY WISE LAST SALE RATE .
-
-						// $rs = "select max(a.id) maxid from invoice_summary a,invoice_details b where a.id=b.invoice_summary_id and 
-						// b.product_id=".$product_id."  and a.tbl_party_id=".$tbl_party_id." 	and a.company_id=".$company_id ;
-						// $rs = $this->projectmodel->get_records_from_sql($rs);		
-						// $maxid=$rs[0]->maxid;
-
-						// $whr="product_id=".$product_id." and invoice_summary_id=".$maxid;
-						// $rate=$this->projectmodel->GetSingleVal('rate','invoice_details',$whr);
-						// $disc1=$this->projectmodel->GetSingleVal('disc_per','invoice_details',$whr);
-						// $disc2=$this->projectmodel->GetSingleVal('disc_per2','invoice_details',$whr);
-					
-						// $tbl_party_id=$this->projectmodel->GetSingleVal('tbl_party_id','invoice_summary','id='.$maxid);
-						// $invoice_date=$this->projectmodel->GetSingleVal('invoice_date','invoice_summary','id='.$maxid);
-						// $party_name=$this->projectmodel->GetSingleVal('acc_name','acc_group_ledgers','id='.$tbl_party_id);
-			
-						// $someArray[0]["header"][1]['fields'][0]['product_id']['validation_msg']=
-						// 'Last Sale To '.$party_name.' Date:'.$invoice_date.' @ Rs'.$rate.' Disc1= '.$disc1.'% Disc2= '.$disc2.'%';
-							
-						
-						//RATE VALIDATION
-
-						//PRODUCT WISE PARTY WISE LAST SALE RATE .
-											
-						$whr=" id=".$product_id;	
-						$tax_ledger_id=$this->projectmodel->GetSingleVal('tax_ledger_id','productmstr',$whr);
-						$someArray[0]["header"][1]['fields'][0]['tax_ledger_id']['Inputvalue_id']=$tax_ledger_id;
-
-						$whr=" id=".$tax_ledger_id;
-						$tax_ledger_name=$this->projectmodel->GetSingleVal('acc_name','acc_group_ledgers',$whr);
-						$someArray[0]["header"][1]['fields'][0]['tax_ledger_id']['Inputvalue']=$tax_ledger_name;
-						
-						$this->FrmRptModel->tranfer_data($someArray);
-
-					}
-
-					
-
-			}
-
-	}
-	
-	
-	
+	/*
 	
 	if($form_name=='invoice_credit_note')
 	{
@@ -2729,8 +3900,693 @@ public function experimental_form($datatype='',$cond=0)
 
 	}
 	
+	*/
+
 
 }
+		
+		
+	public function print_documents($doc_type='',$cond=0)
+	{
+
+		//https://stackoverflow.com/questions/8240472/printing-a-web-page-using-just-url-and-without-opening-new-window
+		
+		if($doc_type=='POS_INVOICE')
+		{
+				$this->load->library('zend');
+				$this->zend->load('Zend/Barcode');
+			
+				$barcodetext=$cond;
+				$image='BILL-'.$cond.'.png';
+				$imageResource = Zend_Barcode::factory('code128', 
+				'image', array('text'=>$barcodetext,'barThickWidth'=>6,'barThinWidth'=>2,
+				'drawText' => false), array())->draw();
+
+				imagepng($imageResource, 'uploads/'.$image);
+
+				$data_print['table_name']='invoice_summary';
+				$data_print['table_id']=$cond;		
+				//$data_print['datatype']=$datatype;
+
+				$report_path='accounts_management/report/invoice_print';
+				$this->report_page_layout_display($report_path,$data_print);
+				$sql="update invoice_summary set BILL_STATUS='BILL_PRINTED' WHERE id=".$cond;
+				$this->db->query($sql);
+				$this->accounts_model->ledger_transactions($cond,'SALE');
+				// $report_path='accounts_management/MIS_REPORTS/invoice_print_pos';
+				// $this->report_page_layout_display($report_path,$data_print);
+		}
+
+		//A4 INVOICE
+		if($doc_type=='INVOICE')
+		{
+			
+				$this->load->library('zend');
+				$this->zend->load('Zend/Barcode');
+
+				$barcodetext=$cond;
+				$image='BILL-'.$cond.'.png';
+				$imageResource = Zend_Barcode::factory('code128', 
+			'image', array('text'=>$barcodetext,'barThickWidth'=>6,'barThinWidth'=>2,
+			'drawText' => false), array())->draw();
+			
+				imagepng($imageResource, 'uploads/'.$image);
+			
+				$data_print['table_name']='invoice_summary';
+				$data_print['table_id']=$cond;		
+				//$data_print['datatype']=$datatype;
+			
+				$report_path='accounts_management/report/invoice_print_sell';
+				$this->pdf->load_view($report_path, $data_print);			
+				$this->pdf->render();
+				$this->pdf->stream("uploads/invoice.pdf");				
+				//write_file("uploads/invoice.pdf", $this->pdf->output());				
+		}	
+
+		
+		if($doc_type=='BARCODE_PRINT')
+		{
+			$this->load->library('zend');
+			$this->zend->load('Zend/Barcode');
+			$cnt=1;
+			$sql="select * from  invoice_details where  invoice_summary_id =".$cond;
+			$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
+			foreach ($rowrecord as $row1)
+			{
+					$barcode=$row1->id;
+					$image=$row1->id.'.png';					
+				//DOCUMENT
+				//https://docs.zendframework.com/zend-barcode/objects/								
+				$barcodeOptions = array('text' => $barcode, 'barHeight'=> 16,'barThickWidth'=>6,'barThinWidth'=>2,'drawText' => false);				
+				// No required options
+				$rendererOptions = array();				
+				// Draw the barcode in a new image,
+				$imageResource = Zend_Barcode::factory('code128', 'image', $barcodeOptions, $rendererOptions)->draw();				 				 					 
+				/* $imageResource = Zend_Barcode::factory('code128','image', array('text'=>$barcode,'barHeight' => 30,'drawText' => false), array())->draw();*/				 
+					imagepng($imageResource, 'uploads/purchase_barcode/'.$image);	
+					$cnt=$cnt+1;	
+			}
+
+				$report_path='accounts_management/report/print_purchase_barcode';
+				$data_print['table_name']='invoice_summary';
+				$data_print['table_id']=$cond;		
+				$data_print['PRINTTYPE']=$doc_type;			
+				$this->report_page_layout_display($report_path,$data_print);
+
+		}	
+
+		
+
+	}	
+
+
+	public function print_all($cond,$PRINTTYPE='BARCODE')
+	{
+			
+		$this->login_validate();
+			
+		if($PRINTTYPE=='BARCODE')
+		{
+			$this->load->library('zend');
+			$this->zend->load('Zend/Barcode');
+			$cnt=1;
+			$sql="select * from  invoice_details where  invoice_summary_id =".$cond;
+			$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
+			foreach ($rowrecord as $row1)
+			{
+					$barcode=$row1->id;
+					$image=$row1->id.'.png';					
+				//DOCUMENT
+				//https://docs.zendframework.com/zend-barcode/objects/								
+				$barcodeOptions = array('text' => $barcode, 'barHeight'=> 16,'barThickWidth'=>6,'barThinWidth'=>2,'drawText' => false);				
+				// No required options
+				$rendererOptions = array();				
+				// Draw the barcode in a new image,
+				$imageResource = Zend_Barcode::factory('code128', 'image', $barcodeOptions, $rendererOptions)->draw();				 				 					 
+				/* $imageResource = Zend_Barcode::factory('code128','image', array('text'=>$barcode,'barHeight' => 30,'drawText' => false), array())->draw();*/				 
+					imagepng($imageResource, 'uploads/purchase_barcode/'.$image);	
+					$cnt=$cnt+1;	
+			}
+
+				// print lable section
+				//http://biostall.com/codeigniter-labels-library/
+
+				//$this->load->library('labels');        
+				// Specify the format  
+				//$config['format'] = 'word';  
+				// Specify the address layout, using HTML <br /> tags to determine line breaks  
+				// The elements listed here become the address array keys (see below)  
+				//$config['layout'] = "first_name last_name<br />address_1<br />address_2<br />town<br />county<br />postcode";  
+				//$this->labels->initialize($config);  
+
+
+				$report_path='accounts_management/report/print_purchase_barcode';
+				$data_print['table_name']='invoice_summary';
+				$data_print['table_id']=$cond;		
+				$data_print['PRINTTYPE']=$PRINTTYPE;			
+				$this->report_page_layout_display($report_path,$data_print);
+
+		}	
+
+		if($PRINTTYPE=='LABEL')
+		{
+				$report_path='accounts_management/report/print_all';
+				$data_print['table_name']='invoice_summary';
+				$data_print['table_id']=$cond;		
+				$data_print['PRINTTYPE']=$PRINTTYPE;			
+				$this->report_page_layout_display($report_path,$data_print);
+				$sql="update invoice_summary set BILL_STATUS='LABEL_PRINTED' WHERE id=".$cond;
+				$this->db->query($sql);
+		}	
+				
+		
+		if($PRINTTYPE=='RECEIVE_VOUCHER' || $PRINTTYPE=='PAYMENT_VOUCHER' )
+		{
+		
+			$report_path='accounts_management/report/debit_credit_voucher';
+			$data_print['table_name']='invoice_summary';
+			$data_print['table_id']=$cond;		
+			$data_print['PRINTTYPE']=$PRINTTYPE;			
+			$this->report_page_layout_display($report_path,$data_print);
+
+		}			 
+			
+	}
+
+
+
+	public function load_page()
+	{
+		$this->login_validate();	
+		$data_list['pageId'] = $this->input->post('pageId');		
+		$this->load->view('ActiveReport/TemplateForm', $data_list);
+		print_r($data_list);
+		//redirect('Project_controller/TempleteForm/24/list/');
+	}
+	
+
+	public function urgent_codes($frmrpttemplatehdrID=0)
+	{
+		
+		
+			$getprt=printer_list(PRINTER_ENUM_LOCAL| PRINTER_ENUM_SHARED );
+			$printers = serialize($getprt);
+			$printers=unserialize($printers);
+			print_r($printers);
+			// echo '<select name="printers">';
+			// foreach ($printers as $PrintDest)
+			// echo "<option value=".$PrintDest["NAME"].">".explode(",",$PrintDest["DESCRIPTION"])[1]."</option>";
+			// echo '</select>';
+		
+		
+		// //update stock balance
+		// $company_id=1;
+		// // $products = "select * from  invoice_summary a, invoice_details b  
+		// // where a.id=b.invoice_summary_id and  a.status='PURCHASE'  and a.company_id=1" ;
+		// $start=2500;
+		// $end=2700;
+		// //LIMIT ".$start." , ".$end
+		
+		// $products = "select * from   invoice_details where product_id>0 and status='PURCHASE' AND `qty_available`<=0 ";
+		// $products = $this->projectmodel->get_records_from_sql($products);
+		// if(count($products)>0){foreach ($products as $key=>$product)
+		// {		
+		// 	$tot_purchase=$product->qnty;
+		// 	$tot_sale=0;
+
+		// 	// if($product->product_id>0)
+		// 	// {
+		// 		$records = "select sum(qnty) totqnty from invoice_details 
+		// 		where product_id=".$product->product_id." and PURCHASEID='".$product->id."' and  status='SALE' " ;
+		// 		$records = $this->projectmodel->get_records_from_sql($records);
+		// 		$tot_sale=$records[0]->totqnty;
+
+		// 		//if(count($records)>0){foreach ($records as $record){$tot_sale=$record->totqnty;}}
+		// 	// }
+			
+
+		// 	$inv_details['qty_available']=$tot_purchase-$tot_sale;
+
+
+		// 	//echo 'product :'.$product->product_id.' batch :'.$product->batchno.' Available: '.$inv_details['qty_available'];
+		// 	//echo '<br>';
+
+		// 	$this->projectmodel->save_records_model($product->id,'invoice_details',$inv_details);
+			
+		// 	echo 'item :'.$key.'Updated';
+
+		// 	// $inv_details['qty_available']=$tot_purchase-$tot_sale+$SELL_RTN-$PRUCHAR_RTN-$tot_sample;
+			
+		// 	// $this->save_records_model($product->id,'invoice_details',$inv_details);
+						
+		// 	// $this->projectmodel->product_update($product->product_id,'productmstr',$company_id);
+		// 	// $PURCHASEID=$product->PURCHASEID;
+		// 	// $status=$product->status;
+
+		// 	// if( $status=='PURCHASE')			
+		// 	// {$this->projectmodel->product_update($product->id,'invoice_details');}
+		// 	// else
+		// 	// {$this->projectmodel->product_update($PURCHASEID,'invoice_details');}	
+
+		// }}
+
+		// echo "Process done";
+	}
+
+
+public function TemplateReports($frmrpttemplatehdrID=0)
+{
+	$this->login_validate();
+	if($frmrpttemplatehdrID==29) //STOCK REPORT
+	{	
+	  $data['GridHeader']= array("SysId#-left", "product_id-left","product_name-left","totqnty-left",
+	  "batchno-left","exp_monyr-left","mfg_monyr-left","sale rate-left","MRP-left");
+	}
+	   
+   $data['frmrpttemplatehdrID']=$frmrpttemplatehdrID;
+   
+   $records="select * from frmrpttemplatehdr where id=".$frmrpttemplatehdrID;
+   $records = $this->projectmodel->get_records_from_sql($records);	
+   foreach ($records as $record)
+   {	
+		$data['DisplayGrid']=$record->DisplayGrid;
+		$data['NEWENTRYBUTTON']=$record->NEWENTRYBUTTON;
+		
+		$data['FormRptName']=$record->FormRptName;
+		$data['DataFields']=$record->DataFields;
+		$data['TableName']=$record->TableName;
+		$data['WhereCondition']=$record->WhereCondition;
+		$data['OrderBy']=$record->OrderBy;	
+		$ControllerFunctionLink=$record->ControllerFunctionLink.$frmrpttemplatehdrID.'/';	 
+		$data['tran_link'] = ADMIN_BASE_URL.$ControllerFunctionLink; 
+		$view_path_name=$record->ViewPath; 
+		$data['body']=$this->projectmodel->Activequery($data,'LIST');
+   }
+		   
+   $view_path_name=$view_path_name;
+   $this->page_layout_display($view_path_name,$data);
+}
+
+
+//TEMPLATE FORM REPORT IN ANGULARJS
+
+
+public function load_form_report($TranPageName='',$pagetype='',$form_id=0)
+{
+
+	$output =$data= array();
+	$this->session->set_userdata('form_id', $form_id);
+	$this->session->set_userdata('TranPageName', $TranPageName);
+
+	if($pagetype=='acc_tran')
+	{	$view_path_name='accounts_management/transaction/'.$TranPageName;}
+	else if($pagetype=='report')
+	{
+		$TranPageName='experimental_report';
+		$view_path_name='accounts_management/reports/'.$TranPageName;
+	}
+	else if($pagetype=='master_form')
+	{
+		$TranPageName='template_master_form';
+		$view_path_name='accounts_management/transaction/'.$TranPageName;
+
+		$whr=" id=".$form_id;	
+		$TranPageName=$this->projectmodel->GetSingleVal('FormRptName','frmrpttemplatehdr',$whr);		
+		$this->session->set_userdata('TranPageName', $TranPageName);
+
+	}
+	
+	else
+	{$view_path_name='accounts_management/master/'.$TranPageName;}
+
+	$this->page_layout_display($view_path_name,$data);		
+	
+}
+
+
+
+public function product_master($datatype='',$group_id=0,$brand_id=0,$search='')
+{
+
+	$company_id=$this->session->userdata('COMP_ID');
+	$output=array();
+
+		if($datatype=='SAVE')
+		{
+			$id_header=$id_detail='';
+			$data=$return_data=$save_details=$save_hdr=array();				
+			$RAW_DATA=file_get_contents("php://input");
+			$form_data=json_decode(file_get_contents("php://input"));
+			$json_array_count=sizeof($form_data);
+						
+			//$id_header=$form_data[0]->id_header;			
+
+			$count=sizeof($form_data[0]->list_of_values);		
+			for($cnt=0;$cnt<=$count-1;$cnt++)
+			{			
+					$id_detail=$form_data[0]->list_of_values[$cnt]->id_detail;
+					$save_details['productname']=$form_data[0]->list_of_values[$cnt]->productname;	
+					$save_details['group_id']=$form_data[0]->list_of_values[$cnt]->group_id;	
+					$save_details['brand_id']=$form_data[0]->list_of_values[$cnt]->brand_id;	
+					$save_details['sell_discount']=$form_data[0]->list_of_values[$cnt]->sell_discount;	
+					$save_details['mrp']=$form_data[0]->list_of_values[$cnt]->mrp;	
+					$save_details['spl_discount']=$form_data[0]->list_of_values[$cnt]->spl_discount;		
+					$save_details['sell_price']=
+					$save_details['mrp']-($save_details['mrp']*$save_details['sell_discount']/100);	
+					$save_details['hsncode']=$form_data[0]->list_of_values[$cnt]->hsncode;	
+					$save_details['tax_ledger_id']=$form_data[0]->list_of_values[$cnt]->tax_ledger_id;	
+					$save_details['active_inactive']=$form_data[0]->list_of_values[$cnt]->active_inactive;	
+					$save_details['label_print']=$form_data[0]->list_of_values[$cnt]->label_print;
+					$save_details['minimum_stock']=$form_data[0]->list_of_values[$cnt]->minimum_stock;
+					$save_details['exp_mmyy']=$form_data[0]->list_of_values[$cnt]->exp_mmyy;
+					$save_details['available_qnty']=$form_data[0]->list_of_values[$cnt]->available_qnty;
+					
+					if($id_detail>0)
+					{$this->projectmodel->save_records_model($id_detail,'productmstr',$save_details);	}
+					else
+					{
+						$this->projectmodel->save_records_model($id_detail,'productmstr',$save_details);
+						$id_detail=$this->db->insert_id();
+					}
+					
+
+
+					//COMPANY WISE MANAGE		
+					$product_balance_companywise_id='';			
+					$records = "select * from product_balance_companywise where company_id=".$company_id." and product_id=".$id_detail ;
+					$records = $this->projectmodel->get_records_from_sql($records);	
+					foreach ($records as $record)
+					{ $product_balance_companywise_id=$record->id;  }
+
+
+					$save_comp['product_id']=$id_detail;
+					$save_comp['company_id']=$company_id;
+					$save_comp['minimum_stock']=$form_data[0]->list_of_values[$cnt]->minimum_stock;
+					$save_comp['available_qnty']=$form_data[0]->list_of_values[$cnt]->available_qnty;
+
+					$this->projectmodel->save_records_model($product_balance_companywise_id,'product_balance_companywise',$save_comp);
+					//COMPANY WISE MANAGE		
+						
+			}
+
+			$return_data['msg']=$count." Record(s) has been saved!";
+			
+			header('Access-Control-Allow-Origin: *');
+			header("Content-Type: application/json");
+			echo json_encode($return_data);
+
+		}
+
+
+
+
+		if($datatype=='VIEWALLVALUE')
+		{
+						
+					
+				
+				$fieldIndex	=0;
+				$return_data['group_id']=$group_id;
+				$return_data['brand_id']=$brand_id;
+
+				$return_data['list_of_values'][$fieldIndex]['id_detail']='';
+				$return_data['list_of_values'][$fieldIndex]['productname']='';
+				$return_data['list_of_values'][$fieldIndex]['group_id']=$group_id;
+				$return_data['list_of_values'][$fieldIndex]['brand_id']=$brand_id;
+				$return_data['list_of_values'][$fieldIndex]['sell_discount']='';
+				$return_data['list_of_values'][$fieldIndex]['mrp']='';
+				$return_data['list_of_values'][$fieldIndex]['spl_discount']='';
+				
+				$return_data['list_of_values'][$fieldIndex]['hsncode']='';
+				$return_data['list_of_values'][$fieldIndex]['tax_ledger_id']='';
+				$return_data['list_of_values'][$fieldIndex]['active_inactive']='';
+				$return_data['list_of_values'][$fieldIndex]['minimum_stock']='';
+				$return_data['list_of_values'][$fieldIndex]['exp_mmyy']='';
+				
+				if($search=='')
+				{$whr="group_id=".$group_id." and brand_id=".$brand_id;}
+				else
+				{$whr="group_id=".$group_id." and brand_id=".$brand_id." and productname like '%".$search."%'";}
+				
+				$rs_result=$this->projectmodel->GetMultipleVal('*','productmstr',$whr ,' productname');
+				$json_array_count=sizeof($rs_result);	 
+				for($fieldIndex=0;$fieldIndex<$json_array_count;$fieldIndex++)
+				{
+					$return_data['list_of_values'][$fieldIndex]['id_detail']=$rs_result[$fieldIndex]['id'];
+					$return_data['list_of_values'][$fieldIndex]['productname']=trim($rs_result[$fieldIndex]['productname']);
+					$return_data['list_of_values'][$fieldIndex]['group_id']=$rs_result[$fieldIndex]['group_id'];
+					$return_data['list_of_values'][$fieldIndex]['brand_id']=$rs_result[$fieldIndex]['brand_id'];
+					$return_data['list_of_values'][$fieldIndex]['sell_discount']=$rs_result[$fieldIndex]['sell_discount'];
+					$return_data['list_of_values'][$fieldIndex]['mrp']=$rs_result[$fieldIndex]['mrp'];
+					$return_data['list_of_values'][$fieldIndex]['spl_discount']=$rs_result[$fieldIndex]['spl_discount'];
+					$return_data['list_of_values'][$fieldIndex]['label_print']=$rs_result[$fieldIndex]['label_print'];
+					$return_data['list_of_values'][$fieldIndex]['exp_mmyy']=$rs_result[$fieldIndex]['exp_mmyy'];
+					//$return_data['list_of_values'][$fieldIndex]['available_qnty']=$rs_result[$fieldIndex]['available_qnty'];
+					//$return_data['list_of_values'][$fieldIndex]['minimum_stock']=$rs_result[$fieldIndex]['minimum_stock'];
+
+					$whr=" product_id=".$rs_result[$fieldIndex]['id']." and company_id=".$company_id;	
+					$return_data['list_of_values'][$fieldIndex]['available_qnty']=
+					$this->projectmodel->GetSingleVal('available_qnty','product_balance_companywise',$whr);
+					$return_data['list_of_values'][$fieldIndex]['minimum_stock']=
+					$this->projectmodel->GetSingleVal('minimum_stock','product_balance_companywise',$whr);
+
+					$return_data['list_of_values'][$fieldIndex]['hsncode']=$rs_result[$fieldIndex]['hsncode'];
+					$return_data['list_of_values'][$fieldIndex]['tax_ledger_id']=$rs_result[$fieldIndex]['tax_ledger_id'];
+					$return_data['list_of_values'][$fieldIndex]['active_inactive']=$rs_result[$fieldIndex]['active_inactive'];
+				
+				}
+			
+				array_push($output,$return_data);
+				header('Access-Control-Allow-Origin: *');
+				header("Content-Type: application/json");
+				echo json_encode($output);
+		}
+
+		
+	
+
+}
+
+
+
+public function list_of_values($datatype='',$cond=0)
+{
+
+
+	$output=array();
+
+		if($datatype=='SAVE')
+		{
+			$id_header=$id_detail='';
+			$data=$return_data=$save_details=$save_hdr=array();				
+			$RAW_DATA=file_get_contents("php://input");
+			$form_data=json_decode(file_get_contents("php://input"));
+			$json_array_count=sizeof($form_data);
+
+						
+			$id_header=$form_data[0]->id_header;			
+
+			$count=sizeof($form_data[0]->list_of_values);		
+			for($cnt=0;$cnt<=$count-1;$cnt++)
+			{			
+					$id_detail=$form_data[0]->list_of_values[$cnt]->id_detail;
+					$save_details['parent_id']=$id_header;
+					$save_details['Status']='LIST';
+					$save_details['active_inactive']=$form_data[0]->list_of_values[$cnt]->active_inactive;
+					$save_details['FieldID']=$save_details['FieldVal']=$form_data[0]->list_of_values[$cnt]->FieldVal;	
+					$save_details['comment']=$form_data[0]->list_of_values[$cnt]->comment;	
+					$save_details['display_order']=$form_data[0]->list_of_values[$cnt]->display_order;	
+					
+					$this->projectmodel->save_records_model($id_detail,'frmrptgeneralmaster',$save_details);						
+						
+			}
+
+			$return_data['id_header']=$id_header;
+			
+			header('Access-Control-Allow-Origin: *');
+			header("Content-Type: application/json");
+			echo json_encode($return_data);
+
+		}
+
+
+
+
+		if($datatype=='VIEWALLVALUE')
+		{
+						
+				$acc_tran_details['id_header']=$cond;
+
+				//delete array elements				
+				// for($bil=0;$bil<=300-1;$bil++)
+				// {unset($acc_tran_details['list_of_values'][$bil]);}
+				
+					$arraindx=0;
+					$acc_tran_details['list_of_values'][$arraindx]['id_detail']='';
+					$acc_tran_details['list_of_values'][$arraindx]['FieldVal']=0;				
+					$acc_tran_details['list_of_values'][$arraindx]['comment']='';								
+					$acc_tran_details['list_of_values'][$arraindx]['display_order']='';
+					$acc_tran_details['list_of_values'][$arraindx]['active_inactive']='';		
+				
+					if($cond>0)
+					{
+						$sql_bills="select * from  frmrptgeneralmaster where 	parent_id=".$cond." ORDER BY id";					
+						$sql_bills = $this->projectmodel->get_records_from_sql($sql_bills);	
+						foreach ($sql_bills as $sql_bill)
+						{				
+							$acc_tran_details['list_of_values'][$arraindx]['id_detail']=$sql_bill->id;
+							$acc_tran_details['list_of_values'][$arraindx]['FieldVal']=$sql_bill->FieldVal;		
+							$acc_tran_details['list_of_values'][$arraindx]['comment']=$sql_bill->comment;						
+							$acc_tran_details['list_of_values'][$arraindx]['display_order']=$sql_bill->display_order;
+							$acc_tran_details['list_of_values'][$arraindx]['active_inactive']=$sql_bill->active_inactive;
+
+							$arraindx=$arraindx+1;
+						}
+					}
+			
+					array_push($output,$acc_tran_details);
+					header('Access-Control-Allow-Origin: *');
+					header("Content-Type: application/json");
+					echo json_encode($output);
+		}
+
+		
+	
+
+}
+
+
+
+
+
+public function product_rate_master($datatype='',$cond=0)
+{
+	
+
+	$return=$dtlist_total=$output=array();	
+
+	$form_data1=json_decode(file_get_contents("php://input"));	
+	$subtype=$form_data1->subtype;
+	
+
+	if($subtype=='PRODUCT_GROUP')
+	{
+		$id=$form_data1->id;
+
+		$records="select * from misc_mstr where mstr_type='PRODUCT_GROUP' ";
+		$records = $this->projectmodel->get_records_from_sql($records);
+		foreach ($records as $fieldIndex=>$record)
+		{	
+			$dtlist_total['id']=$record->id;
+			$dtlist_total['name']=$record->name;
+			$dtlist_total['name_value']=$record->name_value;
+			array_push($output,$dtlist_total);
+		}
+		
+		 $return['group_list']=$output;
+		$this->FrmRptModel->tranfer_data($return);			
+	}
+
+	if($subtype=='rate_list')
+	{
+		$id=$form_data1->id;
+
+		//MAIN GROUP 
+		$whr=" id=".$id;
+		$main_grp_id=$this->projectmodel->GetSingleVal('parent_id','misc_mstr',$whr);
+
+		$dtlist_total['GROUP_ID']=$id;
+
+		//POTENCY 
+		$potency="select * from misc_mstr where parent_id=".$main_grp_id." 
+		 and mstr_type='POTENCY' and status='ACTIVE'";
+		$potency = $this->projectmodel->get_records_from_sql($potency);
+		foreach ($potency as $potencyIndex=>$pot)
+		{			
+			$dtlist_total['POTENCY_ID']=$pot->id;
+			$dtlist_total['POTENCY_NAME']=$pot->name;
+
+			$packs="select * from misc_mstr where parent_id=".$main_grp_id." 
+			and mstr_type='PACK_SIZE' and status='ACTIVE'";
+			$packs = $this->projectmodel->get_records_from_sql($packs);
+			foreach ($packs as $packIndex=>$pack)
+			{	
+				$dtlist_total['PACK_ID']=$pack->id;
+				$dtlist_total['PACK_NAME']=$pack->name;
+				$product_rate_mstr_id=$RATE=$MRP='';
+				$dose2_mrp=$dose2_rate=$dose3_mrp=$dose3_rate=$dose4_mrp=$dose4_rate=$dose5_mrp=$dose5_rate='';
+				$whr=" GROUP_ID=".$id." and POTENCY_ID=".$pot->id." and PACK_ID=".$pack->id;	
+				$product_rate_mstr_id=$this->projectmodel->GetSingleVal('id','product_rate_mstr',$whr);
+				$RATE=$this->projectmodel->GetSingleVal('RATE','product_rate_mstr',$whr);
+				$MRP=$this->projectmodel->GetSingleVal('MRP','product_rate_mstr',$whr);
+
+				$dose2_mrp=$this->projectmodel->GetSingleVal('dose2_mrp','product_rate_mstr',$whr);
+				$dose2_rate=$this->projectmodel->GetSingleVal('dose2_rate','product_rate_mstr',$whr);
+				$dose3_mrp=$this->projectmodel->GetSingleVal('dose3_mrp','product_rate_mstr',$whr);
+				$dose3_rate=$this->projectmodel->GetSingleVal('dose3_rate','product_rate_mstr',$whr);
+				$dose4_mrp=$this->projectmodel->GetSingleVal('dose4_mrp','product_rate_mstr',$whr);
+				$dose4_rate=$this->projectmodel->GetSingleVal('dose4_rate','product_rate_mstr',$whr);
+				$dose5_mrp=$this->projectmodel->GetSingleVal('dose5_mrp','product_rate_mstr',$whr);
+				$dose5_rate=$this->projectmodel->GetSingleVal('dose5_rate','product_rate_mstr',$whr);
+
+				$dtlist_total['id']=$product_rate_mstr_id;
+				$dtlist_total['RATE']=$RATE;
+				$dtlist_total['MRP']=$MRP;
+
+				$dtlist_total['dose2_rate']=$dose2_rate;
+				$dtlist_total['dose2_mrp']=$dose2_mrp;
+				
+				$dtlist_total['dose3_rate']=$dose3_rate;
+				$dtlist_total['dose3_mrp']=$dose3_mrp;
+				
+				$dtlist_total['dose4_rate']=$dose4_rate;
+				$dtlist_total['dose4_mrp']=$dose4_mrp;
+				
+				$dtlist_total['dose5_rate']=$dose5_rate;
+				$dtlist_total['dose5_mrp']=$dose5_mrp;
+				
+
+				array_push($output,$dtlist_total);
+			}
+		}
+
+		$return['header']=array('Potency','Pack Size','Rate','MRP','Dos2-MRP','Dos2-Rate','Dos3-MRP','Dos3-Rate','Dos4-MRP','Dos4-Rate','Dos5>=MRP','Dos5>=Rate');
+		$return['body']=$output;
+		$this->FrmRptModel->tranfer_data($return);			
+	}
+	
+
+	if($subtype=='SAVE_DATA')
+	{
+		$save_details2['test_data']=$raw_data=$form_data1->raw_data;
+		$raw_data=json_decode($raw_data);
+		$raw_data=json_decode(json_encode($raw_data), true );	
+		
+		foreach($raw_data as $key1=>$raw_data1)
+		 {
+			$id=$raw_data1['id'];
+			$save_data['GROUP_ID']=$raw_data1['GROUP_ID'];
+			$save_data['POTENCY_ID']=$raw_data1['POTENCY_ID'];
+			$save_data['PACK_ID']=$raw_data1['PACK_ID'];
+			$save_data['RATE']=$raw_data1['RATE'];
+			$save_data['MRP']=$raw_data1['MRP'];
+
+			$save_data['dose2_mrp']=$raw_data1['dose2_mrp'];
+			$save_data['dose2_rate']=$raw_data1['dose2_rate'];
+			$save_data['dose3_mrp']=$raw_data1['dose3_mrp'];
+			$save_data['dose3_rate']=$raw_data1['dose3_rate'];
+			$save_data['dose4_mrp']=$raw_data1['dose4_mrp'];
+			$save_data['dose4_rate']=$raw_data1['dose4_rate'];
+			$save_data['dose5_mrp']=$raw_data1['dose5_mrp'];
+			$save_data['dose5_rate']=$raw_data1['dose5_rate'];
+
+			$this->projectmodel->save_records_model($id,'product_rate_mstr',$save_data);						
+		 }	
+
+	}
+
+
+}	
 
 
 public function form_view($form_name,$id)
@@ -2786,6 +4642,53 @@ public function form_view($form_name,$id)
 
 	}	
 
+	if($form_name=='invoice_entry_wholesale')
+	{
+
+		$indx=0;
+		$form_id=45;
+		$whr=" id=".$form_id;	
+		$DataFields=$this->projectmodel->GetSingleVal('DataFields','frmrpttemplatehdr',$whr);	
+		$DataFields2=$this->projectmodel->GetSingleVal('DataFields2','frmrpttemplatehdr',$whr);	
+		$DataFields3=$this->projectmodel->GetSingleVal('DataFields3','frmrpttemplatehdr',$whr);	
+		$DataFields4=$this->projectmodel->GetSingleVal('DataFields4','frmrpttemplatehdr',$whr);	
+		$DataFields5=$this->projectmodel->GetSingleVal('DataFields5','frmrpttemplatehdr',$whr);	
+		$TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);	
+		$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
+		$rs[$indx]['section_type']=$section_type;	
+		$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
+		$rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
+		$rs[$indx]['fields']=$DataFields;
+		$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']." where id=".$id;
+
+
+
+		$indx=1;
+		$form_id=46;
+		$invoice_summary_id=$id;
+		$whr=" id=".$form_id;	
+		$DataFields=$this->projectmodel->GetSingleVal('DataFields','frmrpttemplatehdr',$whr);
+		$TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);	
+		$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
+		$rs[$indx]['section_type']='GRID_ENTRY';		
+		$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
+		$rs[$indx]['id']=0;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
+		//	$rs[$indx]['fields']=$DataFields.$setting['segments'];
+		$rs[$indx]['fields']=$DataFields;
+		$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']."
+		 where invoice_summary_id=".$invoice_summary_id;
+
+
+		$form_structure=$this->FrmRptModel->create_form($rs,$id);
+		$form_structure=$this->FrmRptModel->re_arrange_input_index($form_structure);
+		//$form_structure=$this->projectmodel->other_setting($form_structure,$form_name);
+		
+		
+		return $form_structure;
+
+
+	}
+
 
 	if($form_name=='purchase_entry')
 	{
@@ -2831,11 +4734,54 @@ public function form_view($form_name,$id)
 			//$form_structure=$this->projectmodel->other_setting($form_structure,$form_name);
 			
 			return $form_structure;
-
-
-
 	}
 
+	if($form_name=='issue_entry')
+	{
+			$form_summary_id=47;
+			$form_detail_id=48;
+
+			$indx=0;
+			$form_id=$form_summary_id;
+			$whr=" id=".$form_id;	
+			$DataFields=$this->projectmodel->GetSingleVal('DataFields','frmrpttemplatehdr',$whr);	
+			$DataFields2=$this->projectmodel->GetSingleVal('DataFields2','frmrpttemplatehdr',$whr);	
+			$DataFields3=$this->projectmodel->GetSingleVal('DataFields3','frmrpttemplatehdr',$whr);	
+			$DataFields4=$this->projectmodel->GetSingleVal('DataFields4','frmrpttemplatehdr',$whr);	
+			$DataFields5=$this->projectmodel->GetSingleVal('DataFields5','frmrpttemplatehdr',$whr);	
+			$TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);	
+			$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
+			$rs[$indx]['section_type']=$section_type;	
+			$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
+			$rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
+			$rs[$indx]['fields']=$DataFields;
+			$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']." where id=".$id;
+
+
+
+			$indx=1;
+			$form_id=$form_detail_id;
+			$invoice_summary_id=$id;
+			$whr=" id=".$form_id;	
+			$DataFields=$this->projectmodel->GetSingleVal('DataFields','frmrpttemplatehdr',$whr);
+			$TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);	
+			$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
+			$rs[$indx]['section_type']='GRID_ENTRY';		
+			$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
+			$rs[$indx]['id']=0;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
+			//	$rs[$indx]['fields']=$DataFields.$setting['segments'];
+			$rs[$indx]['fields']=$DataFields;
+			$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']."
+			where invoice_summary_id=".$invoice_summary_id;
+
+
+			$form_structure=$this->FrmRptModel->create_form($rs,$id);
+			$form_structure=$this->FrmRptModel->re_arrange_input_index($form_structure);
+			//$form_structure=$this->projectmodel->other_setting($form_structure,$form_name);
+			
+			return $form_structure;
+
+	}
 
 	if($form_name=='invoice_credit_note')
 	{
@@ -3520,33 +5466,31 @@ public function Master_upload()
 	$this->login_validate();
 	$data=array();
 	
-	// insert into product master
-	/*$sql_led="select product_id,tax_ledger_id,HSNCODE	from import_product_batch_data ";			
-	$rowledgers = $this->projectmodel->get_records_from_sql($sql_led);	
-	foreach ($rowledgers as $rowledger)
-	{ 
-		
-		 $save_hdr['tax_ledger_id']=$rowledger->tax_ledger_id;
-		 $save_hdr['hsncode']=$rowledger->HSNCODE;
-		 
-		 $this->projectmodel->save_records_model($rowledger->product_id,'productmstr',$save_hdr);
-	}*/
-	
-	//update batch 
-	
-	/*$sql_led="select * 	from import_product_batch_data ";			
-	$rowledgers = $this->projectmodel->get_records_from_sql($sql_led);	
-	foreach ($rowledgers as $rowledger)
-	{ 
-		$id=$rowledger->id;
-		$whr=" productname like '%".$rowledger->Name."%' ";
-		$save_hdr['product_id']=$this->projectmodel->GetSingleVal('id','productmstr',$whr);	
-	    $this->projectmodel->save_records_model($id,'import_product_BATCH_DATA',$save_hdr);
-	}*/
-	
+	//date("Y-m-d H:i:s", 1388516401);
 	
 		//DETAIL SETIONS
-	
+		///AGENT
+
+		// $records="select * from  patient_registration ";
+		// $records = $this->projectmodel->get_records_from_sql($records);	
+		// foreach ($records as $record)
+		// {
+		// 	//11/01/2015
+		// 	//$save_updte['REGDATE_FINAL']=substr($record->REGDATE,6,4).'-'.substr($record->REGDATE,3,2).'-'.substr($record->REGDATE,0,2);
+		// 	//$save_updte['DOB_FINAL']=substr($record->DOB,6,4).'-'.substr($record->DOB,3,2).'-'.substr($record->DOB,0,2);		
+		// 	$field_id='';
+		// 	//$save_updte['status']='ACTIVE';
+		// 	//$save_updte['ENTRY_TYPE']='AGENT';
+		// 	$sql="SELECT * FROM tbl_party 	WHERE UPPER(party_name)='".trim(strtoupper($record->AGENT_NAME))."'  "; 
+		// 	$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
+		// 	foreach ($rowrecord as $row1)
+		// 	{$field_id=$row1->id; }
+		// 	//echo ' - '.$field_id.'<br>';
+		// 	//echo $save_updte['party_name']=$record->AGENT_NAME;
+		// 	$save_updte['agent_id']=$field_id;
+		// 	$this->projectmodel->save_records_model($record->id,'patient_registration',$save_updte);
+
+		// }	
 		
 		
 	$data['DisplayGrid']='NO';
@@ -3576,6 +5520,9 @@ public function Master_upload()
 			$highestRow = $worksheet['numRows']; // ex: 14
 			$numCols = $worksheet['numCols']; // ex: 4
 			$cells = $worksheet['cells']; // the 1st row are usually the field's name
+
+
+			
 
 			//PRODUCT_MASTER -SECTION
 			if($frmrpttemplatehdrID=='PRODUCT_MASTER')
@@ -3618,7 +5565,44 @@ public function Master_upload()
 
 			}//DOCTOR_MASTER -SECTION
 
-			
+			//party_upload
+			if($frmrpttemplatehdrID=='patient_upload')
+			{	
+				
+				$this->db->query("delete from patient_registration");
+				if($temp_original=='FINAL')
+				{
+					$COLUMNS=11;									
+					//$this->db->query("delete from import_product_BATCH_DATA");
+									
+					for ($row = 2; $row <= $highestRow; ++$row) 
+					{			
+						for ($ColNo = 1; $ColNo <= $COLUMNS;  $ColNo++)
+						{	
+												
+							if( isset($cells[$row][$ColNo]) )
+							{
+								$header_name =$cells[1][$ColNo];								
+								$save_hdr[$header_name]=$cells[$row][$ColNo];
+							}
+							else
+							{								
+								$header_name =$cells[1][$ColNo];								
+								$save_hdr[$header_name]='0';							
+							}
+						}						
+							$this->projectmodel->save_records_model('','patient_registration',$save_hdr);
+					}
+				}
+
+				//$this->company_structure_model->UPDATE_MASTER('PARTY_LEDGER');	
+
+			}
+			//party_upload end
+
+
+
+
 			if($frmrpttemplatehdrID=='PRODUCT_BATCH_DATA')
 			{	
 				//temporary UPLOAD
@@ -3730,76 +5714,6 @@ public function Master_upload()
 		
 }
 
-public function print_all($cond,$PRINTTYPE='BARCODE')
-{
-		
-	$this->login_validate();
-		
-	if($PRINTTYPE=='BARCODE')
-	{
-		$this->load->library('zend');
-		$this->zend->load('Zend/Barcode');
-		$cnt=1;
-		$sql="select * from  invoice_details where  invoice_summary_id =".$cond;
-		$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
-		foreach ($rowrecord as $row1)
-		{
-				$barcode=$row1->id;
-				$image=$row1->id.'.png';					
-			//DOCUMENT
-			//https://docs.zendframework.com/zend-barcode/objects/								
-			$barcodeOptions = array('text' => $barcode, 'barHeight'=> 16,'barThickWidth'=>6,'barThinWidth'=>2,'drawText' => false);				
-			// No required options
-			$rendererOptions = array();				
-			// Draw the barcode in a new image,
-			$imageResource = Zend_Barcode::factory('code128', 'image', $barcodeOptions, $rendererOptions)->draw();				 				 					 
-			/* $imageResource = Zend_Barcode::factory('code128','image', array('text'=>$barcode,'barHeight' => 30,'drawText' => false), array())->draw();*/				 
-				imagepng($imageResource, 'uploads/purchase_barcode/'.$image);	
-				$cnt=$cnt+1;	
-		}
-
-			// print lable section
-			//http://biostall.com/codeigniter-labels-library/
-
-			//$this->load->library('labels');        
-			// Specify the format  
-			//$config['format'] = 'word';  
-			// Specify the address layout, using HTML <br /> tags to determine line breaks  
-			// The elements listed here become the address array keys (see below)  
-			//$config['layout'] = "first_name last_name<br />address_1<br />address_2<br />town<br />county<br />postcode";  
-			//$this->labels->initialize($config);  
-
-
-			$report_path='accounts_management/report/print_purchase_barcode';
-			$data_print['table_name']='invoice_summary';
-			$data_print['table_id']=$cond;		
-			$data_print['PRINTTYPE']=$PRINTTYPE;			
-			$this->report_page_layout_display($report_path,$data_print);
-
-	}	
-
-	if($PRINTTYPE=='LABEL')
-	{
-			$report_path='accounts_management/report/print_all';
-			$data_print['table_name']='invoice_summary';
-			$data_print['table_id']=$cond;		
-			$data_print['PRINTTYPE']=$PRINTTYPE;			
-			$this->report_page_layout_display($report_path,$data_print);
-	}	
-			
-	
-	if($PRINTTYPE=='RECEIVE_VOUCHER' || $PRINTTYPE=='PAYMENT_VOUCHER' )
-	{
-	
-		$report_path='accounts_management/report/debit_credit_voucher';
-		$data_print['table_name']='invoice_summary';
-		$data_print['table_id']=$cond;		
-		$data_print['PRINTTYPE']=$PRINTTYPE;			
-		$this->report_page_layout_display($report_path,$data_print);
-
-	}			 
-		
-}
 
 
 
@@ -4418,6 +6332,9 @@ public function TempleteForm($frmrpttemplatehdrID=2,$operation='',$id_header='',
 		 if($frmrpttemplatehdrID==40) //DOSE WISE PARCENTAGE
 		 {$data['GridHeader']=array("SysId#-left", "Dose Name-left", "Group Name-left");}
 
+		 if($frmrpttemplatehdrID==44) //RACK MASTER
+		 {$data['GridHeader']=array("SysId#-left", "Rack Name-left", "Max Qnty-left", "Available Qnty-left", "Branch-left");}
+		
 		//  $id_header=129;
 		//  $save_data_primary_details = "select * from invoice_details where   invoice_summary_id=".$id_header."  " ;		
 		//  $save_data_primary_details = $this->projectmodel->get_records_from_sql($save_data_primary_details);
@@ -4525,19 +6442,33 @@ public function TempleteForm($frmrpttemplatehdrID=2,$operation='',$id_header='',
 				$this->projectmodel->save_records_model($id_header,$tran_table_name,$save_hdr);
 			}
 			
+				if($frmrpttemplatehdrID==41) //PARTY 
+				{$this->accounts_model->ledger_master_create('tbl_party',$id_header,28,'SUNDRY_DEBTORS');}
 			
-			
-			 if($frmrpttemplatehdrID==9) //PARTY / VENDOR 
-			 {	
-			 	if($Party_Type=='REGULAR_CREDITOR' or $Party_Type=='COMPOSITE_CREDITOR')
-				{	
-				$this->accounts_model->ledger_master_create('tbl_party',$id_header,27,'SUNDRY_CREDITORS');
-				}
-				else
+				if($frmrpttemplatehdrID==9) // VENDOR 
+				{$this->accounts_model->ledger_master_create('tbl_party',$id_header,27,'SUNDRY_CREDITORS');}
+
+
+				if($frmrpttemplatehdrID==21) //BRAND MASTER WISE SALE DISCOUNT SET 
 				{
-				$this->accounts_model->ledger_master_create('tbl_party',$id_header,28,'SUNDRY_DEBTORS');
-				}				
-			 }
+					$sale_discount=$this->projectmodel->GetSingleVal('sale_discount','misc_mstr',' id='.$id_header);
+					$sql="update  productmstr set sell_discount=".$sale_discount." where   brand_id=".$id_header." ";
+					$this->db->query($sql);
+				}	
+
+
+
+			
+
+			 	// if($Party_Type=='REGULAR_CREDITOR' or $Party_Type=='COMPOSITE_CREDITOR')
+				// {	
+				// $this->accounts_model->ledger_master_create('tbl_party',$id_header,27,'SUNDRY_CREDITORS');
+				// }
+				// else
+				// {
+				// $this->accounts_model->ledger_master_create('tbl_party',$id_header,28,'SUNDRY_DEBTORS');
+				// }				
+			
 			 
 			 if($frmrpttemplatehdrID==25) //doctor master
 			 {	
@@ -4551,9 +6482,9 @@ public function TempleteForm($frmrpttemplatehdrID=2,$operation='',$id_header='',
 				$products = $this->projectmodel->get_records_from_sql($products);
 				foreach ($products as $product){$count=$product->cnt;}
 
-				if($count==0)
+				if($count==1)
 				{
-					$sql="insert into product_balance_companywise(product_id,company_id	) select id,".$id_header." from productmstr";
+				echo	$sql="insert into product_balance_companywise(product_id,company_id	) select id,".$id_header." from productmstr";
 					$this->db->query($sql);
 				}
 			 }

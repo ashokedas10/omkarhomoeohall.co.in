@@ -51,12 +51,25 @@ ng-click="hideMenu($event)" ng-init="initarray('TRIP_ENTRY')" id="myBody">
 		<td >{{steps.PACK_NAME}}</td>
 		<td >		
 			<input  type="text"  placeholder="{{steps.RATE}}"  
-			 ng-model="steps.RATE" autocomplete="off" />
+			 ng-model="steps.RATE" autocomplete="off" style="width:70px;"/>
 		</td>
 		<td >		
 			<input  type="text"  placeholder="{{steps.MRP}}"  
-			 ng-model="steps.MRP" autocomplete="off" />
+			 ng-model="steps.MRP" autocomplete="off" style="width:70px;"/>
 		</td>
+		
+		<td ><input  type="text"  placeholder="{{steps.dose2_mrp}}"   ng-model="steps.dose2_mrp" autocomplete="off"    style="width:70px;" /></td>
+		<td ><input  type="text"  placeholder="{{steps.dose2_rate}}"   ng-model="steps.dose2_rate" autocomplete="off"  style="width:70px;"/></td>
+		
+		<td ><input  type="text"  placeholder="{{steps.dose3_mrp}}"   ng-model="steps.dose3_mrp" autocomplete="off"    style="width:70px;"/></td>
+		<td ><input  type="text"  placeholder="{{steps.dose3_rate}}"   ng-model="steps.dose3_rate" autocomplete="off"  style="width:70px;"/></td>
+		
+		<td ><input  type="text"  placeholder="{{steps.dose4_mrp}}"   ng-model="steps.dose4_mrp" autocomplete="off"    style="width:70px;"/></td>
+		<td ><input  type="text"  placeholder="{{steps.dose4_rate}}"   ng-model="steps.dose4_rate" autocomplete="off"  style="width:70px;"/></td>
+		
+		<td ><input  type="text"  placeholder="{{steps.dose5_mrp}}"   ng-model="steps.dose5_mrp" autocomplete="off"  style="width:70px;"/></td>
+		<td ><input  type="text"  placeholder="{{steps.dose5_rate}}"   ng-model="steps.dose5_rate" autocomplete="off" style="width:70px;"/></td>
+		
 	
 	</tr>
 	

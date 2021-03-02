@@ -74,8 +74,7 @@
 <?php } ?>		
 
 
-<?php if($REPORT_NAME=='HSN_WISE_SALE' || $REPORT_NAME=='HSN_WISE_SUMMARY' || $REPORT_NAME=='GST_REPORT' || 
-$REPORT_NAME=='PRODUCT_WISE_PURCHASE' || $REPORT_NAME=='PRODUCT_WISE_SALE' || $REPORT_NAME=='TRIAL_BALANCE' 
+<?php if($REPORT_NAME=='HSN_WISE_SALE' || $REPORT_NAME=='HSN_WISE_SUMMARY' || $REPORT_NAME=='GST_REPORT'  || $REPORT_NAME=='TRIAL_BALANCE' 
 || $REPORT_NAME=='PROFIT_LOSS_ACCOUNT' || $REPORT_NAME=='BALANCE_SHEET'){ ?> 
 <div class="panel panel-primary" >
 		<div class="panel-body" align="center" style="background-color:#3c8dbc">
@@ -119,7 +118,8 @@ $REPORT_NAME=='PRODUCT_WISE_PURCHASE' || $REPORT_NAME=='PRODUCT_WISE_SALE' || $R
 
 <?php if($REPORT_NAME=='DOCTOR_COMMISSION_SUMMARY' || $REPORT_NAME=='DOCTOR_COMMISSION_DETAILS'
  ||$REPORT_NAME=='GENERAL_LEDGER' || $REPORT_NAME=='PURCHASE_LEDGER' || $REPORT_NAME=='SALE_LEDGER' || 
- $REPORT_NAME=='DEBTORS_SUMMARY'  || $REPORT_NAME=='CREDITORS_SUMMARY' ){ ?> 
+ $REPORT_NAME=='DEBTORS_SUMMARY'  || $REPORT_NAME=='CREDITORS_SUMMARY' 
+ || $REPORT_NAME=='PURCHASE_REGISTER' || $REPORT_NAME=='SALE_REGISTER'   ){ ?> 
  
 <div class="panel panel-primary" >
 		<div class="panel-body" align="center" style="background-color:#3c8dbc">
@@ -156,6 +156,80 @@ $REPORT_NAME=='PRODUCT_WISE_PURCHASE' || $REPORT_NAME=='PRODUCT_WISE_SALE' || $R
 		</div>
 	</div> 
 <?php } ?>
+
+
+<?php if($REPORT_NAME=='PRODUCT_WISE_PURCHASE' || $REPORT_NAME=='PRODUCT_WISE_SALE' ){ ?> 
+ 
+<div class="panel panel-primary" >
+		<div class="panel-body" align="center" style="background-color:#3c8dbc">
+				<div class="form-row">
+					<div class="form-group col-md-4">
+					  <label for="inputState">Select Product</label>
+					 <select id="param1" class="form-control select2"  name="param1">
+							  <option value="0">Select All</option>
+								  <?php							
+									foreach ($ledger_accounts as $row){ 						
+									?>
+								  <option value="<?php echo $row->id; ?>" 
+									<?php if($row->id==$param1) 
+									{ echo 'selected="selected"'; } ?>> 
+									<?php echo $row->productname; ?> </option>
+								  <?php } ?>
+						</select>
+					</div>
+						<div class="form-group col-md-3">
+							<label for="inputState">To Date</label>
+							<input type="text"  id="fromdate" name="fromdate" value="<?php echo $fromdate; ?>" class="form-control"  > 				
+						</div>
+											
+						<div class="form-group col-md-3">
+							<label for="inputState">From Date</label>
+							<input type="text"  id="todate" name="todate" value="<?php echo $todate; ?>" class="form-control"  > 				
+						</div>
+					
+						<div class="form-group col-md-2">
+								<button type="submit" class="btn btn-primary" name="Save" >Display</button>		
+						</div>							
+						
+				</div>
+		</div>
+	</div> 
+<?php } ?>
+
+<?php if($REPORT_NAME=='STOCK_REGISTER' ){ ?> 
+ 
+<div class="panel panel-primary" >
+		<div class="panel-body" align="center" style="background-color:#3c8dbc">
+				<div class="form-row">
+					<div class="form-group col-md-4">
+					  <label for="inputState">Select Product</label>
+					 <select id="param1" class="form-control select2"  name="param1">
+							  <option value="0">Select All</option>
+								  <?php							
+									foreach ($ledger_accounts as $row){ 						
+									?>
+								  <option value="<?php echo $row->id; ?>" 
+									<?php if($row->id==$param1) 
+									{ echo 'selected="selected"'; } ?>> 
+									<?php echo $row->productname; ?> </option>
+								  <?php } ?>
+						</select>
+					</div>
+																	
+						<div class="form-group col-md-3">
+							<label for="inputState">From Date</label>
+							<input type="text"  id="todate" name="todate" value="<?php echo $todate; ?>" class="form-control"  > 				
+						</div>
+					
+						<div class="form-group col-md-2">
+								<button type="submit" class="btn btn-primary" name="Save" >Display</button>		
+						</div>							
+						
+				</div>
+		</div>
+	</div> 
+<?php } ?>
+
 
 
 <?php if($REPORT_NAME=='BILL_WISE_SALE' || $REPORT_NAME=='BILL_WISE_PURCHASE' ){ ?> 

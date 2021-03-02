@@ -196,14 +196,16 @@ class Project_model extends CI_Model {
 
 
 	}
+	
 
-
-	public function transaction_update($id_header=0)	
+	public function transaction_update($id_detail=0)	
 	{
 
-		$company_id=$this->session->userdata('COMP_ID');
-		$company_gst_no=$this->projectmodel->GetSingleVal('GSTNo','company_details',' id='.$company_id);
-	
+		//$company_id=$this->session->userdata('COMP_ID');
+		//$company_gst_no=$this->projectmodel->GetSingleVal('GSTNo','company_details',' id='.$company_id);
+		
+		$id_header=$this->projectmodel->GetSingleVal('invoice_summary_id','invoice_details',' id='.$id_detail);
+
 		if($id_header>0)
 		{
 					$bank_charge_fine=0;
@@ -211,22 +213,16 @@ class Project_model extends CI_Model {
 					$interest_charge=0;
 					$gsttype='sgst_cgst';
 					$gst2nos='';
+					$tax_per=0;
 					
 					$sql="select * from invoice_summary where id=".$id_header;			
 					$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
 					foreach ($rowrecord as $row_hdr)
 					{
 						$BILL_TYPE=$row_hdr->BILL_TYPE;
-						$disc_per=$row_hdr->disc_per;
-						$bank_charge_fine=$row_hdr->bank_charge_fine;
-						$freight_charge=$row_hdr->freight_charge;
-						$interest_charge=$row_hdr->interest_charge;
-						$cash_disc=$row_hdr->cash_disc;
-						$tot_cash_discount=$row_hdr->tot_cash_discount;
 						$status=$row_hdr->status;
 						$tbl_party_id=$row_hdr->tbl_party_id;
 						$company_id=$row_hdr->company_id;
-						
 						$company_gst_no=$this->projectmodel->GetSingleVal('GSTNo','company_details',' id='.$company_id);
 
 						//CUSTOMER TAX RATE
@@ -249,7 +245,7 @@ class Project_model extends CI_Model {
 			
 			if($status=='PURCHASE' or $status=='SALE' or $status=='PURCHASE_RTN' or $status=='SALE_RTN')
 			{
-					$sql="select * from invoice_details where  invoice_summary_id=".$id_header;			
+					$sql="select * from invoice_details where  id=".$id_detail;			
 					$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
 					foreach ($rowrecord as $row1)
 					{
@@ -257,38 +253,44 @@ class Project_model extends CI_Model {
 							$PURCHASEID=$row1->PURCHASEID;	
 							$product_id=$row1->product_id;								
 							$rate=$row1->rate;
+							$mrp=$row1->mrp;
 
-							if($status=='PURCHASE')
-							{$inv_details['srate']=$row1->mrp;}	
+							// if($status=='PURCHASE')
+							// {$inv_details['srate']=$row1->mrp;}	
 
-							if($status=='SALE')
-							{
-								if($row1->tax_ledger_id==319)
-								{ $inv_details['srate']=$rate-($rate*4.76/100);}
-								else	if($row1->tax_ledger_id==320)
-								{ $inv_details['srate']=$rate-($rate*10.71/100);}
-							    else if($row1->tax_ledger_id==321)
-								{ $inv_details['srate']=$rate-($rate*15.25/100);}
-								else
-								{$inv_details['srate']=$rate;}								
-							}
+							// if($status=='SALE')
+							// {
+							// 	if($row1->tax_ledger_id==319)
+							// 	{ $inv_details['srate']=$rate-($rate*4.76/100);}
+							// 	else	if($row1->tax_ledger_id==320)
+							// 	{ $inv_details['srate']=$rate-($rate*10.71/100);}
+							//     else if($row1->tax_ledger_id==321)
+							// 	{ $inv_details['srate']=$rate-($rate*15.25/100);}
+							// 	else
+							// 	{$inv_details['srate']=$rate;}								
+							// }
 
 
 							$inv_details['subtotal']=$rate*$row1->qnty;		
 
 							//DISCOUNT PORTION
-							$disc_amt1=$inv_details['disc_amt']=$inv_details['subtotal']*$row1->disc_per/100;
+							$disc_amt1=$inv_details['disc_amt']=$mrp*$row1->qnty*$row1->disc_per/100;
 							$after_first_disc_amount=$inv_details['subtotal']-$disc_amt1;
 							$disc_amt2=$after_first_disc_amount*$row1->disc_per2/100;
-							$inv_details['disc_amt']=$disc_amt1+$disc_amt2;		
-
+							//$disc_amt2=0;
+							//$inv_details['disc_amt']=$disc_amt1+$disc_amt2;		
+							
 							//TAXABLE AMOUNT PORTION
-							$inv_details['taxable_amt']=$row1->qnty*$rate;	
-							$inv_details['taxable_amt']=$inv_details['taxable_amt']-$inv_details['disc_amt'];
+							$inv_details['taxable_amt']=$inv_details['subtotal'];	
+							//$inv_details['taxable_amt']=$inv_details['taxable_amt']-$inv_details['disc_amt'];
 							
 
 							//GST PORTION
-							$tax_per=$this->projectmodel->GetSingleVal('default_value','acc_group_ledgers',' id='.$row1->tax_ledger_id);
+							$inv_details['cgst_rate']=0;
+							$inv_details['sgst_rate']=0;
+							$inv_details['igst_rate']=0;
+
+							$tax_per=floatval($this->projectmodel->GetSingleVal('default_value','acc_group_ledgers',' id='.$row1->tax_ledger_id));
 							if($gst2nos=='' || $gst2nos==19)
 							{
 								$inv_details['cgst_rate']=$tax_per/2;
@@ -319,7 +321,7 @@ class Project_model extends CI_Model {
 							//TOTAL TAX AMOUNT
 							$inv_details['taxamt']=$inv_details['cgst_amt']+$inv_details['sgst_amt']+$inv_details['igst_amt'];
 							$inv_details['net_amt']=$inv_details['taxable_amt']+$inv_details['taxamt'];
-													
+											
 						
 							//PRODUCT QNTY ADJUSTMENT		
 							// if( $status=='PURCHASE')			
@@ -333,24 +335,48 @@ class Project_model extends CI_Model {
 
 							//$this->projectmodel->product_update($product_id,'productmstr',$company_id);
 
-							//UPDATE SUMMARY TABLE										
-							$save_hdr['total_amt']=$save_hdr['total_amt']+$inv_details['subtotal'];
-							$save_hdr['tot_discount']=$save_hdr['tot_discount']+$inv_details['disc_amt'];
-							$save_hdr['tot_cash_discount']= $tot_cash_discount;
+							//UPDATE SUMMARY TABLE			
+							
+							$records="select sum(subtotal) subtotal,sum(disc_amt) disc_amt,sum(taxamt) taxamt
+							from  invoice_details where invoice_summary_id=".$id_header;
+							$records = $this->projectmodel->get_records_from_sql($records);								
+							foreach ($records as $record)
+							{
 
-							$save_hdr['totvatamt']=$save_hdr['totvatamt']+$inv_details['taxamt'];	
-							$grandtot=$save_hdr['total_amt']-$save_hdr['tot_discount']-$save_hdr['tot_cash_discount']+$save_hdr['totvatamt'];
+								$save_hdr['tot_cash_discount']=0;
+								$save_hdr['total_amt']=$record->subtotal;   
+								$save_hdr['tot_discount']=$record->disc_amt; 
+								$save_hdr['totvatamt']=$record->taxamt;  
+								$grandtot=$save_hdr['total_amt']+$save_hdr['totvatamt'];
+								
+								$grandtot=sprintf("%01.2f",$grandtot);
+								$grandtot1=sprintf("%01.0f",$grandtot);
+								$rndoff=$grandtot-$grandtot1;
+								$save_hdr['rndoff']=sprintf("%01.2f",$rndoff);	
+								$save_hdr['grandtot']=$grandtot-$rndoff;
+
+								$save_hdr['grandtot']=round($grandtot);
+								
+								$this->projectmodel->save_records_model($id_header,'invoice_summary',$save_hdr);
 							
-							$grandtot=sprintf("%01.2f",$grandtot);
-							$grandtot1=sprintf("%01.0f",$grandtot);
-							$rndoff=$grandtot-$grandtot1;
-							$save_hdr['rndoff']=sprintf("%01.2f",$rndoff);	
-							$save_hdr['grandtot']=$grandtot-$rndoff;
+							}
+
+							// $save_hdr['total_amt']=$save_hdr['total_amt']+$inv_details['subtotal'];
+							// $save_hdr['tot_discount']=$save_hdr['tot_discount']+$inv_details['disc_amt'];
+							// $save_hdr['tot_cash_discount']= $tot_cash_discount;
+
+							// $save_hdr['totvatamt']=$save_hdr['totvatamt']+$inv_details['taxamt'];	
+							// $grandtot=$save_hdr['total_amt']-$save_hdr['tot_discount']-$save_hdr['tot_cash_discount']+$save_hdr['totvatamt'];
 							
-							$this->projectmodel->save_records_model($id_header,'invoice_summary',$save_hdr);	
+							// $grandtot=sprintf("%01.2f",$grandtot);
+							// $grandtot1=sprintf("%01.0f",$grandtot);
+							// $rndoff=$grandtot-$grandtot1;
+							// $save_hdr['rndoff']=sprintf("%01.2f",$rndoff);	
+							// $save_hdr['grandtot']=$grandtot-$rndoff;							
+							// $this->projectmodel->save_records_model($id_header,'invoice_summary',$save_hdr);	
 					}
 
-						$this->accounts_model->ledger_transactions($id_header,$status);
+					//$this->accounts_model->ledger_transactions($id_header,$status);
 			
 				
 			
@@ -495,184 +521,7 @@ public function delete_invoice($id=0)
 
 }	
 
-public function product_update($id=0,$operation_type='invoice_details',$company_id=0)
-{
-			
-		$company_id=$this->session->userdata('COMP_ID');
-	
-		
-		if($operation_type=='invoice_details')	//PRODUCT update batch wise
-		{
-			$PURCHASEID=$id;
-			$tot_purchase=$tot_sale=$tot_sample=$SELL_RTN=$PRUCHAR_RTN=0;
 
-			$whr=" id=".$PURCHASEID;
-			$product_id=$this->GetSingleVal('product_id','invoice_details',$whr);
-		
-
-			$products = "select sum(qnty) totqnty from invoice_details where id=".$PURCHASEID." 	and  status='PURCHASE' " ;
-			$products = $this->get_records_from_sql($products);
-			if(count($products)>0){foreach ($products as $product){$tot_purchase=$product->totqnty;}}
-
-			$records = "select sum(qnty) totqnty from invoice_details 
-			where product_id=".$product_id." and PURCHASEID='".$PURCHASEID."' and  status='SALE' " ;
-			$records = $this->projectmodel->get_records_from_sql($records);
-			$tot_sale=$records[0]->totqnty;
-
-			$inv_details['qty_available']=$tot_purchase-$tot_sale+$SELL_RTN-$PRUCHAR_RTN-$tot_sample;
-			
-			$this->save_records_model($PURCHASEID,'invoice_details',$inv_details);
-
-			//COMPANY WISE PRODUCT UPDATE 
-			$companies = "select * from company_details  " ;
-			$companies = $this->get_records_from_sql($companies);
-			if(count($companies)>0)
-			{foreach ($companies as $company)
-			{
-				$company_id=$company->id;
-
-				$products = "select sum(b.qty_available) totqnty from  invoice_summary a, invoice_details b 
-				where a.id=b.invoice_summary_id   and b.product_id=".$product_id." 
-				and a.company_id=".$company_id." and  a.status='PURCHASE' " ;
-				$products = $this->get_records_from_sql($products);
-				$qty_available=$products[0]->totqnty;
-
-				$product_save['available_qnty']=$qty_available;
-			
-				$product_balance_companywise_id='';
-				$products = "select id from product_balance_companywise 
-				where product_id=".$product_id." and company_id=".$company_id ;
-				$products = $this->get_records_from_sql($products);
-				foreach ($products as $product){$product_balance_companywise_id=$product->id;}
-
-				if($product_balance_companywise_id=='')
-				{$this->save_records_model('','product_balance_companywise',$product_save);}
-				else
-				{$this->save_records_model($product_balance_companywise_id,'product_balance_companywise',$product_save);}
-
-			}}	
-
-			//FOR PREVIOUS PRODUCT
-			$PURCHASEID=$id;
-			$tot_purchase=$tot_sale=$tot_sample=$SELL_RTN=$PRUCHAR_RTN=0;
-
-			$whr=" id=".$PURCHASEID;
-			$PURCHASEID=$this->GetSingleVal('PREVIOUS_PURCHASEID','invoice_details',$whr);
-		
-			if($PURCHASEID>0)
-			{
-
-				$whr=" id=".$PURCHASEID;
-				$product_id=$this->GetSingleVal('product_id','invoice_details',$whr);
-	
-				$products = "select sum(qnty) totqnty from invoice_details where id=".$PURCHASEID." 	and  status='PURCHASE' " ;
-				$products = $this->get_records_from_sql($products);
-				if(count($products)>0){foreach ($products as $product){$tot_purchase=$product->totqnty;}}
-	
-				$records = "select sum(qnty) totqnty from invoice_details 
-				where product_id=".$product_id." and PURCHASEID='".$PURCHASEID."' and  status='SALE' " ;
-				$records = $this->projectmodel->get_records_from_sql($records);
-				$tot_sale=$records[0]->totqnty;
-	
-				$inv_details['qty_available']=$tot_purchase-$tot_sale+$SELL_RTN-$PRUCHAR_RTN-$tot_sample;
-				
-				$this->save_records_model($PURCHASEID,'invoice_details',$inv_details);
-	
-				//COMPANY WISE PRODUCT UPDATE 
-				$companies = "select * from company_details  " ;
-				$companies = $this->get_records_from_sql($companies);
-				if(count($companies)>0)
-				{foreach ($companies as $company)
-				{
-					$company_id=$company->id;
-	
-					$products = "select sum(b.qty_available) totqnty from  invoice_summary a, invoice_details b 
-					where a.id=b.invoice_summary_id   and b.product_id=".$product_id." 
-					and a.company_id=".$company_id." and  a.status='PURCHASE' " ;
-					$products = $this->get_records_from_sql($products);
-					$qty_available=$products[0]->totqnty;
-	
-					$product_save['available_qnty']=$qty_available;
-				
-					$product_balance_companywise_id='';
-					$products = "select id from product_balance_companywise 
-					where product_id=".$product_id." and company_id=".$company_id ;
-					$products = $this->get_records_from_sql($products);
-					foreach ($products as $product){$product_balance_companywise_id=$product->id;}
-	
-					if($product_balance_companywise_id=='')
-					{$this->save_records_model('','product_balance_companywise',$product_save);}
-					else
-					{$this->save_records_model($product_balance_companywise_id,'product_balance_companywise',$product_save);}
-	
-				}}	
-			}
-			
-			
-		}
-
-
-		
-		/*
-		if($operation_type=='productmstr')	//PRODUCT MASTER UPDATE END
-		{
-					
-			
-			$companies = "select * from company_details  " ;
-			$companies = $this->get_records_from_sql($companies);
-			if(count($companies)>0)
-			{foreach ($companies as $company)
-			{
-			
-				$company_id=$company->id;
-				$product_id=$id;
-				$tot_purchase=$tot_sale=$tot_sample=$SELL_RTN=$PRUCHAR_RTN=0;
-
-				
-				$products = "select sum(b.qnty) totqnty from  invoice_summary a, invoice_details b 
-				where a.id=b.invoice_summary_id   and b.product_id=".$product_id." 
-				and a.company_id=".$company_id." and  a.status='PURCHASE'  " ;
-				$products = $this->get_records_from_sql($products);
-				if(count($products)>0){foreach ($products as $product){$tot_purchase=$product->totqnty;}}
-
-				$products = "select sum(b.qnty) totqnty from  invoice_summary a, invoice_details b 
-				where a.id=b.invoice_summary_id   and b.product_id=".$product_id." 
-				and a.company_id=".$company_id." and  a.status='SALE' " ;
-				$products = $this->get_records_from_sql($products);
-				if(count($products)>0){foreach ($products as $product){$tot_sale=$product->totqnty;}}
-
-				$products = "select sum(b.qnty) totqnty from  invoice_summary a, invoice_details b 
-				where a.id=b.invoice_summary_id   and b.product_id=".$product_id." 
-				and a.company_id=".$company_id." and  a.status='SALE_RTN' " ;
-				$products = $this->get_records_from_sql($products);
-				if(count($products)>0){foreach ($products as $product){$SELL_RTN=$product->totqnty;}}
-
-				$products = "select sum(b.qnty) totqnty from  invoice_summary a, invoice_details b 
-				where a.id=b.invoice_summary_id   and b.product_id=".$product_id." 
-				and a.company_id=".$company_id." and  a.status='PRUCHAR_RTN' " ;
-				$products = $this->get_records_from_sql($products);
-				if(count($products)>0){foreach ($products as $product){$PRUCHAR_RTN=$product->totqnty;}}
-						
-				$product_save['available_qnty']=$tot_purchase-$tot_sale+$SELL_RTN-$PRUCHAR_RTN-$tot_sample;
-
-				$product_balance_companywise_id='';
-				$products = "select id from product_balance_companywise 
-				where product_id=".$product_id." and company_id=".$company_id ;
-				$products = $this->get_records_from_sql($products);
-				foreach ($products as $product){$product_balance_companywise_id=$product->id;}
-
-				if($product_balance_companywise_id=='')
-				{$this->save_records_model('','product_balance_companywise',$product_save);}
-				else
-				{$this->save_records_model($product_balance_companywise_id,'product_balance_companywise',$product_save);}
-
-			
-			}}
-			
-		}
-		*/
-		
-}
 
 
 	//END OF INVOICE RELATED FUNCTIONS
@@ -947,78 +796,206 @@ function gethierarchy_list($parentuid='',$returntype='HQ')
 	
 	
 }
+
+
+
+	public function product_update($invoice_details_id=0,$operation_type='ADD_STOCK')
+	{
+				
+		//$company_id=$this->session->userdata('COMP_ID');
 		
-function batch_wise_available_stock($product_id,$batchno)
-{
-	
-		$qnty=0;
-		$freeqty=0;
-		$totqnty=0;
-		//purchase
-		$sqlqty="select SUM(qnty) qnty,SUM(freeqty) freeqty,
-		SUM(totqnty) totqnty  
-		from invoice_details where product_id=".$product_id." 
-		and batchno='".$batchno."' and status='PURCHASE' ";
+		$tot_purchase=$tot_sale=$tot_issue=0;
+
+		//PRODUCT UPDATE
+		$products = "select b.product_id,b.rackno,b.id,a.company_id,a.status,b.qnty
+		from invoice_summary a, invoice_details b 
+		where a.id=b.invoice_summary_id and  a.BILL_STATUS='BILL_SAVED' and b.main_group_id=51 and  b.id=".$invoice_details_id ;
+		$products = $this->get_records_from_sql($products);
+		foreach ($products as $product)
+		{
+			
+			$rack_save['total_available_qnty']=$product_save['available_qnty']=0;
+
+			$records = "select sum(b.qnty) totqnty from invoice_summary a,invoice_details b 
+			where a.id=b.invoice_summary_id and a.status='PURCHASE'  and b.product_id=".$product->product_id." and  a.company_id=".$product->company_id ;
+			$records = $this->get_records_from_sql($records);
+			if(count($records)>0){foreach ($records as $record){$tot_purchase=$record->totqnty;}}
 		
-		$avlqty = $this->projectmodel->get_records_from_sql($sqlqty);
-		foreach ($avlqty as $rowq){	
-		$qnty=$rowq->qnty;
-		$freeqty=$rowq->freeqty;
-		$totqnty=$rowq->totqnty;
+
+			$records = "select sum(b.qnty) totqnty from invoice_summary a,invoice_details b 
+			where a.id=b.invoice_summary_id and a.status='SALE'  and b.product_id=".$product->product_id." and   a.company_id=".$product->company_id ;
+			$records = $this->get_records_from_sql($records);
+			if(count($records)>0){foreach ($records as $record){$tot_sale=$record->totqnty;}}
+		
+
+			$records = "select sum(b.qnty) totqnty from invoice_summary a,invoice_details b 
+			where a.id=b.invoice_summary_id and a.status='ISSUE'  and b.product_id=".$product->product_id." and  a.company_id=".$product->company_id ;
+			$records = $this->get_records_from_sql($records);
+			if(count($records)>0){foreach ($records as $record){$tot_issue=$record->totqnty;}}
+
+			$product_save['available_qnty']=$tot_purchase-$tot_sale-$tot_issue;
+			
+			$product_balance_companywise_id='';			
+			$records = "select * from product_balance_companywise where company_id=".$product->company_id." and product_id=".$product->product_id ;
+			$records = $this->projectmodel->get_records_from_sql($records);	
+			foreach ($records as $record)
+			{ $product_balance_companywise_id=$record->id;  }
+			
+			if($operation_type=='MINUS_STOCK')
+			{
+				if($product->status=='PURCHASE')
+				{$product_save['available_qnty']=$product_save['available_qnty']-intval($product->qnty); }
+				if($product->status=='SALE' || $product->status=='ISSUE')
+				{$product_save['available_qnty']=$product_save['available_qnty']+intval($product->qnty); }
+			}
+
+
+			if($product->product_id>0 && $product_save['available_qnty']>-1)
+			{
+				//$this->save_records_model($product->product_id,'product_balance_companywise',$product_save);
+
+				$product_save['product_id']=$product->product_id;
+				$product_save['company_id']=$product->company_id;	
+				$this->projectmodel->save_records_model($product_balance_companywise_id,'product_balance_companywise',$product_save);
+			
+			}
+			//CLEARSTONE - 30ML			
+			
+			$tot_purchase=$tot_sale=$tot_issue=0;	
+			//RACK WISE UPDATE
+
+			$records = "select sum(qnty) totqnty from invoice_summary a, invoice_details b where  
+			a.id=b.invoice_summary_id and     a.status='PURCHASE' and b.rackno=".$product->rackno." 
+			and b.product_id=".$product->product_id." and a.company_id=".$product->company_id;
+			$records = $this->get_records_from_sql($records);
+			if(count($records)>0){foreach ($records as $record){$tot_purchase=$record->totqnty;}}
+
+			$records = "select sum(qnty) totqnty from invoice_summary a, invoice_details b where  
+			a.id=b.invoice_summary_id and a.status='SALE' and b.rackno=".$product->rackno." 
+			and b.product_id=".$product->product_id." and a.company_id=".$product->company_id;
+			$records = $this->get_records_from_sql($records);
+			if(count($records)>0){foreach ($records as $record){$tot_sale=$record->totqnty;}}
+
+			$records = "select sum(qnty) totqnty from invoice_summary a, invoice_details b where  
+			a.id=b.invoice_summary_id and a.status='ISSUE' and b.rackno=".$product->rackno." 
+			and b.product_id=".$product->product_id." and a.company_id=".$product->company_id;
+			$records = $this->get_records_from_sql($records);
+			if(count($records)>0){foreach ($records as $record){$tot_issue=$record->totqnty;}}
+
+			$rack_save['total_available_qnty']=$tot_purchase-$tot_sale-$tot_issue;
+			
+			if($operation_type=='MINUS_STOCK')
+			{
+				if($product->status=='PURCHASE')
+				{$rack_save['total_available_qnty']=$rack_save['total_available_qnty']-intval($product->qnty); }
+				if($product->status=='SALE' || $product->status=='ISSUE')
+				{$rack_save['total_available_qnty']=$rack_save['total_available_qnty']+intval($product->qnty); }
+			}
+
+			if($product->rackno>0 )
+			{$this->save_records_model($product->rackno,'rack_master',$rack_save);}
+			$tot_purchase=$tot_sale=$tot_issue=0;	
+
 		}
+
 		
-		//SELL RETURN
-		$sqlqty="select SUM(qnty) qnty,SUM(freeqty) freeqty,
-		SUM(totqnty) totqnty   
-		from invoice_details where product_id=".$product_id." 
-		and batchno='".$batchno."' and status='SELL_RTN' ";
-		$avlqty = $this->projectmodel->get_records_from_sql($sqlqty);
-		foreach ($avlqty as $rowq){	
-		$qnty=$qnty+$rowq->qnty;
-		$freeqty=$freeqty+$rowq->freeqty;
-		$totqnty=$totqnty+$rowq->totqnty;		
-		}
+			
+	}
+			
+	function batch_wise_available_stock($product_id=0,$MRP='',$exp_monyr='',$company_id=1)
+	{
+			$totqnty=0;
+			$purchase_qnty=0;
+			$records="select SUM(b.qnty) qnty	from invoice_summary a,invoice_details b 
+			where a.id=b.invoice_summary_id and  b.product_id=".$product_id." 
+			and b.mrp='".$MRP."' and b.exp_monyr='".$exp_monyr."' and a.status='PURCHASE' and a.company_id=".$company_id;
+			$records = $this->projectmodel->get_records_from_sql($records);
+			$purchase_qnty=$records[0]->qnty;
+
+
+			$sale_qnty=0;
+			$records="select SUM(b.qnty) qnty	from invoice_summary a,invoice_details b 
+			where a.id=b.invoice_summary_id and  b.product_id=".$product_id." 
+			and b.mrp='".$MRP."' and b.exp_monyr='".$exp_monyr."'  and a.status='SALE' and a.company_id=".$company_id;
+			$records = $this->projectmodel->get_records_from_sql($records);
+			$sale_qnty=$records[0]->qnty;
+
+			$totqnty=$purchase_qnty-$sale_qnty;
+			return $totqnty;
+	}	
+
+	function batch_list($product_id=0,$company_id=1)
+	{
+		$data=array();
+		$key=0;
+		$records = "select b.batchno FieldID,b.batchno FieldVal,b.rackno ,b.mrp MRP,b.exp_monyr ,b.product_id ,b.id, c.productname 
+		from invoice_summary a ,invoice_details b ,productmstr c
+		where a.id=b.invoice_summary_id and c.id=b.product_id and 
+		(a.status='OPEN_BALANCE' or a.status='PURCHASE' or a.status='SALE_RTN') and b.product_id=".$product_id." 
+		and a.company_id=".$company_id." group by b.exp_monyr,b.mrp" ;
+
+		$records = $this->get_records_from_sql($records);	
+		foreach ($records as $record)
+		{
+			$available_qnty=$this->batch_wise_available_stock($product_id,$record->MRP,$record->exp_monyr,$company_id);
+			if($available_qnty>0)
+			{
+				$data[$key]['FieldID']=$record->FieldID;
+				$data[$key]['FieldVal']=$record->FieldVal;
+				$data[$key]['Product_name']=$record->productname;
+				$data[$key]['MRP']=$record->MRP;
+				$discount_per=floatval($this->projectmodel->GetSingleVal('sell_discount','productmstr','id='.$record->product_id));
+				$data[$key]['rate']=$data[$key]['MRP']-($data[$key]['MRP']*$discount_per/100);
+				$data[$key]['exp_monyr']=$record->exp_monyr;
+				$data[$key]['available_qnty']=$available_qnty;
+
+				$data[$key]['Rack_No']=$this->projectmodel->GetSingleVal('rack_name','rack_master','id='.$record->rackno);
+				$data[$key]['Avilable_qnty']=intval($this->projectmodel->GetSingleVal('total_available_qnty','rack_master','id='.$record->rackno));
+				$data[$key]['Max_qnty']=intval($this->projectmodel->GetSingleVal('max_qnty','rack_master','id='.$record->rackno));
+				$data[$key]['Avilable_qnty']=$data[$key]['Max_qnty']-$data[$key]['Avilable_qnty'];
+							
+			
+				//calculate available qnty
+				
+				$data[$key]['Rkid']=$record->rackno;
+				$data[$key]['pid']=$record->id;
+				$key=$key+1;
+			}
+
+		}	
 		
-		//SELL
-		$sqlqty="select SUM(qnty) qnty,SUM(freeqty) freeqty,
-		SUM(totqnty) totqnty  
-		from invoice_details where product_id=".$product_id." 
-		and batchno='".$batchno."' and status='SELL' ";
-		$avlqty = $this->projectmodel->get_records_from_sql($sqlqty);
-		foreach ($avlqty as $rowq){			
-		$qnty=$qnty-$rowq->qnty;
-		$freeqty=$freeqty-$rowq->freeqty;
-		$totqnty=$totqnty-$rowq->totqnty;		
-		}
+		return $data;
+
+
+	}
+
+	function rack_wise_available_stock()
+	{
+		$company_id=$this->session->userdata('COMP_ID');
 		
-		//PURCHASE RETURN
-		$sqlqty="select SUM(qnty) qnty,SUM(freeqty) freeqty,
-		SUM(totqnty) totqnty    
-		from invoice_details where product_id=".$product_id." 
-		and batchno='".$batchno."' and status='PRCHS_RTN' ";
-		$avlqty = $this->projectmodel->get_records_from_sql($sqlqty);
-		foreach ($avlqty as $rowq){			
-		$qnty=$qnty-$rowq->qnty;
-		$freeqty=$freeqty-$rowq->freeqty;
-		$totqnty=$totqnty-$rowq->totqnty;		
-		}
-		
-		//SAMPLE DISTRIBUTION
-		$sqlqty="select SUM(qnty) qnty,SUM(freeqty) freeqty,
-		SUM(totqnty) totqnty  
-		from  sample_tran_details where product_id=".$product_id." 
-		and batchno='".$batchno."' and status='SAMPLE_RCV' ";
-		$avlqty = $this->projectmodel->get_records_from_sql($sqlqty);
-		foreach ($avlqty as $rowq){			
-		$qnty=$qnty-$rowq->qnty;
-		$freeqty=$freeqty-$rowq->freeqty;
-		$totqnty=$totqnty-$rowq->totqnty;
-		
-		}
-		
-	return $totqnty;
-}	
-	/*UPDATE TAX IN BILL*/
+		$data=array();
+		$key=0;
+		$records = "select * FROM rack_master WHERE company_id=".$company_id." ORDER BY rack_name" ;
+		$records = $this->projectmodel->get_records_from_sql($records);	
+		foreach ($records as $record)
+		{			
+			$available_qnty=intval($this->GetSingleVal('total_available_qnty','rack_master','id='.$record->id));	
+			$max_qnty=intval($this->GetSingleVal('max_qnty','rack_master','id='.$record->id));						
+			if($available_qnty<$max_qnty)
+			{
+				$data[$key]['FieldID']=$record->id;
+				$data[$key]['FieldVal']=$record->rack_name;
+				$data[$key]['max_qnty']=$record->max_qnty;
+				$data[$key]['total_available_qnty']=$available_qnty;
+				$key=$key+1;
+			}	
+		}	
+		return $data;	
+	}	
+
+
+
+/*UPDATE TAX IN BILL*/
 	function update_tax_bill()
 	{
 		$sql="select * from invoice_summary where status='SELL' ";

@@ -1,0 +1,77 @@
+//ALL SOLVED
+
+//MASTER SECTION 
+1.company setting : increase mob no field
+2. error in rack master
+3.short name in brand master
+5.dose discount not require
+11.PURCHASE,ISSUE,SALE ENTRY -- RACK WISE STOCK ADD/DELETE
+7.PATIENT REGISTRATION - PAID/FREE
+8.DOCTOR MASTER -->FEES, 1ST VISIT, NEXT VISIT,DAYS GAP
+4.at product master --> min stock,mrp,discount,rate
+6. dose 2 mrp,rate, mrp3,rate3,mrp4-rate4,rate5 and above
+
+
+PURCHASE SECTION
+===============
+14.AT PRODUCT LIST--->ADD MIN STOCK ,SHORT NAME
+13.AT RACK FIELD RACK ID IS COMMING INSTEAD OF NAME
+12.NOT DISPLAY BATCH LIST PKD,PID ---HIDDEN
+15.RACK LIST NOT COMING ..CHK--ORDER BY CURRENT PRODUCT LAST PURCHASE
+16.BATCH WILL BE REPLACE BY MRP ...SEARCH BY MRP
+
+RETAIL INVOICE 
+================
+21.GL -SIZE FOR DILUTION
+20.at bottom list ---if synonym enter will come otherwise original name
+24.mrp total at bill
+25.at bill saving in double digit
+22.AT BILL PRINT FOR DILUTION AFTER POTENCY ENTER GL-size( dana)
+28.at label header ---GL-SIZE PACK SIZE (FOR SYNONYM ERROR)
+29.MRP AT LABEL WITH 2DIGIT
+30.AT BILL WATER DOSE WILL COME AFTER POTENCY
+27.Total No of Products :0 (error)
+23.at pack size check
+35.CALCULATE RATE FROM MRP AND DISCOUNT
+37.PATENT NOT COME AT BILL AND LABEL
+36.DISCOUNT FIELD AFTER MRP
+34.COMPANY SHORT NAME,STOCK MIN STOCK AT PATENT
+31.AT BILL SUGAR AFTER POTENCY ==8+2=10DOSE COME
+33.mother mixture at bill MRP WILL COME
+39.AFTER CLICKING DISPLAY LIST WILL COME...DATE CORRENT DATE
+38.LIST OF BILL ORDER BY DESC
+
+
+//PENDING PROBLEMS
+
+9.DOC COMMISSION MAIN GROUP WISE
+TRANSACTIONS
+===============
+10.EDIT, DELETE NOT FUNCTIONAL IN ALL SEGMENT ---
+
+
+
+RETAIL INVOICE 
+================
+12.INCOMING DOCTOR ADD NAME ..BUT ADD TO MASTER
+26.bill footer ...description not require ...connect with company setting field
+will display at footer
+
+32.AT PRODUCT LIST GROUP NAME WILL COME (A,B...)
+mother mixer at bill problem from mm2
+distil water rate master correction
+all synonym at list
+
+
+WHOLE SALE 
+
+41.CORRECTION WATER AS RETAIL
+42.PATENT NAME AT BILL NOT COMING --CHK BILL NO : 30/20-21
+43.PREVIOUS DUE =XXXX + THIS BILL AMOUNT=YYY = ZZZ ( TOTAL DUE)
+  LAST PAID ON ----  AMOUNT SSSSS 
+
+
+44.ORDER FORM AND REPORT
+
+
+

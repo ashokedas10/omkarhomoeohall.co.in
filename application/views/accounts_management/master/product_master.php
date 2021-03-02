@@ -76,15 +76,14 @@ ng-click="hideMenu($event)" ng-init="initarray('TRIP_ENTRY')" id="myBody">
 						ng-model="FormInputArray[0].brand_id" >
 						<option  value="0">NA</option>
 						<option ng-repeat="option in brand_list" 
-						value="{{option.id}}">{{option.name}}</option>
+						value="{{option.id}}">{{option.name_value}} -	{{option.name}}</option>
 					</select>					
 					</td>
 					
 					<td  align="right" >
 					<button type="button" class="btn btn-danger" id="Save" 
 					name="Save"  
-					ng-click="view_list(FormInputArray[0].group_id,
-					FormInputArray[0].brand_id)">Display</button>	
+					ng-click="view_list(FormInputArray[0].group_id,FormInputArray[0].brand_id,'')">Display</button>	
 					
 					
 					</td>
@@ -99,8 +98,8 @@ ng-click="hideMenu($event)" ng-init="initarray('TRIP_ENTRY')" id="myBody">
                     <td >Search : </td>
                     <td colspan="7" >
 					<input  type="text" style="text-align:left; width:200px;"
-					  class="form-control input_field_hight" 
-					  ng-model="search.$"  />
+					  class="form-control input_field_hight"   ng-model="search"  
+					  ng-change="view_list(FormInputArray[0].group_id,FormInputArray[0].brand_id,search)"/>
 					</td>    
 					
                   </tr>
@@ -111,8 +110,14 @@ ng-click="hideMenu($event)" ng-init="initarray('TRIP_ENTRY')" id="myBody">
                     <th >Group</th>    
 					<th >Brand</th>  
 					<th >MRP</th>
+					<th >Avai.Qnty</th> 
+					<th >Min Stock</th>
+					<th >EXP (mm/yy)</th>
 					<th >Sale Discount</th> 
+					
 					<th >Spl.Discount</th> 
+					
+					<th >Label (Y/N)</th> 
 					<?php /*?><th >HSN Code</th>    
 					<th >Tax%</th>  <?php */?>    
 					<th >Status</th>  
@@ -122,7 +127,7 @@ ng-click="hideMenu($event)" ng-init="initarray('TRIP_ENTRY')" id="myBody">
 				
 	<?php /*?>  <tr ng-repeat="layer in  [0,FormInputArray[0].list_of_values.length-1] | filter:searchText"  style="padding-top:0px;"><?php */?>
 			
-	 <tr ng-repeat="(layer, data) in FormInputArray[0].list_of_values | filter:search:strict" style="padding-top:0px;">
+	 <tr ng-repeat="(layer, data) in FormInputArray[0].list_of_values " style="padding-top:0px;">
 			
 		
 		   
@@ -158,15 +163,42 @@ ng-click="hideMenu($event)" ng-init="initarray('TRIP_ENTRY')" id="myBody">
 		  ng-model="FormInputArray[0].list_of_values[layer].mrp"/>
 		 </td> 
 		 
+		  <td align="right"  >
+		 <input  type="text" style="text-align:left"	class="form-control input_field_hight" 
+		 ng-model="FormInputArray[0].list_of_values[layer].available_qnty"/>		
+		 </td> 
+		 
+		  <td align="right"  >
+		  <input  type="text" style="text-align:left"	
+		  class="form-control input_field_hight" 
+		  ng-model="FormInputArray[0].list_of_values[layer].minimum_stock"/>
+		 </td>   
+		 
+		  <td align="right"  >
+		  <input  type="text" style="text-align:left"	
+		  class="form-control input_field_hight" 
+		  ng-model="FormInputArray[0].list_of_values[layer].exp_mmyy"/>
+		 </td>   
+		 
+		 
 		 <td align="right"  >
 		  <input  type="text" style="text-align:left"	
 		  class="form-control input_field_hight" 
 		  ng-model="FormInputArray[0].list_of_values[layer].sell_discount"/>
 		 </td>   
+		 
+	
 		
 		<td align="right"  >
 		<input  type="text" style="text-align:left"	class="form-control input_field_hight" 
 		 ng-model="FormInputArray[0].list_of_values[layer].spl_discount"/>
+		 </td> 
+		 
+		
+		 
+		 <td align="right"  >
+		<input  type="text" style="text-align:left"	class="form-control input_field_hight" 
+		 ng-model="FormInputArray[0].list_of_values[layer].label_print"/>
 		 </td> 
 		
 		<?php /*?><td align="right"  >

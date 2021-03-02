@@ -184,7 +184,7 @@ public function create_report($rs=array(),$id=0)
                             //here
                             $form_structure['header'][$key]['fields'][$key1+1][$key2]=$this->create_fields_parameter($sections['frmrpttemplatehdr_id'],$key2,$field_val,$input_id_index);
                             $input_id_index=$input_id_index+1;
-        
+                            
                         }
                         else
                         {
@@ -288,17 +288,19 @@ public function create_report($rs=array(),$id=0)
                                 if($datafields_array[$cnt_parent]['FieldID']==$Inputvalue)
                                 {	$inputval=$datafields_array[$cnt_parent]['FieldVal'];}
                         }	
-                    
+                        //if($inputval==0){$inputval='';}
                         $output['Inputvalue']=$inputval;		
                         $output['Inputvalue_id']=$Inputvalue_id;
                 }
                 else if($detail->Inputvalue<>'')
                 {
-                    $output['Inputvalue']=$detail->Inputvalue;
+                    if($detail->Inputvalue==0){$output['Inputvalue']='';}
+                    else{$output['Inputvalue']=$detail->Inputvalue;}                    
                     $output['Inputvalue_id']='';
                 }   
                 else
                 {
+                    if($Inputvalue==0){$Inputvalue='';}
                     $output['Inputvalue']=$Inputvalue;		
                     $output['Inputvalue_id']='';	
                 }

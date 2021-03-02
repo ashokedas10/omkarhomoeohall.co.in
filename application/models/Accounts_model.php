@@ -139,7 +139,7 @@ function ledger_transactions($tran_table_id='',$TRAN_TYPE='')
 			
 			//DETAILS OF TRANSACTIONS
 			$matching_tran_id=1;
-			$amount=$field->total_amt-$field->tot_discount-$field->tot_cash_discount;
+			$amount=$field->total_amt;
 			$cr_ledger_account=323; //sales a/c
 			$dr_ledger_account=$tbl_party_id; //stockist a/c sundry debtors
 			if($amount>0)
@@ -263,7 +263,7 @@ function ledger_transactions($tran_table_id='',$TRAN_TYPE='')
 			//DETAILS OF TRANSACTIONS
 			$matching_tran_id=0;
 			$matching_tran_id=$matching_tran_id+1;		
-			$amount=$field->total_amt-$field->tot_cash_discount-$field->tot_discount;
+			$amount=$field->total_amt;
 			$dr_ledger_account=322; //purchase ledger
 			$cr_ledger_account=$tbl_party_id; // a/c sundry creditor
 			if($amount>0)
@@ -334,7 +334,7 @@ function ledger_transactions($tran_table_id='',$TRAN_TYPE='')
 			
 			//DETAILS OF TRANSACTIONS
 			$matching_tran_id=1;
-			$amount=$field->total_amt-$field->tot_discount-$field->tot_cash_discount;
+			$amount=$field->total_amt;
 		
 			$cr_ledger_account=$tbl_party_id; //stockist a/c sundry debtors
 			$dr_ledger_account=323; //sales a/c 
@@ -643,7 +643,72 @@ function all_mis_report($REPORT_NAME,$param_array)
 	//print_r($param_array);
 	//echo $param_array['fromdate'].' todate::'.$param_array['todate'];
 
+	if($REPORT_NAME=='PURCHASE_REGISTER')
+	{
+			
+		$fromdate=$param_array['fromdate'];
+		$todate=$param_array['todate'];
+		$ledger_ac=$param_array['ledger_ac'];
 
+		$indx=0;
+		$form_id=$id=49;
+		$whr=" id=".$id;	
+		$DataFields=$this->projectmodel->GetSingleVal('GridHeader','frmrpttemplatehdr',$whr);									
+		$TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);
+		$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
+		$WhereCondition=$this->projectmodel->GetSingleVal('WhereCondition','frmrpttemplatehdr',$whr);	
+		
+		if($ledger_ac==0){$WhereCondition=$WhereCondition." and invoice_date between '$fromdate' and '$todate'   order by invoice_date";}
+		else{$WhereCondition=$WhereCondition." and invoice_date between '$fromdate' and '$todate'  and tbl_party_id=".$ledger_ac." order by invoice_date";}
+		
+						
+		$rs[$indx]['section_type']='GRID_ENTRY';	
+		$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
+		$rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
+		$rs[$indx]['fields']=$DataFields;
+		$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']." where ".$WhereCondition;		
+		$count = $this->projectmodel->get_records_from_sql($rs[$indx]['sql_query']);	
+		if(sizeof($count)>0)
+		{
+			$output=$this->FrmRptModel->create_report_for_web($rs,$id);  
+			return $output;	
+		}
+		
+
+	}
+
+	if($REPORT_NAME=='SALE_REGISTER')
+	{
+			
+		$fromdate=$param_array['fromdate'];
+		$todate=$param_array['todate'];
+		$ledger_ac=$param_array['ledger_ac'];
+
+		$indx=0;
+		$form_id=$id=50;
+		$whr=" id=".$id;	
+		$DataFields=$this->projectmodel->GetSingleVal('GridHeader','frmrpttemplatehdr',$whr);									
+		$TableName=$this->projectmodel->GetSingleVal('TableName','frmrpttemplatehdr',$whr);
+		$section_type=$this->projectmodel->GetSingleVal('Type','frmrpttemplatehdr',$whr);	
+		$WhereCondition=$this->projectmodel->GetSingleVal('WhereCondition','frmrpttemplatehdr',$whr);	
+		
+		if($ledger_ac==0){$WhereCondition=$WhereCondition." and invoice_date between '$fromdate' and '$todate'   order by invoice_date";}
+		else{$WhereCondition=$WhereCondition." and invoice_date between '$fromdate' and '$todate'  and tbl_party_id=".$ledger_ac." order by invoice_date";}
+		
+						
+		$rs[$indx]['section_type']='GRID_ENTRY';	
+		$rs[$indx]['frmrpttemplatehdr_id']=$form_id;
+		$rs[$indx]['id']=$id;	$rs[$indx]['parent_id']='';	$rs[$indx]['TableName']=$TableName;
+		$rs[$indx]['fields']=$DataFields;
+		$rs[$indx]['sql_query']="select ".$rs[$indx]['fields']." from ".$rs[$indx]['TableName']." where ".$WhereCondition;		
+		$count = $this->projectmodel->get_records_from_sql($rs[$indx]['sql_query']);	
+		if(sizeof($count)>0)
+		{
+			$output=$this->FrmRptModel->create_report_for_web($rs,$id);  
+			return $output;	
+		}
+
+	}
 	
 
 	if($REPORT_NAME=='DOCTOR_COMMISSION_SUMMARY' ) 
@@ -1341,6 +1406,7 @@ function all_mis_report($REPORT_NAME,$param_array)
 			$mfg_monyr='';
 			$exp_monyr='';
 			$totqnty='';
+			$product_id=$param_array['param1'];
 
 			if($REPORT_NAME=='PRODUCT_WISE_PURCHASE')
 			{$status='PURCHASE';}
@@ -1349,9 +1415,23 @@ function all_mis_report($REPORT_NAME,$param_array)
 			
 		
 			$mainindx=$balance=0;
-			$records="select * 	from invoice_summary a,invoice_details b,productmstr c where  
-			a.id=b.invoice_summary_id and b.product_id=c.id and b.RELATED_TO_MIXER='NO' and
-			a.invoice_date  between '".$param_array['fromdate']."' and '".$param_array['todate']."' and a.status='$status' and a.company_id=".$company_id." order by c.id,a.id";
+			if($product_id==0)
+			{
+				$records="select * 	from invoice_summary a,invoice_details b,productmstr c where  
+				a.id=b.invoice_summary_id and b.product_id=c.id and b.RELATED_TO_MIXER='NO' and
+				a.invoice_date  between '".$param_array['fromdate']."' and '".$param_array['todate']."' 
+				and a.status='$status' and a.company_id=".$company_id." order by c.id,a.id";
+			}
+			else
+			{
+			 	$records="select * 	from invoice_summary a,invoice_details b,productmstr c where  
+				a.id=b.invoice_summary_id and b.product_id=c.id and b.RELATED_TO_MIXER='NO' and
+				a.invoice_date  between '".$param_array['fromdate']."' and '".$param_array['todate']."' 
+				and a.status='$status' and a.company_id=".$company_id." and b.product_id=".$product_id." order by c.id,a.id";
+		
+			}
+
+
 			$records = $this->projectmodel->get_records_from_sql($records);
 			foreach ($records as $key=>$record)
 			{ 
@@ -1368,7 +1448,7 @@ function all_mis_report($REPORT_NAME,$param_array)
 				if($REPORT_NAME=='PRODUCT_WISE_PURCHASE')
 				{$rsval[$mainindx]['rate']=$record->rate;}
 				if($REPORT_NAME=='PRODUCT_WISE_SALE')
-				{$rsval[$mainindx]['rate']=$record->srate;}
+				{$rsval[$mainindx]['rate']=$record->rate;}
 
 				
 				$rsval[$mainindx]['total']=$record->subtotal;

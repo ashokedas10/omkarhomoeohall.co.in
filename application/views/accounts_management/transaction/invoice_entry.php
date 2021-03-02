@@ -188,7 +188,26 @@ font-weight:200;
 </style>
 
 
+<?php /*?><script type="text/javascript">
+    $(function(){
+        $('#printOut').click(function(e){
+            e.preventDefault();
+            var w = window.open();
+            var printOne = $('.contentToPrint').html();
+            var printTwo = $('.termsToPrint').html();
+            w.document.write('<html><head><title>Copy Printed</title></head><body><h1>Copy Printed</h1><hr />' + printOne + '<hr />' + printTwo) + '</body></html>';
+            w.window.print();
+            w.document.close();
+            return false;
+        });
+    });
+</script><?php */?>
+
 <script type = "text/javascript">
+
+
+
+
 /*Final Submit(F8) | New Mixer(F9) | Print Invoice(F10) | Print POS(F11) | New Entry (F1) */
  function shortcut() {		 
 		 
@@ -197,18 +216,17 @@ font-weight:200;
 		 	//alert(event.keyCode);
 			if(event.keyCode==27)
 			{
-				var answer1 = window.confirm("Save Bill?");
+			
+				angular.element(document.getElementById('myBody')).scope().bill_process_functions();
+			
+			/*	var answer1 = window.confirm("Save Bill?");
 				if (answer1) 
-				{
-					//some code
-					angular.element(document.getElementById('myBody')).scope().save_check();
-					//PRINT LABEL
-					var answer2 = window.confirm("Print Label?");
-					if (answer2) 
-					{				
-						angular.element(document.getElementById('myBody')).scope().print_label();
-					}		
-				}
+				{angular.element(document.getElementById('myBody')).scope().final_submit();}
+				
+				var answer2 = window.confirm("Print Label?");
+				if (answer2) 
+				{angular.element(document.getElementById('myBody')).scope().print_label();}		*/
+					
 			}		
 		
 			
@@ -294,6 +312,7 @@ font-weight:200;
 		<td  align="left">{{get_field_name(0,'LabelName','patient_name')}}</td> 
 		<td  align="left">{{get_field_name(0,'LabelName','patient_address')}}</td> 
 		<td  align="left">{{get_field_name(0,'LabelName','doctor_ledger_id')}}</td> 
+		
 </tr>
 
 
@@ -374,6 +393,9 @@ FormInputArray[0]['header'][0]['fields'][0]['doctor_ledger_id']['input_id_index'
 class="form-control" onfocus="this.select();" onmouseup="return false;"  />
 
 </td>  
+
+
+
 						
 </tr>
 
@@ -482,12 +504,29 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 				ng-keydown="checkKeyDown($event,1,0,0,0,steps.input_id_index)" 
 				ng-keyup="checkKeyUp($event)" ng-model="steps.Inputvalue"							
 				ng-keypress="mainOperation($event,1,0,0,0,steps.input_id_index)"
+				ng-focus="search(steps.InputName,1,0,0,0)"
 				ng-change="search(steps.InputName,1,0,0,0)" 	
-				ng-focus="search(steps.InputName,1,0,0,0)" 	class="form-control input_field_height"	
+				 	class="form-control input_field_height"	
 				style="width:{{50*steps.DIVClass}}px;"  autocomplete="off" 
 				onfocus="this.select();" onmouseup="return false;"/>
 				
 				</div>
+				
+				
+				<div ng-if="steps['InputType']== 'datefield'">
+					<input id="{{steps.input_id_index}}"  data-inputmask="'alias': 'date'" autofocus type="text" name=""  
+					 placeholder="{{steps.LabelName}}"  
+					ng-keydown="checkKeyDown($event,1,0,0,0,steps.input_id_index)" 
+					ng-keyup="checkKeyUp($event)" ng-model="steps.Inputvalue"
+					ng-change="search(steps.InputName,1,0,0,0)" 
+					ng-focus="search(steps.InputName,1,0,0,0)" 	class="form-control input_field_height"	
+					ng-keypress="mainOperation($event,1,0,0,0,steps.input_id_index)"
+					style="width:{{50*steps.DIVClass}}px;"  autocomplete="off" 
+					onfocus="this.select();" onmouseup="return false;" />					
+				</div>
+				
+				
+				
 				<div ng-if="steps['InputType']== 'LABEL'">
 				
 				<input id="{{steps.input_id_index}}" autofocus type="text" name=""  
@@ -608,13 +647,16 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 				<td    colspan="3">
 				<td>
 				<button type="button" class="btn btn-success" id="Save" name="Save" 
-				ng-click="save_check()">Save</button>
+				ng-click="final_submit()">Save Bill</button>
 				
 				<button type="button" class="btn btn-success" id="Save" name="Save" 
 				ng-click="print_label()">Print Label</button>
 				
 				<button type="button" class="btn btn-success" id="Save" name="Save" 
-				ng-click="print_documents('POS_INVOICE',value)">Bill Print</button>
+				ng-click="print_documents('POS_INVOICE',value)"> Print Bill</button>
+				
+				<button type="button" class="btn btn-success"  
+				ng-click="new_entry()">New Entry </button>
 				
 				<!--<a data-toggle="modal" data-target="#shortModal" 
 					class="btn btn-primary"><i class="fa fa-pencil"></i> SHOW BARCODE</a>-->
@@ -649,8 +691,7 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 				
 				<!-- <button ng-click="print_documents('POS_INVOICE')"  class="btn btn-block btn-success">Print</button>-->
 			
-				<button type="button" class="btn btn-success"  
-				ng-click="new_entry()">New Entry </button>
+				
 		
 			  	 </div>
 				 
@@ -669,9 +710,9 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 			<td  >Edit</td>
 			<td  >Delete</td>
 			<td  >Pos Print</td>
-			<td  >A4 Print</td>
+			<!--<td  >A4 Print</td>-->
 			</tr>	
-											
+							
 			<tr ng-repeat="values in main_grid_array" ng-init="setTotals(values)">
 			
 				<td  align="right" ng-repeat="(key,value) in values" ng-if="key!='id'">{{value}}</td>	
@@ -680,22 +721,22 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 				</td>
 				
 				<td ng-repeat="(key,value) in values" ng-if="key=='id'" >
-				<button class="btn-block btn-info" ng-click="view_list(value)" >Delete</button>
+				<button class="btn-block btn-info" ng-click="delete_bill(value)" >Delete</button>
 				</td>
 				
 				<td ng-repeat="(key,value) in values" ng-if="key=='id'" >
 				<button class="btn-block btn-info" ng-click="print_documents('POS_INVOICE',value)" >Pos Print</button>
 				</td>
 				
-				<td ng-repeat="(key,value) in values" ng-if="key=='id'" >
+				<!--<td ng-repeat="(key,value) in values" ng-if="key=='id'" >
 				<button class="btn-block btn-info" ng-click="print_documents('INVOICE',value)" >A4 Print</button>
-				</td>
+				</td>-->
 			
 			</tr>
 			
 			
 			<tr class="input_field_height" style="background-color:#999999">
-			<td  colspan="3" >Total</td>			
+			<td  colspan="4" >Total</td>			
 			<td align="right" >{{grandtotal}}</td>
 			<td colspan="4" >&nbsp;</td>
 			</tr>																										

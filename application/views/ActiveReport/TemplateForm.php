@@ -200,6 +200,15 @@
 						}
 					}
 					
+					if($frmrpttemplatehdrID==44 && $key1=='company_id')
+					{
+						$location='';
+						$sql="select * from company_details 	where  	id=".$bdr;
+						$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
+						foreach ($rowrecord as $row1)
+						{$bdr=$row1->NAME;}						
+					}
+					
 					
 				?>
 				<td align="<?php echo $align[1]; ?>"><?php echo $bdr; ?></td>

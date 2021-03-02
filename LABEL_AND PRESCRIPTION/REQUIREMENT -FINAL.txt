@@ -8,33 +8,50 @@
 
 //BILL RELATED
 
+//COMPLE LABEL
+//COMPLETE BILL
 
--->PATENT CHECK
 
+BILL_STATUS =NONE,BILL_SAVED,LABEL_PRINTED,BILL_PRINTED
+IF BILL_STATUS =NONE IF EXIT AND NEW BILL --DELETE BILL
+IF BILL_STATUS =BILL_SAVED STOCK WILL BE MINUS BUT NO ACCOUNT 
+IF BILL_STATUS =LABEL_PRINTED --BILL WILL BE SAVED AND STOCK ADJUST BUT NO ACCOUNT
+IF BILL_STATUS =BILL_PRINTED ACCOUNT...DONE
 
---.DELETE OPTION PRODUCT WISE
 -->bill print (dilution,mother..mm1)
 -->label correction
 -->if cash bill doctor must select(disable auto select)
 -->in bill if select party print at bill
 -->if doctor name enter print on bill save not require
 
+--.DELETE OPTION PRODUCT WISE
 
-
+-->party select
 
 1.SAVE PRODUCT FROM BILL
 2.LIST BELOW THE SEARCH
-
-4.PATENT MFG DATE WISE ORDER
 5.DELETE ITEM SAVE AT TRANSACTION AND REPORT
 
 
 DONE ARE
 
+
+at product master
+available qnty field
+LABEL (Y/N)
+
+
+AT SALE ENTRY/ AND PURCHASE
+BATCH WISE LIST COME AT BATCH
+(MRP -RATE -AVAILABLE QNTY - EXP)
+
+
+
 done on : 02/02/21
 -->DISPLAY NET TOTAL BESIDE QNTY
 -->PRODUCT MASTER
-
+-->PATENT CHECK
+-->PURCHASE ENTRY COMPLETE
 --------------------------
 
 
@@ -83,4 +100,5 @@ select id FieldID,FieldID FieldVal from
 frmrptgeneralmaster where Status='MAIN_PRODUCT_GROUP'
 
 
-MM1 rate:400 Mrp:600 Qnty: 100ml
+
+

@@ -23,11 +23,13 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 	   var success={};	
 	   
 	   var data_save = {'form_name':form_name,'subtype':'view_list','id':id};
+	   console.log(form_name + id);
+	   
 	   var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
 	   $http.post(data_link,data_save,config).then (function success(response){
 	   angular.forEach(response.data,function(value,key)
 	   {	
-			 $rootScope.FormInputArray[0] ={	header:value.header};	
+			 $rootScope.FormInputArray[0] ={header:value.header};	
 	   });	
 	   },
 	   function error(response){
@@ -65,6 +67,25 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 
 	   return $rootScope.FormInputArray;
    }	
+
+   factoryobj.delete_bill=function(form_name,subtype,BaseUrl,id)
+   {
+
+	   var data_link=BaseUrl;
+	   var success={};		   
+	   var data_save = {'form_name':$rootScope.current_form_report,'subtype':'delete_bill','id':id};
+		console.log('ID:'+$rootScope.current_form_report);
+	   var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
+	   $http.post(data_link,data_save,config).then (function success(response){	
+		$rootScope.server_msg=response.data.server_msg;		
+	   },
+	   function error(response){
+		   $scope.errorMessage = 'Error adding user!';
+		   $scope.message = '';
+	   });
+	  
+   }	
+
 
    factoryobj.view_detail=function(form_name,BaseUrl,id)
    {
@@ -164,12 +185,12 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 	   var success={};		
 	   
 	   var data_save = {'form_name':$rootScope.current_form_report,'subtype':'dtlist','id':id};
-	   console.log(data_save);	
+	   console.log('ID: '+$rootScope.current_form_report);	
 	   var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
 	   $http.post(data_link,data_save,config).then (function success(response){
 
 		   $rootScope.dtlist_array=response.data.header;
-		   console.log($rootScope.dtlist_array);
+		   console.log(' aaaaaaa '+$rootScope.dtlist_array);
 	   },
 	   function error(response){
 		   $scope.errorMessage = 'Error adding user!';
