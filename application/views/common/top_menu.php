@@ -191,18 +191,24 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
 		
 		<?php */?>
 		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/invoice_entry/acc_tran/47/">
+		<i class="fa fa-circle-o"></i>Sale Retail</a></li>
 		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/invoice_entry_wholesale/acc_tran/47/">
+		<i class="fa fa-circle-o"></i>Sale Entry-Wholesale </a></li>
+		
+				
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/purchase_entry/acc_tran/47/">
 		<i class="fa fa-circle-o"></i>Purchase Entry</a></li>	
 		
-		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/invoice_entry/acc_tran/47/">
-		<i class="fa fa-circle-o"></i>Sale Entry </a></li>
 		
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/issue_entry/acc_tran/47/">
 		<i class="fa fa-circle-o"></i>Issue Entry</a></li>	
+		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/doctor_prescription/acc_tran/47/">
+		<i class="fa fa-circle-o"></i>Prescription</a></li>
 					
-		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/invoice_entry_wholesale/acc_tran/47/">
-		<i class="fa fa-circle-o"></i>Sale Entry-Wholesale </a></li>
+		
 		
               </ul>
             </li>	
@@ -230,8 +236,30 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
 		<li><a href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/PRODUCT_WISE_SALE/0/0/"><i class="fa fa-circle-o"></i>
 		Product Wise Sale</a></li>
 		
+		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/EXPIRY_REGISTER/">
+		<i class="fa fa-circle-o"></i>Expiry Register</a></li>
+						
+		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/DEBTORS_SUMMARY/">
+		<i class="fa fa-circle-o"></i>Party Ledger Summary </a></li>
+		
+		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/DEBTORS_DETAILS/">
+		<i class="fa fa-circle-o"></i>Party Ledger Detail </a></li>
+		
 		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/CREDITORS_SUMMARY/">
-		<i class="fa fa-circle-o"></i>Creditors Ledger </a></li>
+		<i class="fa fa-circle-o"></i>Vendor Ledger Summary</a></li>
+		
+		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/CREDITORS_DETAILS/">
+		<i class="fa fa-circle-o"></i>Vendor Ledger Details</a></li>
+		
+		
+		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/DOCTOR_COMMISSION_SUMMARY/">
+		<i class="fa fa-circle-o"></i>Doctor Commission Summary</a></li>
+		
+		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/DOCTOR_COMMISSION_DETAILS/">
+		<i class="fa fa-circle-o"></i>Doctor Commission Details</a></li>
+		
+		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/DOCTOR_PRESCRIPTIONS/">
+		<i class="fa fa-circle-o"></i>Doctor Prescription</a></li>
 		
               </ul>
        </li>	

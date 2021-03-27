@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<font face="Times New Roman, Times, serif"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
@@ -65,6 +65,13 @@ body p {
 </style>
 
 <style>
+.CLASS_DELETE
+{
+	background-color: red;
+    color:black;	
+    font-weight:bold;
+}
+
 input {
   font-family: monospace;
 }
@@ -217,7 +224,7 @@ font-weight:200;
 			if(event.keyCode==27)
 			{
 			
-				angular.element(document.getElementById('myBody')).scope().bill_process_functions();
+				//angular.element(document.getElementById('myBody')).scope().bill_process_functions();
 			
 			/*	var answer1 = window.confirm("Save Bill?");
 				if (answer1) 
@@ -240,7 +247,10 @@ font-weight:200;
 			
 			//(F11) -NEW ENTRY
 			if(event.keyCode==121) 
-			{angular.element(document.getElementById('myBody')).scope().new_entry();}
+			{
+			angular.element(document.getElementById('myBody')).scope().new_entry();
+			document.getElementById(4).focus();
+			}
 			
 			
 			//print_documents('POS_INVOICE',value)
@@ -285,7 +295,12 @@ font-weight:200;
 		
 		<td  align="center" colspan="2"  class="activeTR">
 		<span class="style3">
-		<button type="button" class="btn btn-danger" ng-click="test()">LOAD INVOICE ENTRY</button>
+		<button type="button" class="btn btn-danger" ng-click="test()">SALE RETAIL </button>
+		
+		<strong >{{FormInputArray[0]["header"][0]['fields'][0]['BILL_STATUS']['Inputvalue']}}</strong>
+		<strong>{{FormInputArray[0]["header"][1]['fields'][0]['main_group_id']['Inputvalue']}}</strong>
+		
+		
 		</span>	
 		</td> 
 		
@@ -603,14 +618,22 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 				<!--<td>Edit</td>-->
 				<td>Delete</td>
 			</tr>	
-										
-			<tr ng-repeat="values in dtlist_array track by $index" >
+			<!--{{dtlist_array}}	-->					
+			<tr ng-repeat="values in dtlist_array track by $index" 			
 			
+			ng-class="values.ITEM_DELETE_STATUS.Inputvalue==='DELETED':'CLASS_DELETE'" >
+			
+				
 				<td  align="right">{{$index+1}}</td>	
 				<td  align="right" ng-repeat="(key,value) in values" 
-				ng-if="value.InputType!='hidden'">{{value.Inputvalue}}</td>	
+				ng-if="value.InputType!='hidden' ">				
+				{{value.Inputvalue}}</td>					
+				<td>
 				
-				<td><button class="btn-block btn-info" ng-click="delete_item(values.id.Inputvalue)" >
+				
+				<font face="Arial, Helvetica, sans-serif"></font>
+				
+				<button class="btn-block btn-info" ng-click="delete_item(values.id.Inputvalue)" >
 				Delete</button></td>	
 						
 			</tr>	
@@ -708,8 +731,8 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 			<tr  style="background-color:#999999">
 			<td align="center" ng-repeat="(key,value) in main_grid_array[0]" ng-if="key!='id' ">{{key}}</td>
 			<td  >Edit</td>
-			<td  >Delete</td>
-			<td  >Pos Print</td>
+			<td  >Label</td>
+			<td  >Print</td>
 			<!--<td  >A4 Print</td>-->
 			</tr>	
 							
@@ -721,11 +744,11 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 				</td>
 				
 				<td ng-repeat="(key,value) in values" ng-if="key=='id'" >
-				<button class="btn-block btn-info" ng-click="delete_bill(value)" >Delete</button>
+				<button class="btn-block btn-info" ng-click="print_label(value)" >Label</button>
 				</td>
 				
 				<td ng-repeat="(key,value) in values" ng-if="key=='id'" >
-				<button class="btn-block btn-info" ng-click="print_documents('POS_INVOICE',value)" >Pos Print</button>
+				<button class="btn-block btn-info" ng-click="print_documents('POS_INVOICE',value)" >Print</button>
 				</td>
 				
 				<!--<td ng-repeat="(key,value) in values" ng-if="key=='id'" >
@@ -779,3 +802,4 @@ product_group_id-  {{FormInputArray[0]["header"][1]['fields'][0]['product_group_
 
 
 
+</font>

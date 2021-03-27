@@ -198,17 +198,27 @@ function shortcut()
 		 document.addEventListener("keydown", function(event) {
 		 
 		 	//alert(event.keyCode);
+			/*
 			
 		 	if(event.keyCode==119)//Final Submit(F8)
 			{angular.element(document.getElementById('myBody')).scope().final_submit();}
 			if(event.keyCode==120) //New Mixer(F9)
 			{$('#shortModal').modal({show: 'false'});document.getElementById(101).focus();}
-			/*if(event.keyCode==121) // Print Invoice(F10)
+			if(event.keyCode==121) // Print Invoice(F10)
 			{angular.element(document.getElementById('myBody')).scope().print_invoice('INVOICE');}
 			if(event.keyCode==122) //Print POS(F11)
-			{angular.element(document.getElementById('myBody')).scope().print_invoice('INVOICE_POS');}*/
-			if(event.keyCode==118) //New Entry (F7)
-			{angular.element(document.getElementById('myBody')).scope().new_entry();}
+			{angular.element(document.getElementById('myBody')).scope().print_invoice('INVOICE_POS');}
+			
+			*/
+			
+			if(event.keyCode==27) //New Entry (F7)
+			{
+			angular.element(document.getElementById('myBody')).scope().new_entry();
+			//document.getElementById(0).focus();
+			//alert('aa');
+			//document.getElementById("newentry").click();
+			//document.getElementById(0).focus();
+			}
 		  
 		});
           
@@ -219,10 +229,17 @@ function shortcut()
 
 <div ng-app="Accounts"   >
 
-<div ng-controller="main_transaction_controller" class="panel panel-primary" id="myBody" onkeypress = "shortcut()" >
+<div ng-controller="main_transaction_controller" class="panel panel-primary" id="myBody" onkeypress = "shortcut()" ng-init="test( )">
 																
 		<table class="table table-bordered table-striped" >
-	<!--{{FormInputArray[0]['header'][0]['fields'][0]}}-->
+		
+		
+			
+		
+	<!--{{returnArray}}
+	<br /><br />
+	
+	{{FormInputArray[0]["header"][1]['fields'][0]['product_id']['datafields']}}-->
 	
 					<tr>
 						<td  align="center" colspan="2"  class="activeTR">
@@ -472,14 +489,14 @@ function shortcut()
 		</table>
 	</div>
 				
-		<!--REGULAR SALE SECTION END-->				
+				
 			
 		<div class="panel panel-primary"  ng-if="dtlist_array.length>0">
 		<div class="panel-body" >
-		<!--{{dtlist_array}}-->
+		
 		
 			<table class="table table-bordered table-hover table-condensed "  >	
-			<!--tt :{{dtlist_array}}-->
+			
 				
 				<tr  style="background-color:#999999">			
 				<td>Srl</td>
@@ -511,6 +528,8 @@ function shortcut()
 			   </tr>	
 																												
 			</table>
+			
+			
 	   </div></div>		
 				
 	
@@ -525,8 +544,13 @@ function shortcut()
 				
 				<td    colspan="3">
 				<td>
+				
 				<button type="button" class="btn btn-success" id="Save" name="Save" 
-				ng-click="final_submit()">Final Submit</button>
+				ng-click="print_slip('PRINT_SLIP',value)"> Print Slip</button>
+				
+				
+				<!--<button type="button" class="btn btn-success" id="Save" name="Save" 
+				ng-click="final_submit()">Final Submit</button>-->
 				
 				<!--<button type="button" class="btn btn-success" id="Save" name="Save" 
 				ng-click="print_documents('BARCODE_PRINT',
@@ -562,8 +586,11 @@ function shortcut()
 				
 				<!-- <button ng-click="print_documents('POS_INVOICE')"  class="btn btn-block btn-success">Print</button>-->
 			
-				<button type="button" class="btn btn-success"  
-				ng-click="new_entry()">New Entry </button>
+				<!--<button type="button" class="btn btn-success" id="newentry" ng-click="new_entry()"  ng-confirm-click="New Invoice Create ? "
+				>New Entry </button>
+				-->
+				
+				<button type="button" class="btn btn-success" id="newentry" ng-click="new_entry()" 	>New Entry </button>
 		
 			  	 </div>
 				 
@@ -624,9 +651,9 @@ $(":input").inputmask();
 document.getElementById(0).focus();
 </script>
 
+<!--{{FormInputArray[0]["header"][1]['fields'][0]['product_id']}}-->
 
-
-<!--{{FormInputArray[0]["header"][1]['fields'][0]['product_id']['validation_msg']}}
+<!--
 
 {{FormInputArray[0]["header"][1]['fields'][0]['batchno']['Inputvalue_id']}}-->
 

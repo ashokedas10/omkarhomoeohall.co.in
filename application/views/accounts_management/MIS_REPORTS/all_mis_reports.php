@@ -2,6 +2,35 @@
 <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
+<script language="javascript" type="text/javascript">
+		
+	function print_result(hqid,fromdate,todate) {
+	var base_url = '<?php echo ADMIN_BASE_URL.'Project_controller/print_documents/DOCTOR_COMMISSION/';  ?>';
+			
+			url=base_url+hqid+'/'+fromdate+'/'+todate;
+			
+			//alert(url);
+			newwindow=window.open(url,'name','height=600,width=800');
+			if (window.focus) {newwindow.focus()}
+			return false;
+		}
+		
+		
+		function print_presciption(hqid,fromdate,todate) {
+	var base_url = '<?php echo ADMIN_BASE_URL.'Project_controller/print_documents/DOCTOR_PRESCRIPTIONS/';  ?>';
+			
+			url=base_url+hqid+'/'+fromdate+'/'+todate;
+			
+			//alert(url);
+			newwindow=window.open(url,'name','height=600,width=800');
+			if (window.focus) {newwindow.focus()}
+			return false;
+		}
+		
+</script>
+
+
+
 <script>
 function getlink(href) 
 {
@@ -148,11 +177,10 @@ a {
 				$totvatamt=0;
 				$grandtot=0;
 				
-				
 				foreach($report_data['header'] as $key=>$array_record){  ?>	
 				<tr>
 				<?php 
-				$total_amt=$total_amt+$array_record['Bill Amt'];
+				$total_amt=$total_amt+floatval($array_record['Bill Amt']);
 				/*$tot_discount=$tot_discount+$array_record['Discount Rcv'];
 				$totvatamt=$totvatamt+$array_record['Tax'];
 				$grandtot=$grandtot+$array_record['Grand'];*/
@@ -233,6 +261,8 @@ a {
 		
 		<?php if($REPORT_NAME=='DOCTOR_COMMISSION_SUMMARY' && $display_report=='YES'){ 
 			$trading_rs=$report_data;
+			
+			$grand_total=0;
 			//print_r($trading_rs);
 			
 			?>
@@ -241,7 +271,8 @@ a {
 				<tr>			
 					<td  colspan="7" align="center" style="background: linear-gradient(#CC9933,#CC9933);">
 					<?php
-					$acc_name=$this->projectmodel->GetSingleVal('acc_name','acc_group_ledgers',' id='.$ledger_ac); 		
+					$acc_name=$this->projectmodel->GetSingleVal('acc_name','acc_group_ledgers',
+					' id='.$ledger_ac); 		
 					echo 'Ledger Transaction of '.$acc_name.' From :'.$fromdate.' To :'.$todate;
 					?>
 					</td>	
@@ -252,7 +283,9 @@ a {
 					<td  align="left">Invoice No</td>		
 					<td  align="left">Total Amount</td>				
 					<?php 
-													
+						
+						if(!empty($report_data[0]['groupname'])){	
+												
 						$group_cnt=sizeof($report_data[0]['groupname']); 
 						if($group_cnt>0){  
 						for($cnt=0;$cnt<$group_cnt;$cnt++)
@@ -261,7 +294,7 @@ a {
 					?>		
 					<td  align="left" colspan="2" >&nbsp;</td>
 					
-					<?php }} ?>
+					<?php }}} ?>
 					
 				</tr>
 				
@@ -271,7 +304,9 @@ a {
 					<td  align="left" colspan="3">-</td>	
 					
 					<?php 
-													
+					
+						if(!empty($report_data[0]['groupname'])){
+						
 						$group_cnt=sizeof($report_data[0]['groupname']); 
 						if($group_cnt>0){  
 						for($cnt=0;$cnt<$group_cnt;$cnt++)
@@ -279,12 +314,12 @@ a {
 							
 					?>		
 					<td  align="left" ><?php echo $report_data[0]['groupname'][$cnt]; ?></td>
-					<td  align="left" ><?php echo $report_data[0]['group_commission'][$cnt]; ?>%</td>
-					<?php }} ?>
-					
+					<?php /*?><td  align="left" ><?php echo $report_data[0]['group_commission'][$cnt]; ?>%</td><?php */?>
+					<?php }}} ?>
+					<td  align="left" >Tot Comm</td>	
 				</tr>
 				
-				<tr style="background: linear-gradient(#CC9933,#CC9933);">			
+				<?php /*?><tr style="background: linear-gradient(#CC9933,#CC9933);">			
 					<td  align="left" colspan="3">&nbsp;</td>	
 					
 					<?php 
@@ -296,11 +331,11 @@ a {
 							
 					?>		
 					<td  align="left" >Tot</td>
-					<td  align="left" >Comm</td>
+					<!--<td  align="left" >Comm</td>-->
 					<?php }} ?>
 					<td  align="left" >Tot Comm</td>	
 					
-				</tr>
+				</tr><?php */?>
 				
 			 				
 					  <?php 
@@ -323,14 +358,22 @@ a {
 								for($cnt=0;$cnt<$group_cnt;$cnt++)
 								{		
 							?>		
-							<td  align="left" ><?php echo $report_data[$trading_cnt]['group_wise_trade_val'][$cnt]; ?></td>
 							<?php /*?><td  align="left" >
-							<?php echo $report_data[$trading_cnt]['group_commission'][$cnt]; ?></td>
-							<?php */?>
+							<?php echo $report_data[$trading_cnt]['group_wise_trade_val'][$cnt]; ?>
+							</td><?php */?>
 							
-							<td  align="left" ><?php echo $report_data[$trading_cnt]['group_commission_amt'][$cnt]; ?></td>
+							<?php /*?><td  align="left" >
+							<?php echo $report_data[$trading_cnt]['group_commission'][$cnt]; ?>
+							</td><?php */?>
+														
+							<td  align="right" >
+							<?php echo $report_data[$trading_cnt]['group_commission_amt'][$cnt]; ?>
+							</td>
+							
 						<?php }} ?>
-							<td><?php echo $report_data[$trading_cnt]['row_comm_total'] ?></td>	 
+							<td align="right"><?php 
+							$grand_total=$grand_total+$report_data[$trading_cnt]['row_comm_total'];
+							echo $report_data[$trading_cnt]['row_comm_total'] ?></td>	 
 						 </tr>	
 				<?php 	
 				
@@ -343,10 +386,80 @@ a {
 							<td><?php echo $report_data[$trading_cnt+1]['row_comm_total'] ?></td>	 
 				</tr>	<?php */?>
 	
-	
+				
+				
+						<tr >	
+						     <td colspan="9">&nbsp;</td>
+							 <td><strong>Total</strong></td>						
+							<td  align="right"><strong><?php echo $grand_total; ?></strong></td>	 
+						 </tr>	
+				
+				
 				
 				</table>
 			<?php } ?>
+		
+		
+			
+			<?php if($REPORT_NAME=='DOCTOR_PRESCRIPTIONS'){ ?>
+			<table   class="table table-bordered table-striped" id="example">
+			
+				<tr  style="background-color:#999999">
+				 <td width="40" >Token No</td>
+				 <td width="40" >Status</td>
+				 <td width="40" >Patient ID</td>
+				 <td width="40" >Patient Name</td>
+				 <td width="40"  align="right">Amount</td>	
+				 </tr>			
+				 
+					 <?php 
+					 		$total=$tot_comm=$tot_payable=0;
+							$trading_rs=$report_data;
+							$trading_cnt_total=sizeof($trading_rs); 
+							$tot_sample=0;
+							if($trading_cnt_total>0){  
+							for($trading_cnt=0;$trading_cnt<$trading_cnt_total;$trading_cnt++)
+							{			
+							//$total_purchase=$total_purchase+$trading_rs[$trading_cnt]['total_purchase'];
+							//$total_sale=$total_sale+$trading_rs[$trading_cnt]['total_sale'];
+							$total=$total+$trading_rs[$trading_cnt]['ACTUAL_VISIT_AMT'];
+							$tot_comm=$tot_comm+$trading_rs[$trading_cnt]['comm_amt'];
+							
+							
+						?>	
+							<tr >
+							
+						 <td width="40" ><?php echo $trading_rs[$trading_cnt]['token_no'] ?></td>
+						 <td width="40" ><?php echo $trading_rs[$trading_cnt]['token_status'] ?></td>
+						 <td width="40" ><?php echo $trading_rs[$trading_cnt]['patient_registration_id'] ?>
+						 </td>
+						 <td width="40" ><?php echo $trading_rs[$trading_cnt]['pname'] ?></td>
+						 <td width="40" align="right" ><?php 
+						 echo $trading_rs[$trading_cnt]['ACTUAL_VISIT_AMT'] ?></td>
+						
+							
+							 </tr>	
+					<?php }} ?>
+							<tr  style="background-color:#CC6633">
+							 <td width="40" colspan="4"  style="background-color:#CC6633">Total</td>
+							 <td width="40" align="right"><?php echo $total; ?></td>	
+							 </tr>	
+							 
+							 <tr  style="background-color:#CC6633">
+							 <td width="40" colspan="4"  style="background-color:#CC6633">Total Commission</td>
+							 <td width="40" align="right"><?php echo $tot_comm; ?></td>	
+							 </tr>	
+							 
+							  <tr  style="background-color:#CC6633">
+							 <td width="40" colspan="4"  style="background-color:#CC6633">Total Payable</td>
+							 <td width="40" align="right"><?php echo $total-$tot_comm; ?></td>	
+							 </tr>	
+							 
+				</table>
+			<?php } ?>
+			
+		
+		
 		
 		
 		
@@ -375,7 +488,8 @@ a {
 				</tr>
 			 				
 					  <?php 
-							$credit_cumulative_balance=$debit_cumulative_balance=$tot_dr_balance=$tot_cr_balance=0;
+							$credit_cumulative_balance=$debit_cumulative_balance=
+							$tot_dr_balance=$tot_cr_balance=0;
 							$trading_cnt_total=sizeof($report_data); 
 							if($trading_cnt_total>0){  
 							for($trading_cnt=0;$trading_cnt<$trading_cnt_total;$trading_cnt++)
@@ -1059,7 +1173,7 @@ a {
 								echo $this->projectmodel->GetSingleVal('productname','productmstr',' id='.$invoice_details_rs[$fieldIndex]['product_id']);
 								 ?></td>	
 								<td  align="right"><?php echo $invoice_details_rs[$fieldIndex]['qnty']; ?></td>	
-								<td align="right"><?php echo $invoice_details_rs[$fieldIndex]['srate']; ?></td>
+								<td align="right"><?php echo $invoice_details_rs[$fieldIndex]['rate']; ?></td>
 								<td  align="right"><?php echo $invoice_details_rs[$fieldIndex]['taxable_amt']; ?></td>
 								<td  align="right"><?php echo $invoice_details_rs[$fieldIndex]['doctor_commission_percentage']; ?></td>	
 								<td  align="right"><?php 
@@ -1260,7 +1374,7 @@ a {
 								echo $this->projectmodel->GetSingleVal('productname','productmstr',' id='.$invoice_details_rs[$fieldIndex]['product_id']);
 								 ?></td>	
 								<td  align="right"><?php echo $invoice_details_rs[$fieldIndex]['qnty']; ?></td>	
-								<td align="right"><?php echo $invoice_details_rs[$fieldIndex]['srate']; ?></td>
+								<td align="right"><?php echo $invoice_details_rs[$fieldIndex]['rate']; ?></td>
 								<td  align="right"><?php echo $invoice_details_rs[$fieldIndex]['taxable_amt']; ?></td>
 								<td  align="right"><?php echo $invoice_details_rs[$fieldIndex]['tax_per']; ?></td>	
 								<td  align="right"><?php echo $invoice_details_rs[$fieldIndex]['taxable_amt']+
@@ -1274,16 +1388,16 @@ a {
 						 </tr>
 						 <?php } ?>
 				<?php 				
-					$debit_cumulative_balance=$debit_cumulative_balance+$report_data[$trading_cnt]['credit_amount'];
-					$credit_cumulative_balance=$credit_cumulative_balance+$report_data[$trading_cnt]['debit_amount'];
+					$debit_cumulative_balance=$debit_cumulative_balance+floatval($report_data[$trading_cnt]['credit_amount']);
+					$credit_cumulative_balance=$credit_cumulative_balance+floatval($report_data[$trading_cnt]['debit_amount']);
 					
 					if($debit_cumulative_balance>=$credit_cumulative_balance)
 					{ $bal=$debit_cumulative_balance-$credit_cumulative_balance;} //echo $bal.'Dr';}
 					else
 					{$bal=$credit_cumulative_balance-$debit_cumulative_balance;} //echo $bal.'Cr';}
 	
-					$tot_dr_balance=$tot_dr_balance+$report_data[$trading_cnt]['credit_amount'];
-					$tot_cr_balance=$tot_cr_balance+$report_data[$trading_cnt]['debit_amount'];
+					$tot_dr_balance=$tot_dr_balance+floatval($report_data[$trading_cnt]['credit_amount']);
+					$tot_cr_balance=$tot_cr_balance+floatval($report_data[$trading_cnt]['debit_amount']);
 				
 				}}} ?>
 	<tr>
@@ -1407,7 +1521,7 @@ a {
 								echo $this->projectmodel->GetSingleVal('productname','productmstr',' id='.$invoice_details_rs[$fieldIndex]['product_id']);
 								 ?></td>	
 								<td  align="right"><?php echo $invoice_details_rs[$fieldIndex]['qnty']; ?></td>	
-								<td align="right"><?php echo $invoice_details_rs[$fieldIndex]['srate']; ?></td>
+								<td align="right"><?php echo $invoice_details_rs[$fieldIndex]['rate']; ?></td>
 								<td  align="right"><?php echo $invoice_details_rs[$fieldIndex]['taxable_amt']; ?></td>
 								<td  align="right"><?php echo $invoice_details_rs[$fieldIndex]['tax_per']; ?></td>	
 								<td  align="right"><?php 
@@ -1422,16 +1536,16 @@ a {
 						 </tr>
 						 <?php } ?>
 				<?php 				
-					$debit_cumulative_balance=$debit_cumulative_balance+$report_data[$trading_cnt]['credit_amount'];
-					$credit_cumulative_balance=$credit_cumulative_balance+$report_data[$trading_cnt]['debit_amount'];
+					$debit_cumulative_balance=$debit_cumulative_balance+floatval($report_data[$trading_cnt]['credit_amount']);
+					$credit_cumulative_balance=$credit_cumulative_balance+floatval($report_data[$trading_cnt]['debit_amount']);
 					
 					if($debit_cumulative_balance>=$credit_cumulative_balance)
 					{ $bal=$debit_cumulative_balance-$credit_cumulative_balance;} //echo $bal.'Dr';}
 					else
 					{$bal=$credit_cumulative_balance-$debit_cumulative_balance;} //echo $bal.'Cr';}
 	
-					$tot_dr_balance=$tot_dr_balance+$report_data[$trading_cnt]['credit_amount'];
-					$tot_cr_balance=$tot_cr_balance+$report_data[$trading_cnt]['debit_amount'];
+					$tot_dr_balance=$tot_dr_balance+floatval($report_data[$trading_cnt]['credit_amount']);
+					$tot_cr_balance=$tot_cr_balance+floatval($report_data[$trading_cnt]['debit_amount']);
 				
 				}}} ?>
 	<tr>
@@ -1547,9 +1661,29 @@ a {
   
 
 <div class="panel panel-primary" >
-			<div class="panel-body" align="center" style="background-color:#3c8dbc">
-					<button type="button" class="btn btn-danger" onclick="myExportToExcel();">Excel</button>
-					<button type="button" class="btn btn-danger" onclick="printDiv('printablediv');">Print</button>	
+		<div class="panel-body" align="center" style="background-color:#3c8dbc">
+		<button type="button" class="btn btn-danger" onclick="myExportToExcel();">Excel</button>
+					
+					
+	
+	
+	<?php  if($REPORT_NAME=='DOCTOR_COMMISSION_SUMMARY' && $display_report=='YES'){ ?>
+										
+	<button type="button" class="btn btn-primary" onclick="print_result(<?php echo $ledger_ac; ?>,
+	'<?php echo $fromdate; ?>','<?php echo $todate; ?>')">
+	Print
+	</button>
+	<?php }else if($REPORT_NAME=='DOCTOR_PRESCRIPTIONS'){ ?>
+	
+	<button type="button" class="btn btn-primary" onclick="print_presciption(<?php echo $ledger_ac; ?>,
+	'<?php echo $fromdate; ?>','<?php echo $todate; ?>')">
+	Print
+	</button>
+	
+	<?php }else{ ?>
+	<button type="button" class="btn btn-danger" onclick="printDiv('printablediv');">Print</button>	
+	<?php } ?>
+	
 			</div>
 </div> 
 

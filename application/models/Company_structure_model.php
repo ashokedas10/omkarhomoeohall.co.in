@@ -99,25 +99,23 @@ function UPDATE_MASTER($TRANTYPE)
 		foreach ($recordsHDR as $recordHDR)
 		{
 			$id=$recordHDR->id;		
-			//$save_updte['orderno']=$recordHDR->Product_No;	
+			$save_updte['orderno']=$recordHDR->Product_No;	
 			// $save_updte['productname']=$recordHDR->Name.
 			// ' ('.$recordHDR->Packing.' '.$recordHDR->Pack.')';
 
-			$save_updte['group_id']=289;
-			$save_updte['productname']=trim($recordHDR->Name).' - '.trim($recordHDR->Pack);			 		
+			$save_updte['productname']=trim($recordHDR->Name).' - '.trim($recordHDR->Potency);
+			 		
 			$save_updte['product_type']='FINISH';
 			
 			//$save_updte['Packing']=$recordHDR->Packing;	
 			//$save_updte['Pack']=$recordHDR->Pack;	
 			
-			//$save_updte['group_id']=$recordHDR->Group;
-			
-			
+			$save_updte['group_id']=$recordHDR->Group;
 			// $Group=$recordHDR->Group;	
 			// $save_updte['group_id']=$this->create_or_get_field('PRODUCT_GROUP',$Group);
 			
-			$MfgBy=trim($recordHDR->MfgBy);	
-			$save_updte['brand_id']=$this->create_or_get_field('BRAND',$MfgBy);
+			// $MfgBy=$recordHDR->MfgBy;	
+			// $save_updte['brand_id']=$this->create_or_get_field('BRAND',$MfgBy);
 			if($save_updte['productname']<>'0-0')
 			{
 				$this->projectmodel->save_records_model('','productmstr',$save_updte);
@@ -134,7 +132,8 @@ function create_or_get_field($TRANTYPE='',$field_name)
 	$save_field['mstr_type']=trim(strtoupper($TRANTYPE));
 	$save_field['status']='ACTIVE';
 	
-	$sql="SELECT * FROM misc_mstr 	WHERE UPPER(name)='".$save_field['name']."' and
+	$sql="SELECT * FROM misc_mstr 
+	WHERE UPPER(name)='".$save_field['name']."' and
 	UPPER(mstr_type)='".$save_field['mstr_type']."'"; 
 	$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
 	foreach ($rowrecord as $row1)

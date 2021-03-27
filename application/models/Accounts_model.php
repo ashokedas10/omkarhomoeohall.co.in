@@ -748,13 +748,14 @@ function all_mis_report($REPORT_NAME,$param_array)
 									
 									$ledger_ac_mstr=$this->projectmodel->GetSingleVal('ref_table_id','acc_group_ledgers','id='.$ledger_ac); 
 
-									$groups = "select * from misc_mstr		where mstr_type='PRODUCT_GROUP' and status='ACTIVE'  order by name " ;
+									$groups = "select * from 	frmrptgeneralmaster where  Status='MAIN_PRODUCT_GROUP' and id not in (57,58,59,60,61,62) " ;
 									$groups = $this->projectmodel->get_records_from_sql($groups);
 									if(count($groups)>0){
 									foreach ($groups as $grpkey=>$group){
 
 											$rsval[$mainindx]['group_id'][$grpkey]=$group->id;		
-											$rsval[$mainindx]['groupname'][$grpkey]=$group->name;		
+											$rsval[$mainindx]['groupname'][$grpkey]=$group->FieldVal;		
+											$rsval[$mainindx]['shortname'][$grpkey]=$group->FieldID;
 
 											$whr="product_group_id=".$group->id." and doctor_mstr_id=".$ledger_ac_mstr;
 											$doc_commission=$this->projectmodel->GetSingleVal('commission_percentage','doctor_commission_set',$whr);
@@ -766,9 +767,9 @@ function all_mis_report($REPORT_NAME,$param_array)
 									$rsval[$mainindx]['row_comm_total']=0;
 									
 
-									$details = "select b.group_id,sum(a.taxable_amt) taxable_amt
+									$details = "select a.main_group_id,sum(a.taxable_amt) taxable_amt
 									from invoice_details a,productmstr b		
-									where a.invoice_summary_id=".$record->id." and a.product_id=b.id  group by b.group_id" ;
+									where a.invoice_summary_id=".$record->id." and a.product_id=b.id  group by a.main_group_id" ;
 									$details = $this->projectmodel->get_records_from_sql($details);
 									if(count($details)>0)
 									{
@@ -777,10 +778,10 @@ function all_mis_report($REPORT_NAME,$param_array)
 		
 												//$ledger_ac_mstr=$this->projectmodel->GetSingleVal('ref_table_id','acc_group_ledgers','id='.$ledger_ac); 
 
-												$whr="product_group_id=".$detail->group_id." and doctor_mstr_id=".$ledger_ac_mstr;
-												$doc_commission=$this->projectmodel->GetSingleVal('commission_percentage','doctor_commission_set',$whr);
+												$whr="product_group_id=".$detail->main_group_id." and doctor_mstr_id=".$ledger_ac_mstr;
+												$doc_commission=floatval($this->projectmodel->GetSingleVal('commission_percentage','doctor_commission_set',$whr));
 
-											  $array_index = array_search($detail->group_id, $rsval[$mainindx]['group_id']);
+											   $array_index = array_search($detail->main_group_id, $rsval[$mainindx]['group_id']);
 												$rsval[$mainindx]['group_wise_trade_val'][$array_index]=$detail->taxable_amt; 
 												$rsval[$mainindx]['group_commission'][$array_index]=$doc_commission;
 												$rsval[$mainindx]['group_commission_amt'][$array_index]=
@@ -818,6 +819,54 @@ function all_mis_report($REPORT_NAME,$param_array)
 			return $rsval;		
 
 	}
+
+
+
+	if($REPORT_NAME=='DOCTOR_PRESCRIPTIONS' ) 
+	{
+		
+		$mainindx=$balance=0;		
+		$ledger_ac=$param_array['ledger_ac'];
+		$fromdate=$param_array['fromdate'];
+		$todate=$param_array['todate'];
+
+
+	 $records = "select *
+	from patient_prescription  where prescription_date	
+	between '".$param_array['fromdate']."' and '".$param_array['todate']."'
+	and   doctor_mstr_id=".$ledger_ac." ORDER BY id ";
+	$records = $this->projectmodel->get_records_from_sql($records);
+	if(count($records)>0){
+	foreach ($records as $record){
+
+		$rsval[$mainindx]['token_no']=$record->token_no;
+		$rsval[$mainindx]['token_status']=$record->token_status;
+		$rsval[$mainindx]['ACTUAL_VISIT_AMT']=$record->ACTUAL_VISIT_AMT;		
+		$rsval[$mainindx]['patient_registration_id']=$record->patient_registration_id;
+		$party_name=$this->projectmodel->GetSingleVal('party_name','patient_registration',
+		'id='.$record->patient_registration_id);
+		$rsval[$mainindx]['pname']=$party_name;			
+		
+		//doctor id get
+
+		$whr="id=".$record->doctor_mstr_id;
+		$ref_table_id=$this->projectmodel->GetSingleVal('ref_table_id','acc_group_ledgers',$whr);
+
+		$whr="id=".$ref_table_id;
+		$chamber_commission=$this->projectmodel->GetSingleVal('chamber_commission','doctor_mstr',$whr);
+
+		$rsval[$mainindx]['comm_amt']=round($record->ACTUAL_VISIT_AMT*$chamber_commission/100);
+		 
+		$mainindx=$mainindx+1;
+
+		}}
+
+			
+			return $rsval;		
+
+	}
+
+
 
 
 
@@ -1476,8 +1525,8 @@ function all_mis_report($REPORT_NAME,$param_array)
 		if($ledger_ac>0)
 		{
 			
-			$cr_open_balance=$this->ledger_opening_balance($ledger_ac,$fromdate,'CR');	
-			$dr_open_balance=$this->ledger_opening_balance($ledger_ac,$fromdate,'DR');				
+			$cr_open_balance=floatval($this->ledger_opening_balance($ledger_ac,$fromdate,'CR'));	
+			$dr_open_balance=floatval($this->ledger_opening_balance($ledger_ac,$fromdate,'DR'));				
 
 			if($cr_open_balance>0 || $dr_open_balance>0)
 			{

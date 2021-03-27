@@ -40,38 +40,99 @@ RETAIL INVOICE
 33.mother mixture at bill MRP WILL COME
 39.AFTER CLICKING DISPLAY LIST WILL COME...DATE CORRENT DATE
 38.LIST OF BILL ORDER BY DESC
+10.EDIT, DELETE NOT FUNCTIONAL IN ALL SEGMENT ---
+32.AT PRODUCT LIST GROUP NAME WILL COME (A,B...)
+mother mixer at bill problem from mm2
+distil water rate master correction
+
+WHOLE SALE 
+41.CORRECTION WATER AS RETAIL
+
+
+
+//RECENT PROBLEM SOLVE
+
+problem in edit ing bill
+save bill ---save from save bill also
+at batch and rack no  not require ...select from mrp
+sub total increased....problem
+delete from stock not done and not delete from rack
+PRODUCT WISE DISCOUNT AS PER PARTY AND PRODUCT
+
+after editing the bill if go to new entry bill deleted
+save bill,print bill or print label --> product will be minus
+
+AT ISSUE 
+------------
+AT PRODUCT LIST
+MRP LIST
+
+AT PRINT
+PRODUCT  MRP QNTY BOX 
+9.DOC COMMISSION MAIN GROUP WISE
+
+DOCTOR COMMISSION calculate done
+doctor name save
+
+
+retail
+whole
+purchase
+issue
+
+EXP DATE WILL BE CALCULATE =PURCHASE DATE + 12 MONTH
 
 
 //PENDING PROBLEMS
 
-9.DOC COMMISSION MAIN GROUP WISE
-TRANSACTIONS
-===============
-10.EDIT, DELETE NOT FUNCTIONAL IN ALL SEGMENT ---
+product wise delete section.....
+product master not added ...chk for nature
+GENERATE PRESCRIPTION
 
 
 
-RETAIL INVOICE 
-================
-12.INCOMING DOCTOR ADD NAME ..BUT ADD TO MASTER
-26.bill footer ...description not require ...connect with company setting field
-will display at footer
-
-32.AT PRODUCT LIST GROUP NAME WILL COME (A,B...)
-mother mixer at bill problem from mm2
-distil water rate master correction
-all synonym at list
 
 
-WHOLE SALE 
 
-41.CORRECTION WATER AS RETAIL
-42.PATENT NAME AT BILL NOT COMING --CHK BILL NO : 30/20-21
+
+
+AUTO SETTLE IN BOX ...WHEN PURCHASE SELECT AVAILABLE BOX AND ADD .
+AT SALE DONT NEED TO SHOW BOX AND MRP LIST ...CALCULATE AUTO
+CHCK THE BOX IN WHICH THE PRODUCT HAS...ENTER THE PRODUCT INTO THIS BOX AT PURCHASE
+
+BOX WISE REPORT
+BOX NO 
+PRODUCT 1 QNTY
+PRODUCT 2 QNTY
+
+SO ON 
+
+
+bill date problem at edit ..save with current date
+retail and whole sale 
+
+POS PRINTER COMMISSION SLIP FOR DOCTORS
+
+
+
+SYNOMYM AT BILL LIST
+
+
+ORDER FORM AND REPORT
+PRESCRIPTION
+PRINT PRESCRIPTION
+
+at bill print -beside of patent name company shrot name
+MOTHER MIX 1 ..2 AT LABEL
+IN INVOICE RETAIL BILL
+ENTER DUE : ENTER DUE PAID ____ PAY DATE 
+
+
+
+WHOLE SALE BILL ISSUES
+---------------------
 43.PREVIOUS DUE =XXXX + THIS BILL AMOUNT=YYY = ZZZ ( TOTAL DUE)
   LAST PAID ON ----  AMOUNT SSSSS 
 
-
-44.ORDER FORM AND REPORT
-
-
-
+26.bill footer ...description not require ...connect with company setting field
+will display at footer

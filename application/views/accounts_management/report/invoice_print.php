@@ -149,6 +149,8 @@ td{
 } 
 .style1 {font-family: 'Courier'; font-weight:bold; font-size: 16px}
 
+.style2 {font-family:'Bookman Old Style'; font-weight:500;  font-size: 18px}
+
 .product_list {font-family:'Bookman Old Style'; font-weight:500;  font-size: 12px}
 
 .header_section {font-family:'Bookman Old Style'; font-weight:500;  font-size: 14px}
@@ -255,13 +257,21 @@ td{
 	<!--stamp section-->
 	<?php /*?><span class="stamp is-nope"><?php echo $billtype;?></span><?php */?>
       <div class="info header_section" > 
-           Bill No   :<?php echo $invoice_summary[0]->invoice_no.'.    Date: '.$invoice_summary[0]->invoice_date.' Time: '.$invoice_summary[0]->invoice_time; ?>
+           Bill No   :<?php 
+		   
+		   $format_date=
+		   substr($invoice_summary[0]->invoice_date,8,2).'/'.
+		   substr($invoice_summary[0]->invoice_date,5,2).'/'.
+		   substr($invoice_summary[0]->invoice_date,2,2);
+		   
+		   echo $invoice_summary[0]->invoice_no.
+		   '.  Date: '.$format_date.' Time: '.$invoice_summary[0]->invoice_time; ?>
 		   
 		   <?php /*?>Date/Time :<?php echo $invoice_summary[0]->invoice_date.'/'.$invoice_summary[0]->invoice_time; ?><?php */?></br>
 		  <?php /*?> Bill Type   :<?php echo '<strong>'.$billtype.'</strong>'; ?></br><?php */?>
 		   
            Bill By   :<?php echo $invoice_summary[0]->emp_name; ?></br> 
-		   Ref By   :<?php echo $doctor; ?></br> 
+		   Ref By   :<?php echo $invoice_summary[0]->doctor_name; ?></br> 
       </div>
     </div><!--End Invoice Mid-->
 	<?php /*?><br>
@@ -365,6 +375,7 @@ td{
 				$tax_per=$row->tax_per;		
 				
 				$product_name=$this->projectmodel->GetSingleVal('productname','productmstr',' id='.$row->product_id);
+				$brand_id=$this->projectmodel->GetSingleVal('brand_id','productmstr',' id='.$row->product_id);
 					
 				
 				//potency
@@ -455,7 +466,10 @@ td{
 				
 				if($row->main_group_id==51) //PATENT
 				{
-					$product_name=$product_name;
+					$brand_name=$this->projectmodel->GetSingleVal('name_value','misc_mstr',' id='.$brand_id);
+				
+				
+					$product_name=$product_name.' ('.$brand_name.')';
 					$pack_name='';
 				}	
 		
@@ -612,7 +626,8 @@ td{
 					$stotal=0;		
 					$tax_per=$row->tax_per;		
 					
-					$product_name=$this->projectmodel->GetSingleVal('productname','productmstr',' id='.$row->product_id);
+					$product_name=
+					$this->projectmodel->GetSingleVal('productname','productmstr',' id='.$row->product_id);
 									
 					if($row->product_Synonym<>'')
 					{$product_name=$row->product_Synonym;}
@@ -704,33 +719,24 @@ td{
 							<tr><td  colspan="7"><div style="border-bottom:solid;">&nbsp;</div></td></tr>
 							
 							<tr >
-							<td class="tableitem" colspan="2">
-							<span class="product_list"><?PHP echo 'Total Qnty :'.$total_qnty; ?></span>
+							<td  colspan="2">
+							<span class="style2"><?PHP echo 'Total Qnty :'.$total_qnty; ?></span>
 							</td>
 							
-							<td class="tableitem" colspan="3" align="left"><strong>Grand Total</strong></td>
-								<td class="tableitem" colspan="2" align="right">
-								<span class="style1"><?PHP echo $invoice_summary[0]->total_amt; ?> </span></td>
+							<td  colspan="3" align="left">
+							
+							<span class="style2">Grand Total</span>
+							</td>
+								<td  colspan="2" align="right">
+								<span class="style2"><?PHP echo $invoice_summary[0]->total_amt; ?> </span>
+								</td>
 							</tr>
 							<tr><td  colspan="7"><div style="border-top:solid;">&nbsp;</div></td></tr>
 							
-						<?php /*?>	<tr class="service">
-								<td class="tableitem" colspan="2">&nbsp;</td>
-								<td class="tableitem" colspan="2"><span class="style1">Total</span></td>
-								<td class="tableitem" colspan="3" align="right">
-								<span class="style1"><?PHP echo $total_amt; ?></span></td>
-								
-							</tr>
-							<tr class="service">
-								<td class="tableitem" colspan="2">&nbsp;</td>
-								<td class="tableitem" colspan="2"><span class="style1">Discount</span></td>
-								<td class="tableitem" colspan="3" align="right">
-								<span class="style1"><?PHP echo $total_disc_amt; ?></span></td>
-								
-							</tr><?php */?>
+						
 							
 							<?php if($gst_enable){?>
-							<tr class="service">
+							<?php /*?><tr class="service">
 								<td class="tableitem" colspan="2">&nbsp;</td>
 								<td class="tableitem" colspan="2"><span class="style1">Taxable Amt</span></td>
 								<td class="tableitem" colspan="3" align="right">
@@ -748,32 +754,26 @@ td{
 								<td class="tableitem" colspan="2"><span class="style1">SGST Amt</span></td>
 								<td class="tableitem" colspan="3" align="right">
 								<span class="style1"><?PHP echo $total_sgst_amt; ?> </span></td>
-							</tr>
+							</tr><?php */?>
 							<?php }?>
 							
-							<?php /*?><tr class="service">
-								<td class="tableitem" colspan="2">&nbsp;</td>
-								<td class="tableitem" colspan="2"><span class="style1">Grand Total</span></td>
-								<td class="tableitem" colspan="3" align="right">
-								<span class="style1"><?PHP echo $invoice_summary[0]->total_amt; ?> </span></td>
-							</tr>
-							<?php */?>
-							
-							<tr class="service">
-								<td class="header_section" colspan="7" align="left">
-								<span class="style1">[ Total MRP :<?php  echo '<strong>'.sprintf('%0.2f',$grand_mrp).'</strong>';?> ]</span></td>
+										
+							<tr >
+								<td   colspan="7" align="left">
+								<span class="style2">[ Rs Payable :<?php echo 
+								'<strong>'.strtoupper($this->numbertowords->convert_digit_to_words(intval($invoice_summary[0]->total_amt)).' Only').'</strong>';?> ]	</span>							</td>
 							</tr>
 							
 							<tr class="service">
-								<td class="header_section" colspan="7" align="left">
-								[ Rs Payable :<?php echo 
-								'<strong>'.strtoupper($this->numbertowords->convert_digit_to_words(intval($invoice_summary[0]->total_amt)).' Only').'</strong>';?> ]								</td>
+								<td  colspan="7" align="left">
+								<span class="style2">[ Total MRP :<?php  echo '<strong>'.sprintf('%0.2f',$grand_mrp).'</strong>';?> ]</span></td>
 							</tr>
+							
 							
 							<?php if($invoice_summary[0]->status=='SALE'){?>						
 							<tr class="service">
-								<td class="header_section" colspan="7" align="left">
-								<span class="style1">[ Your Savings Rs.<?php 
+								<td   colspan="7" align="left">
+								<span class="style2">[ Your Savings Rs.<?php 
 								
 								$mrpsum="SELECT SUM( mrp * qnty ) totmrp 
 								FROM invoice_details WHERE invoice_summary_id =".$table_id;					

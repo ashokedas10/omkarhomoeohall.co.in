@@ -74,10 +74,32 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 	   var data_link=BaseUrl;
 	   var success={};		   
 	   var data_save = {'form_name':$rootScope.current_form_report,'subtype':'delete_bill','id':id};
-		console.log('ID:'+$rootScope.current_form_report);
+
 	   var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
 	   $http.post(data_link,data_save,config).then (function success(response){	
-		$rootScope.server_msg=response.data.server_msg;		
+
+		$rootScope.server_msg=response.data.server_msg;
+		
+	   },
+	   function error(response){
+		   $scope.errorMessage = 'Error adding user!';
+		   $scope.message = '';
+	   });
+	  
+   }	
+
+   factoryobj.delete_item=function(form_name,subtype,BaseUrl,id)
+   {
+
+	   var data_link=BaseUrl;
+	   var success={};		   
+	   var data_save = {'form_name':$rootScope.current_form_report,'subtype':'delete_item','id':id};
+		console.log(id);
+	   var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
+	   $http.post(data_link,data_save,config).then (function success(response){	
+
+		$rootScope.server_msg=response.data.server_msg;
+		
 	   },
 	   function error(response){
 		   $scope.errorMessage = 'Error adding user!';
@@ -178,6 +200,29 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 	   return $rootScope.main_grid_array;
    }	
 
+
+   factoryobj.prescription_list=function(form_name,subtype,BaseUrl,id,startdate,enddate)
+   {
+	   var data_link=BaseUrl;
+	   var success={};		
+	   
+	   var data_save = {'form_name':$rootScope.current_form_report,'subtype':'prescription_list',
+	   'id':id,'startdate':startdate,'enddate':enddate	};
+	   console.log(data_save);	
+	   var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
+	   $http.post(data_link,data_save,config).then (function success(response){
+
+		   $rootScope.main_grid_array=response.data.header;
+		   console.log($rootScope.main_grid_array);
+	   },
+	   function error(response){
+		   $scope.errorMessage = 'Error adding user!';
+		   $scope.message = '';
+	   });
+
+	   return $rootScope.main_grid_array;
+   }	
+
    factoryobj.dtlist=function(BaseUrl,id)
    {
 
@@ -185,12 +230,12 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 	   var success={};		
 	   
 	   var data_save = {'form_name':$rootScope.current_form_report,'subtype':'dtlist','id':id};
-	   console.log('ID: '+$rootScope.current_form_report);	
+	   console.log(data_save);	
 	   var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
 	   $http.post(data_link,data_save,config).then (function success(response){
 
 		   $rootScope.dtlist_array=response.data.header;
-		   console.log(' aaaaaaa '+$rootScope.dtlist_array);
+		   console.log($rootScope.dtlist_array);
 	   },
 	   function error(response){
 		   $scope.errorMessage = 'Error adding user!';

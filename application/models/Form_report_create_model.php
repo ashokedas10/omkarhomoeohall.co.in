@@ -269,7 +269,7 @@ public function create_report($rs=array(),$id=0)
             // else if($detail->InputType=='LABEL'){$output['InputType']='LABEL';}
             // else {$output['InputType']='text';}
             
-                $output['Inputvalue']=$detail->Inputvalue;
+                 $output['Inputvalue']=$detail->Inputvalue;
                 if($detail->datafields<>'')
                 {
                     $output['datafields']=$this->projectmodel->get_records_from_sql($detail->datafields);
@@ -294,13 +294,15 @@ public function create_report($rs=array(),$id=0)
                 }
                 else if($detail->Inputvalue<>'')
                 {
-                    if($detail->Inputvalue==0){$output['Inputvalue']='';}
+                    if($detail->Inputvalue=='0'){$output['Inputvalue']='';}
                     else{$output['Inputvalue']=$detail->Inputvalue;}                    
                     $output['Inputvalue_id']='';
                 }   
                 else
                 {
-                    if($Inputvalue==0){$Inputvalue='';}
+                    //echo $Inputvalue;
+                    //echo '<br>';
+                    if($Inputvalue=='0'){$Inputvalue='';}
                     $output['Inputvalue']=$Inputvalue;		
                     $output['Inputvalue_id']='';	
                 }

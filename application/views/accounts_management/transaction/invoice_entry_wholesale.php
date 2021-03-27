@@ -176,10 +176,10 @@ body p {
 .input_field_height
 {
 height:27px;
-font-family:Arial, Helvetica, sans-serif bold;
-font-size:15px;
+font-family:Arial black;
+font-size:12px;
 color:#000000;
-font-weight:200;
+font-weight:300;
 }
 .style4 {
 	color: #FFFFFF;
@@ -274,7 +274,7 @@ font-weight:200;
 		
 		<td  align="center"   class="activeTR">
 		<span class="style3">
-		<button type="button" class="btn btn-danger" ng-click="test()">LOAD INVOICE ENTRY</button>
+		<button type="button" class="btn btn-danger" ng-click="test()">WHOLE SALE</button>
 		</span>	
 		</td> 
 		

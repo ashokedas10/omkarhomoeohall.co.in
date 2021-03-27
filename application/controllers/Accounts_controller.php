@@ -3119,6 +3119,8 @@ $id_header='',$id_detail='',$fromdate='',$todate='')
 			$data['ledger_accounts'] =$data['user_ac']=	0;
 			$data['ledger_ac']=0;
 			$data['display_report'] ='NO';
+			$data['report_data'] =array();
+			
 			/* if($REPORT_NAME=='PRODUCT_GROUP' || $REPORT_NAME=='PRODUCT_BATCH' || $REPORT_NAME=='PRODUCT_BATCH_TRANSACTIONS')
 			{ 
 				$data['param1'] =$param1;
@@ -3171,7 +3173,8 @@ $id_header='',$id_detail='',$fromdate='',$todate='')
 
 			
 			if( $REPORT_NAME=='HSN_WISE_SALE' || $REPORT_NAME=='HSN_WISE_SUMMARY' || $REPORT_NAME=='GST_REPORT' 
-			|| $REPORT_NAME=='DOCTOR_COMMISSION_SUMMARY' || 	$REPORT_NAME=='DOCTOR_COMMISSION_DETAILS')
+			|| $REPORT_NAME=='DOCTOR_COMMISSION_SUMMARY' || $REPORT_NAME=='DOCTOR_COMMISSION_DETAILS' || 
+				$REPORT_NAME=='DOCTOR_PRESCRIPTIONS' )
 			{
 					$data['fromdate']=date('Y-m-d');
 					$data['todate']=date('Y-m-d');
@@ -3270,7 +3273,8 @@ $id_header='',$id_detail='',$fromdate='',$todate='')
 
 				if($REPORT_NAME=='DOCTOR_COMMISSION_SUMMARY' || $REPORT_NAME=='DOCTOR_COMMISSION_DETAILS' || 
 				$REPORT_NAME=='GENERAL_LEDGER' || $REPORT_NAME=='DEBTORS_SUMMARY' || $REPORT_NAME=='CREDITORS_SUMMARY' 
-				|| $REPORT_NAME=='PURCHASE_REGISTER' || $REPORT_NAME=='SALE_REGISTER')
+				|| $REPORT_NAME=='PURCHASE_REGISTER' || $REPORT_NAME=='SALE_REGISTER' ||  
+				$REPORT_NAME=='DOCTOR_PRESCRIPTIONS')
 				{
 					$data['fromdate']=$this->input->post('fromdate');
 					$data['todate']=$this->input->post('todate');

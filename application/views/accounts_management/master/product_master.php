@@ -47,6 +47,9 @@ ng-click="hideMenu($event)" ng-init="initarray('TRIP_ENTRY')" id="myBody">
 		<div class="panel-heading">
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 				<h4 class="panel-title" id="contactLabel"><span class="glyphicon glyphicon-info-sign">List of values</span>{{savemsg}}</h4>
+				<!--{{FormInputArray}}-->
+				
+				
 		</div>	
 		
 			<form id="Transaction_form" name="Transaction_form" >
@@ -109,10 +112,11 @@ ng-click="hideMenu($event)" ng-init="initarray('TRIP_ENTRY')" id="myBody">
                     <th >Product Name </th>
                     <th >Group</th>    
 					<th >Brand</th>  
-					<th >MRP</th>
+					<!--<th >MRP</th>-->
+					<th >Status</th>
 					<th >Avai.Qnty</th> 
 					<th >Min Stock</th>
-					<th >EXP (mm/yy)</th>
+					<!--<th >EXP (mm/yy)</th>-->
 					<th >Sale Discount</th> 
 					
 					<th >Spl.Discount</th> 
@@ -120,7 +124,7 @@ ng-click="hideMenu($event)" ng-init="initarray('TRIP_ENTRY')" id="myBody">
 					<th >Label (Y/N)</th> 
 					<?php /*?><th >HSN Code</th>    
 					<th >Tax%</th>  <?php */?>    
-					<th >Status</th>  
+					  
 					<th>Add</th> 
                   </tr>
 				  
@@ -139,7 +143,7 @@ ng-click="hideMenu($event)" ng-init="initarray('TRIP_ENTRY')" id="myBody">
 		 
 		<td>
 			<select name="select" 
-				class="form-control input_field_hight" 
+				class=" input_field_hight" 
 				ng-model="FormInputArray[0].list_of_values[layer].group_id" >
 				<option  value="0">NA</option>
 				<option ng-repeat="option in product_group_list" 
@@ -149,19 +153,29 @@ ng-click="hideMenu($event)" ng-init="initarray('TRIP_ENTRY')" id="myBody">
 		 
 		<td  >
 			<select name="select" 
-				class="form-control input_field_hight" 
+				class="input_field_hight" 
 				ng-model="FormInputArray[0].list_of_values[layer].brand_id" >
 				<option  value="0">NA</option>
 				<option ng-repeat="option in brand_list" 
 				value="{{option.id}}">{{option.name}}</option>
 			</select>
 		</td> 
+		
+		<td  >
+			<select name="select" 
+				class="input_field_hight" 
+				ng-model="FormInputArray[0].list_of_values[layer].active_inactive" >
+				<option  value="0">Select</option>
+				<option ng-repeat="option in active_inactive_list" 
+				value="{{option.FieldID}}">{{option.FieldVal}}</option>
+			</select>
+		</td>
 		 
-		 <td align="right"  >
+		<!-- <td align="right"  >
 		  <input  type="text" style="text-align:left"	
 		  class="form-control input_field_hight" 
 		  ng-model="FormInputArray[0].list_of_values[layer].mrp"/>
-		 </td> 
+		 </td> -->
 		 
 		  <td align="right"  >
 		 <input  type="text" style="text-align:left"	class="form-control input_field_hight" 
@@ -174,11 +188,11 @@ ng-click="hideMenu($event)" ng-init="initarray('TRIP_ENTRY')" id="myBody">
 		  ng-model="FormInputArray[0].list_of_values[layer].minimum_stock"/>
 		 </td>   
 		 
-		  <td align="right"  >
+		 <!-- <td align="right"  >
 		  <input  type="text" style="text-align:left"	
 		  class="form-control input_field_hight" 
 		  ng-model="FormInputArray[0].list_of_values[layer].exp_mmyy"/>
-		 </td>   
+		 </td>   -->
 		 
 		 
 		 <td align="right"  >
@@ -216,15 +230,7 @@ ng-click="hideMenu($event)" ng-init="initarray('TRIP_ENTRY')" id="myBody">
 			</select>
 		</td><?php */?>
 		
-			<td  >
-			<select name="select" 
-				class="form-control input_field_hight" 
-				ng-model="FormInputArray[0].list_of_values[layer].active_inactive" >
-				<option  value="0">Select</option>
-				<option ng-repeat="option in active_inactive_list" 
-				value="{{option.FieldID}}">{{option.FieldVal}}</option>
-			</select>
-		</td>
+			
 		   
 		<td  align="left"  ><button class="btn btn-warning" ng-click="add_entry('lov_list')" >
 		Add</button></td>					

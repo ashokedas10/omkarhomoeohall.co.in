@@ -1,201 +1,201 @@
-$rootScope.search = function(searchelement)
-		{			
-				
-				$rootScope.searchelement=searchelement;
-				$rootScope.suggestions = [];
-				$rootScope.searchItems=[];
-					
-				console.log(searchelement);
-
-				if($rootScope.searchelement=='product_id_name')
-				{$rootScope.searchItems=$rootScope.productlist;}			
-				else if($rootScope.searchelement=='batchno')
-				{
-					var data_link=BaseUrl+"batchno/"+$scope.product_id;	
-					console.log(data_link);
-					$http.get(data_link).then(function(response){
-						angular.forEach(response.data,function(value,key){	
-							if($rootScope.batchlist.indexOf($rootScope.batchlist[key]) === -1) {				
-							$rootScope.batchlist.push({id:value.id,name:value.batchno,purchase_rate:value.rate,PURCHASEID:value.PURCHASEID
-								,AVAILABLE_QTY:value.AVAILABLE_QTY,exp_monyr:value.exp_monyr,mfg_monyr:value.mfg_monyr,srate:value.srate,mrp:value.mrp,ptr:value.ptr});
-							}
-						});
-					});		
-					$rootScope.searchItems=$rootScope.batchlist;
-
-					//console.log($rootScope.searchItems);
-				}	
-				else if($rootScope.searchelement=='tbl_party_id_name')
-				{$rootScope.searchItems=$rootScope.partylist; }	
-				else if($rootScope.searchelement=='hq_id_name')
-				{
-					var data_link=BaseUrl+"hq_id_name/"+$scope.tbl_party_id;					
-					$http.get(data_link).then(function(response){
-						angular.forEach(response.data,function(value,key){	
-							if($rootScope.hqlist.indexOf($rootScope.hqlist[key]) === -1) {				
-							$rootScope.hqlist.push({id:value.id,name:value.name});
-							}
-						});
-					});		
-					$rootScope.searchItems=$rootScope.hqlist;
-				}	
-				else
-				{}				
-				
-				$rootScope.searchItems.sort();	
-				var myMaxSuggestionListLength = 0;
-				for(var i=0; i<$rootScope.searchItems.length; i++)
-				{					
-						var searchItemsSmallLetters = angular.uppercase($rootScope.searchItems[i].name);
-						var searchTextSmallLetters = angular.uppercase($scope[$rootScope.searchelement]);
-						if( searchItemsSmallLetters.indexOf(searchTextSmallLetters) >=0)
-						{
-							if($rootScope.searchelement=='batchno')
-							{
-								
-								$rootScope.suggestions.push(
-									{
-										id:$rootScope.searchItems[i].id,name:$rootScope.searchItems[i].name,PURCHASEID:$rootScope.searchItems[i].PURCHASEID
-										,AVAILABLE_QTY:$rootScope.searchItems[i].AVAILABLE_QTY,exp_monyr:$rootScope.searchItems[i].exp_monyr,
-									  mfg_monyr:$rootScope.searchItems[i].mfg_monyr,srate:$rootScope.searchItems[i].srate,
-										mrp:$rootScope.searchItems[i].mrp,ptr:$rootScope.searchItems[i].ptr,purchase_rate:$rootScope.searchItems[i].purchase_rate});
-							  	}
-									else
-									{$rootScope.suggestions.push({id: $rootScope.searchItems[i].id,name:$rootScope.searchItems[i].name} );}
-							
-									myMaxSuggestionListLength += 1;
-							if(myMaxSuggestionListLength === 1500)
-							{break;}
-						}						
-				}
-
-				
-		};
-	
-	$rootScope.$watch('selectedIndex',function(val){		
-		if(val !== -1) {			
-			$scope[$rootScope.searchelement] =$rootScope.suggestions[$rootScope.selectedIndex]['name'];				
-		}
-	});		
-
-	$rootScope.checkKeyDown = function(event){
-		if(event.keyCode === 40){//down key, increment selectedIndex
-			event.preventDefault();
-			if($rootScope.selectedIndex+1 < $rootScope.suggestions.length){
-				$rootScope.selectedIndex++;
-			}else{
-				$rootScope.selectedIndex = 0;
-			}
-		
-		}else if(event.keyCode === 38){ //up key, decrement selectedIndex
-			event.preventDefault();
-			if($rootScope.selectedIndex-1 >= 0){
-				$rootScope.selectedIndex--;
-			}else{
-				$rootScope.selectedIndex = $rootScope.suggestions.length-1;
-			}
-		}
-		else if(event.keyCode === 13){ //enter key, empty suggestions array
-			$rootScope.AssignValueAndHide($rootScope.selectedIndex);
-			//console.log($rootScope.selectedIndex);
-			// event.preventDefault();			
-			// $rootScope.suggestions = [];
-			// $rootScope.searchItems=[];		
-			// $rootScope.selectedIndex = -1;
-		}
-		else if(event.keyCode === 9){ //enter tab key
-			//console.log($rootScope.selectedIndex);
-			if($rootScope.selectedIndex>-1){
-				$rootScope.AssignValueAndHide($rootScope.selectedIndex);
-			}			
-
-		}else if(event.keyCode === 27){ //ESC key, empty suggestions array
-			$rootScope.AssignValueAndHide($rootScope.selectedIndex);
-			// console.log($rootScope.selectedIndex);
-			// event.preventDefault();
-			// $rootScope.suggestions = [];
-			// $rootScope.searchItems=[];		
-			// $rootScope.selectedIndex = -1;
-		}else{
-			$rootScope.search();	
-		}
-	};
-	
-	//ClickOutSide
-	var exclude1 = document.getElementById($rootScope.searchelement);
-	$rootScope.hideMenu = function($event){
-		$rootScope.search();
-		//make a condition for every object you wat to exclude
-		if($event.target !== exclude1) {
-			// $rootScope.searchItems=[];
-			// $rootScope.suggestions = [];			
-			// $rootScope.selectedIndex = -1;
-		}
-	};
-	//======================================
-	
-	//Function To Call on ng-keyup
-	$rootScope.checkKeyUp = function(event){ 
-		if(event.keyCode !== 8 || event.keyCode !== 46){//delete or backspace
-			if($scope[$rootScope.searchelement] === ""){
-				$rootScope.suggestions = [];
-				$rootScope.searchItems=[];			
-				$rootScope.selectedIndex = -1;
-			}
-		}
-	};
-	//======================================
-	//List Item Events
-	//Function To Call on ng-click
-	$rootScope.AssignValueAndHide = function(index){
-	$scope[$rootScope.searchelement]= $rootScope.suggestions[index];
-
-	if($rootScope.searchelement=='tbl_party_id_name')
-	{		
-		$scope['tbl_party_id']=$rootScope.suggestions[index]['id'];  //ACTUAL ID
-		$scope['tbl_party_id_name']=$rootScope.suggestions[index]['name'];  // NAME 			
-	}
-
-	if($rootScope.searchelement=='product_id_name')
-	{		
-		var id=$rootScope.suggestions[index]['id'];	
-		var data_link=BaseUrl+"product_id/"+id;					
-		console.log(data_link);					
-		$http.get(data_link).then(function(response){
-			angular.forEach(response.data,function(value,key){
-				$scope['product_id']=value.id;  //ACTUAL ID
-				$scope['product_id_name']=value.name; // NAME 	
-				$scope['tax_ledger_id']=value.output_gst_ledger_id; // NAME 	
-				$scope['tax_per']=value.tax_per; // NAME 				
-				$scope.previous_transaction_details(value.id);														
-			});
-		});
-	
-	}
-
-		if($rootScope.searchelement=='hq_id_name')
-		{
-			$scope['hq_id']=$rootScope.suggestions[index]['id'];  //ACTUAL ID
-			$scope['hq_id_name']=$rootScope.suggestions[index]['name'];  // NAME
-		}
-
-		if($rootScope.searchelement=='batchno')
-		{			
-			$scope['batchno']= $rootScope.suggestions[index]['name'];
-			$scope['exp_monyr']= $rootScope.suggestions[index]['exp_monyr'];
-			$scope['mfg_monyr']=$rootScope.suggestions[index]['mfg_monyr']; 
-			$scope['rate']=$rootScope.suggestions[index]['srate']; 
-			$scope['srate']=$rootScope.suggestions[index]['srate']; 
-			$scope['mrp']=$rootScope.suggestions[index]['mrp']; 
-			$scope['ptr']=$rootScope.suggestions[index]['ptr']; 
-			$scope['AVAILABLE_QTY']=$rootScope.suggestions[index]['AVAILABLE_QTY'];  
-			$scope['purchase_rate']=$rootScope.suggestions[index]['purchase_rate'];  //purchase rate
-			$scope['PURCHASEID']=$rootScope.suggestions[index]['PURCHASEID'];  
-			
-		}
-			
-		 $rootScope.suggestions=[];
-		 $rootScope.searchItems=[];		
-		 $rootScope.selectedIndex = -1;
-	};
+$rootScope.search = function(searchelement)
+		{			
+				
+				$rootScope.searchelement=searchelement;
+				$rootScope.suggestions = [];
+				$rootScope.searchItems=[];
+					
+				console.log(searchelement);
+
+				if($rootScope.searchelement=='product_id_name')
+				{$rootScope.searchItems=$rootScope.productlist;}			
+				else if($rootScope.searchelement=='batchno')
+				{
+					var data_link=BaseUrl+"batchno/"+$scope.product_id;	
+					console.log(data_link);
+					$http.get(data_link).then(function(response){
+						angular.forEach(response.data,function(value,key){	
+							if($rootScope.batchlist.indexOf($rootScope.batchlist[key]) === -1) {				
+							$rootScope.batchlist.push({id:value.id,name:value.batchno,purchase_rate:value.rate,PURCHASEID:value.PURCHASEID
+								,AVAILABLE_QTY:value.AVAILABLE_QTY,exp_monyr:value.exp_monyr,mfg_monyr:value.mfg_monyr,srate:value.srate,mrp:value.mrp,ptr:value.ptr});
+							}
+						});
+					});		
+					$rootScope.searchItems=$rootScope.batchlist;
+
+					//console.log($rootScope.searchItems);
+				}	
+				else if($rootScope.searchelement=='tbl_party_id_name')
+				{$rootScope.searchItems=$rootScope.partylist; }	
+				else if($rootScope.searchelement=='hq_id_name')
+				{
+					var data_link=BaseUrl+"hq_id_name/"+$scope.tbl_party_id;					
+					$http.get(data_link).then(function(response){
+						angular.forEach(response.data,function(value,key){	
+							if($rootScope.hqlist.indexOf($rootScope.hqlist[key]) === -1) {				
+							$rootScope.hqlist.push({id:value.id,name:value.name});
+							}
+						});
+					});		
+					$rootScope.searchItems=$rootScope.hqlist;
+				}	
+				else
+				{}				
+				
+				$rootScope.searchItems.sort();	
+				var myMaxSuggestionListLength = 0;
+				for(var i=0; i<$rootScope.searchItems.length; i++)
+				{					
+						var searchItemsSmallLetters = angular.uppercase($rootScope.searchItems[i].name);
+						var searchTextSmallLetters = angular.uppercase($scope[$rootScope.searchelement]);
+						if( searchItemsSmallLetters.indexOf(searchTextSmallLetters) >=0)
+						{
+							if($rootScope.searchelement=='batchno')
+							{
+								
+								$rootScope.suggestions.push(
+									{
+										id:$rootScope.searchItems[i].id,name:$rootScope.searchItems[i].name,PURCHASEID:$rootScope.searchItems[i].PURCHASEID
+										,AVAILABLE_QTY:$rootScope.searchItems[i].AVAILABLE_QTY,exp_monyr:$rootScope.searchItems[i].exp_monyr,
+									  mfg_monyr:$rootScope.searchItems[i].mfg_monyr,srate:$rootScope.searchItems[i].srate,
+										mrp:$rootScope.searchItems[i].mrp,ptr:$rootScope.searchItems[i].ptr,purchase_rate:$rootScope.searchItems[i].purchase_rate});
+							  	}
+									else
+									{$rootScope.suggestions.push({id: $rootScope.searchItems[i].id,name:$rootScope.searchItems[i].name} );}
+							
+									myMaxSuggestionListLength += 1;
+							if(myMaxSuggestionListLength === 1500)
+							{break;}
+						}						
+				}
+
+				
+		};
+	
+	$rootScope.$watch('selectedIndex',function(val){		
+		if(val !== -1) {			
+			$scope[$rootScope.searchelement] =$rootScope.suggestions[$rootScope.selectedIndex]['name'];				
+		}
+	});		
+
+	$rootScope.checkKeyDown = function(event){
+		if(event.keyCode === 40){//down key, increment selectedIndex
+			event.preventDefault();
+			if($rootScope.selectedIndex+1 < $rootScope.suggestions.length){
+				$rootScope.selectedIndex++;
+			}else{
+				$rootScope.selectedIndex = 0;
+			}
+		
+		}else if(event.keyCode === 38){ //up key, decrement selectedIndex
+			event.preventDefault();
+			if($rootScope.selectedIndex-1 >= 0){
+				$rootScope.selectedIndex--;
+			}else{
+				$rootScope.selectedIndex = $rootScope.suggestions.length-1;
+			}
+		}
+		else if(event.keyCode === 13){ //enter key, empty suggestions array
+			$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+			//console.log($rootScope.selectedIndex);
+			// event.preventDefault();			
+			// $rootScope.suggestions = [];
+			// $rootScope.searchItems=[];		
+			// $rootScope.selectedIndex = -1;
+		}
+		else if(event.keyCode === 9){ //enter tab key
+			//console.log($rootScope.selectedIndex);
+			if($rootScope.selectedIndex>-1){
+				$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+			}			
+
+		}else if(event.keyCode === 27){ //ESC key, empty suggestions array
+			$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+			// console.log($rootScope.selectedIndex);
+			// event.preventDefault();
+			// $rootScope.suggestions = [];
+			// $rootScope.searchItems=[];		
+			// $rootScope.selectedIndex = -1;
+		}else{
+			$rootScope.search();	
+		}
+	};
+	
+	//ClickOutSide
+	var exclude1 = document.getElementById($rootScope.searchelement);
+	$rootScope.hideMenu = function($event){
+		$rootScope.search();
+		//make a condition for every object you wat to exclude
+		if($event.target !== exclude1) {
+			// $rootScope.searchItems=[];
+			// $rootScope.suggestions = [];			
+			// $rootScope.selectedIndex = -1;
+		}
+	};
+	//======================================
+	
+	//Function To Call on ng-keyup
+	$rootScope.checkKeyUp = function(event){ 
+		if(event.keyCode !== 8 || event.keyCode !== 46){//delete or backspace
+			if($scope[$rootScope.searchelement] === ""){
+				$rootScope.suggestions = [];
+				$rootScope.searchItems=[];			
+				$rootScope.selectedIndex = -1;
+			}
+		}
+	};
+	//======================================
+	//List Item Events
+	//Function To Call on ng-click
+	$rootScope.AssignValueAndHide = function(index){
+	$scope[$rootScope.searchelement]= $rootScope.suggestions[index];
+
+	if($rootScope.searchelement=='tbl_party_id_name')
+	{		
+		$scope['tbl_party_id']=$rootScope.suggestions[index]['id'];  //ACTUAL ID
+		$scope['tbl_party_id_name']=$rootScope.suggestions[index]['name'];  // NAME 			
+	}
+
+	if($rootScope.searchelement=='product_id_name')
+	{		
+		var id=$rootScope.suggestions[index]['id'];	
+		var data_link=BaseUrl+"product_id/"+id;					
+		console.log(data_link);					
+		$http.get(data_link).then(function(response){
+			angular.forEach(response.data,function(value,key){
+				$scope['product_id']=value.id;  //ACTUAL ID
+				$scope['product_id_name']=value.name; // NAME 	
+				$scope['tax_ledger_id']=value.output_gst_ledger_id; // NAME 	
+				$scope['tax_per']=value.tax_per; // NAME 				
+				$scope.previous_transaction_details(value.id);														
+			});
+		});
+	
+	}
+
+		if($rootScope.searchelement=='hq_id_name')
+		{
+			$scope['hq_id']=$rootScope.suggestions[index]['id'];  //ACTUAL ID
+			$scope['hq_id_name']=$rootScope.suggestions[index]['name'];  // NAME
+		}
+
+		if($rootScope.searchelement=='batchno')
+		{			
+			$scope['batchno']= $rootScope.suggestions[index]['name'];
+			$scope['exp_monyr']= $rootScope.suggestions[index]['exp_monyr'];
+			$scope['mfg_monyr']=$rootScope.suggestions[index]['mfg_monyr']; 
+			$scope['rate']=$rootScope.suggestions[index]['srate']; 
+			$scope['srate']=$rootScope.suggestions[index]['srate']; 
+			$scope['mrp']=$rootScope.suggestions[index]['mrp']; 
+			$scope['ptr']=$rootScope.suggestions[index]['ptr']; 
+			$scope['AVAILABLE_QTY']=$rootScope.suggestions[index]['AVAILABLE_QTY'];  
+			$scope['purchase_rate']=$rootScope.suggestions[index]['purchase_rate'];  //purchase rate
+			$scope['PURCHASEID']=$rootScope.suggestions[index]['PURCHASEID'];  
+			
+		}
+			
+		 $rootScope.suggestions=[];
+		 $rootScope.searchItems=[];		
+		 $rootScope.selectedIndex = -1;
+	};
 	//===================END SEARCH SECTION =========================================

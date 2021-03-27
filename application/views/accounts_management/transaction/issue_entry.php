@@ -419,8 +419,11 @@ function shortcut()
 				
 				<td    colspan="3">
 				<td>
+				<!--<button type="button" class="btn btn-success" id="Save" name="Save" 
+				ng-click="final_submit()">Final Submit</button>-->
+				
 				<button type="button" class="btn btn-success" id="Save" name="Save" 
-				ng-click="final_submit()">Final Submit</button>
+				ng-click="print_slip('PRINT_SLIP',value)"> Print Slip</button>
 				
 				<!--<button type="button" class="btn btn-success" id="Save" name="Save" 
 				ng-click="print_documents('BARCODE_PRINT',

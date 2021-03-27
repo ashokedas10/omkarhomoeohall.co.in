@@ -198,6 +198,178 @@ class Project_model extends CI_Model {
 	}
 	
 
+	
+	public function product_update($invoice_details_id=0,$operation_type='ADD_STOCK')
+	{
+				
+		//$company_id=$this->session->userdata('COMP_ID');
+		
+		$tot_purchase=$tot_sale=$tot_issue=0;
+
+		//PRODUCT UPDATE
+		$products = "select b.product_id,b.rackno,b.id,a.company_id,a.status,b.qnty,b.ITEM_DELETE_STATUS 
+		from invoice_summary a, invoice_details b 
+		where a.id=b.invoice_summary_id and  a.BILL_STATUS='BILL_SAVED' and b.main_group_id=51 
+		and  b.id=".$invoice_details_id ;
+		$products = $this->get_records_from_sql($products);
+		foreach ($products as $product)
+		{
+			
+			$rack_save['total_available_qnty']=$product_save['available_qnty']=0;
+			
+
+			//NORMAL WITHOUT DELETE
+
+			$records = "select sum(b.qnty) totqnty from invoice_summary a,invoice_details b 
+			where a.id=b.invoice_summary_id and a.status='PURCHASE' 
+			 and b.product_id=".$product->product_id." and  a.company_id=".$product->company_id ;
+			$records = $this->get_records_from_sql($records);
+			if(count($records)>0){foreach ($records as $record){$tot_purchase=$record->totqnty;}}
+		
+
+			$records = "select sum(b.qnty) totqnty from invoice_summary a,invoice_details b 
+			where a.id=b.invoice_summary_id and a.status='SALE' 
+			 and b.product_id=".$product->product_id." and   a.company_id=".$product->company_id ;
+			$records = $this->get_records_from_sql($records);
+			if(count($records)>0){foreach ($records as $record){$tot_sale=$record->totqnty;}}
+		
+
+			$records = "select sum(b.qnty) totqnty from invoice_summary a,invoice_details b 
+			where a.id=b.invoice_summary_id and a.status='ISSUE' 
+			 and b.product_id=".$product->product_id." and  a.company_id=".$product->company_id ;
+			$records = $this->get_records_from_sql($records);
+			if(count($records)>0){foreach ($records as $record){$tot_issue=$record->totqnty;}}
+			
+
+			//DELETED
+			$tot_sale_deleted=0;
+			$records = "select sum(b.qnty) totqnty from invoice_summary a,invoice_details b 
+			where a.id=b.invoice_summary_id and a.status='SALE' AND b.ITEM_DELETE_STATUS='DELETED'
+			 and b.product_id=".$product->product_id." and   a.company_id=".$product->company_id ;
+			$records = $this->get_records_from_sql($records);
+			if(count($records)>0){foreach ($records as $record){$tot_sale_deleted=$record->totqnty;}}
+
+			$product_save['available_qnty']=$tot_purchase-$tot_sale-$tot_issue+$tot_sale_deleted;
+
+			
+			$product_balance_companywise_id='';			
+			$records = "select * from product_balance_companywise where company_id=".$product->company_id." and product_id=".$product->product_id ;
+			$records = $this->projectmodel->get_records_from_sql($records);	
+			foreach ($records as $record)
+			{ $product_balance_companywise_id=$record->id;  }
+			
+			if($operation_type=='MINUS_STOCK')
+			{
+				if($product->status=='PURCHASE')
+				{$product_save['available_qnty']=$product_save['available_qnty']-intval($product->qnty); }
+				if($product->status=='SALE' || $product->status=='ISSUE')
+				{$product_save['available_qnty']=$product_save['available_qnty']+intval($product->qnty); }
+			}
+
+			// if( $product->ITEM_DELETE_STATUS=='DELETED'  )
+			// {
+			// 	if($product->status=='SALE')
+			// 	{$product_save['available_qnty']=$product_save['available_qnty']+intval($product->qnty); }
+			// }
+
+		
+		
+			if($product->product_id>0 && $product_save['available_qnty']>-1)
+			{
+				//$this->save_records_model($product->product_id,'product_balance_companywise',$product_save);
+
+				$product_save['product_id']=$product->product_id;
+				$product_save['company_id']=$product->company_id;	
+				$this->projectmodel->save_records_model($product_balance_companywise_id,'product_balance_companywise',$product_save);
+			
+			}
+			//CLEARSTONE - 30ML			
+			
+			$tot_purchase=$tot_sale=$tot_issue=0;	
+			//RACK WISE UPDATE
+
+			$records = "select sum(qnty) totqnty from invoice_summary a, invoice_details b where  
+			a.id=b.invoice_summary_id and     a.status='PURCHASE' and b.rackno=".$product->rackno." 
+			and b.product_id=".$product->product_id." and a.company_id=".$product->company_id;
+			$records = $this->get_records_from_sql($records);
+			if(count($records)>0){foreach ($records as $record){$tot_purchase=$record->totqnty;}}
+
+			$records = "select sum(qnty) totqnty from invoice_summary a, invoice_details b where  
+			a.id=b.invoice_summary_id and a.status='SALE' and b.rackno=".$product->rackno." 
+			and b.product_id=".$product->product_id." and a.company_id=".$product->company_id;
+			$records = $this->get_records_from_sql($records);
+			if(count($records)>0){foreach ($records as $record){$tot_sale=$record->totqnty;}}
+
+			$records = "select sum(qnty) totqnty from invoice_summary a, invoice_details b where  
+			a.id=b.invoice_summary_id and a.status='ISSUE' and b.rackno=".$product->rackno." 
+			and b.product_id=".$product->product_id." and a.company_id=".$product->company_id;
+			$records = $this->get_records_from_sql($records);
+			if(count($records)>0){foreach ($records as $record){$tot_issue=$record->totqnty;}}
+
+			
+
+
+			//DELETED
+			$tot_sale_deleted=0;
+			$records = "select sum(qnty) totqnty from invoice_summary a, invoice_details b where  
+			a.id=b.invoice_summary_id and a.status='SALE'  AND b.ITEM_DELETE_STATUS='DELETED' and
+			 b.rackno=".$product->rackno." 
+			and b.product_id=".$product->product_id." and a.company_id=".$product->company_id;
+			$records = $this->get_records_from_sql($records);
+			if(count($records)>0){foreach ($records as $record){$tot_sale_deleted=$record->totqnty;}}
+
+			$rack_save['total_available_qnty']=$tot_purchase-$tot_sale-$tot_issue+$tot_sale_deleted;
+			
+			if($operation_type=='MINUS_STOCK')
+			{
+				if($product->status=='PURCHASE')
+				{$rack_save['total_available_qnty']=$rack_save['total_available_qnty']-intval($product->qnty); }
+				if($product->status=='SALE' || $product->status=='ISSUE')
+				{$rack_save['total_available_qnty']=$rack_save['total_available_qnty']+intval($product->qnty); }
+			}
+
+			// if( $product->ITEM_DELETE_STATUS=='DELETED'  )
+			// {
+			// 	if($product->status=='SALE')
+			// 	{$rack_save['total_available_qnty']=$rack_save['total_available_qnty']+intval($product->qnty); }
+	
+			// }
+
+			if($product->rackno>0 )
+			{$this->save_records_model($product->rackno,'rack_master',$rack_save);}
+			$tot_purchase=$tot_sale=$tot_issue=0;	
+
+		}
+
+		
+			
+	}
+
+	public function product_update_sale($invoice_id=0)
+	{
+
+		 $records = "select b.id
+		from invoice_summary a, invoice_details b 
+		where a.id=b.invoice_summary_id and  a.BILL_STATUS='BILL_SAVED' and b.main_group_id=51 
+		and  a.id=".$invoice_id ;
+		$records = $this->get_records_from_sql($records);
+		foreach ($records as $record)
+		{
+			$this->product_update($record->id,'ADD_STOCK');
+		}	
+
+		//UPDATE DOCTOR COMMISSION AND OTHERS
+		$records = "select b.id
+		from invoice_summary a, invoice_details b 
+		where a.id=b.invoice_summary_id and  a.BILL_STATUS='BILL_SAVED'  and  a.id=".$invoice_id ;
+		$records = $this->get_records_from_sql($records);
+		foreach ($records as $record)
+		{
+			$this->transaction_update($record->id);
+		}	
+	
+	}
+
 	public function transaction_update($id_detail=0)	
 	{
 
@@ -214,7 +386,7 @@ class Project_model extends CI_Model {
 					$gsttype='sgst_cgst';
 					$gst2nos='';
 					$tax_per=0;
-					
+				
 					$sql="select * from invoice_summary where id=".$id_header;			
 					$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
 					foreach ($rowrecord as $row_hdr)
@@ -222,8 +394,15 @@ class Project_model extends CI_Model {
 						$BILL_TYPE=$row_hdr->BILL_TYPE;
 						$status=$row_hdr->status;
 						$tbl_party_id=$row_hdr->tbl_party_id;
+						$invoice_date=$row_hdr->invoice_date;
 						$company_id=$row_hdr->company_id;
 						$company_gst_no=$this->projectmodel->GetSingleVal('GSTNo','company_details',' id='.$company_id);
+						$doctor_ledger_id=$row_hdr->doctor_ledger_id;
+						$doctor_ledger_id=$this->projectmodel->GetSingleVal('ref_table_id','acc_group_ledgers','id='.$doctor_ledger_id);
+
+						//select  id FieldID,acc_name FieldVal  from acc_group_ledgers where acc_type='LEDGER' and parent_id=312 order by   acc_name
+
+						$BILL_FROM=$row_hdr->BILL_FROM;
 
 						//CUSTOMER TAX RATE
 						if($tbl_party_id==317)
@@ -254,6 +433,7 @@ class Project_model extends CI_Model {
 							$product_id=$row1->product_id;								
 							$rate=$row1->rate;
 							$mrp=$row1->mrp;
+							
 
 							// if($status=='PURCHASE')
 							// {$inv_details['srate']=$row1->mrp;}	
@@ -269,6 +449,15 @@ class Project_model extends CI_Model {
 							// 	else
 							// 	{$inv_details['srate']=$rate;}								
 							// }
+						
+							//EXPIRY CALCULATE
+							if($status=='PURCHASE')
+							{
+								$inv_details['EXPIRY_DATE']= $this->general_library->get_date($invoice_date,0,0,1);
+								$inv_details['exp_monyr']=substr($inv_details['EXPIRY_DATE'],5,2).'/'.substr($inv_details['EXPIRY_DATE'],2,2);
+								
+							}
+
 
 
 							$inv_details['subtotal']=$rate*$row1->qnty;		
@@ -278,7 +467,23 @@ class Project_model extends CI_Model {
 							$after_first_disc_amount=$inv_details['subtotal']-$disc_amt1;
 							$disc_amt2=$after_first_disc_amount*$row1->disc_per2/100;
 							//$disc_amt2=0;
-							//$inv_details['disc_amt']=$disc_amt1+$disc_amt2;		
+							//$inv_details['disc_amt']=$disc_amt1+$disc_amt2;	
+							
+							//DOCTOR COMMISSION CALCULATION
+							 $doctor_commission_percentage=$inv_details['doctor_commission_percentage']=0;
+							if($status=='SALE' && $BILL_FROM=='RETAIL')
+							{
+
+								$whr="product_group_id=".$row1->main_group_id." and doctor_mstr_id=".$doctor_ledger_id;
+								$doctor_commission_percentage=
+								floatval($this->projectmodel->GetSingleVal('commission_percentage','doctor_commission_set',$whr));
+								
+								if($row1->ITEM_DELETE_STATUS=='DELETED')
+								{
+									$doctor_commission_percentage=0;
+								}								
+								$inv_details['doctor_commission_percentage']=$doctor_commission_percentage;
+							}
 							
 							//TAXABLE AMOUNT PORTION
 							$inv_details['taxable_amt']=$inv_details['subtotal'];	
@@ -338,7 +543,7 @@ class Project_model extends CI_Model {
 							//UPDATE SUMMARY TABLE			
 							
 							$records="select sum(subtotal) subtotal,sum(disc_amt) disc_amt,sum(taxamt) taxamt
-							from  invoice_details where invoice_summary_id=".$id_header;
+							from  invoice_details where ITEM_DELETE_STATUS<>'DELETED' AND invoice_summary_id=".$id_header;
 							$records = $this->projectmodel->get_records_from_sql($records);								
 							foreach ($records as $record)
 							{
@@ -797,110 +1002,10 @@ function gethierarchy_list($parentuid='',$returntype='HQ')
 	
 }
 
+	
 
 
-	public function product_update($invoice_details_id=0,$operation_type='ADD_STOCK')
-	{
-				
-		//$company_id=$this->session->userdata('COMP_ID');
-		
-		$tot_purchase=$tot_sale=$tot_issue=0;
 
-		//PRODUCT UPDATE
-		$products = "select b.product_id,b.rackno,b.id,a.company_id,a.status,b.qnty
-		from invoice_summary a, invoice_details b 
-		where a.id=b.invoice_summary_id and  a.BILL_STATUS='BILL_SAVED' and b.main_group_id=51 and  b.id=".$invoice_details_id ;
-		$products = $this->get_records_from_sql($products);
-		foreach ($products as $product)
-		{
-			
-			$rack_save['total_available_qnty']=$product_save['available_qnty']=0;
-
-			$records = "select sum(b.qnty) totqnty from invoice_summary a,invoice_details b 
-			where a.id=b.invoice_summary_id and a.status='PURCHASE'  and b.product_id=".$product->product_id." and  a.company_id=".$product->company_id ;
-			$records = $this->get_records_from_sql($records);
-			if(count($records)>0){foreach ($records as $record){$tot_purchase=$record->totqnty;}}
-		
-
-			$records = "select sum(b.qnty) totqnty from invoice_summary a,invoice_details b 
-			where a.id=b.invoice_summary_id and a.status='SALE'  and b.product_id=".$product->product_id." and   a.company_id=".$product->company_id ;
-			$records = $this->get_records_from_sql($records);
-			if(count($records)>0){foreach ($records as $record){$tot_sale=$record->totqnty;}}
-		
-
-			$records = "select sum(b.qnty) totqnty from invoice_summary a,invoice_details b 
-			where a.id=b.invoice_summary_id and a.status='ISSUE'  and b.product_id=".$product->product_id." and  a.company_id=".$product->company_id ;
-			$records = $this->get_records_from_sql($records);
-			if(count($records)>0){foreach ($records as $record){$tot_issue=$record->totqnty;}}
-
-			$product_save['available_qnty']=$tot_purchase-$tot_sale-$tot_issue;
-			
-			$product_balance_companywise_id='';			
-			$records = "select * from product_balance_companywise where company_id=".$product->company_id." and product_id=".$product->product_id ;
-			$records = $this->projectmodel->get_records_from_sql($records);	
-			foreach ($records as $record)
-			{ $product_balance_companywise_id=$record->id;  }
-			
-			if($operation_type=='MINUS_STOCK')
-			{
-				if($product->status=='PURCHASE')
-				{$product_save['available_qnty']=$product_save['available_qnty']-intval($product->qnty); }
-				if($product->status=='SALE' || $product->status=='ISSUE')
-				{$product_save['available_qnty']=$product_save['available_qnty']+intval($product->qnty); }
-			}
-
-
-			if($product->product_id>0 && $product_save['available_qnty']>-1)
-			{
-				//$this->save_records_model($product->product_id,'product_balance_companywise',$product_save);
-
-				$product_save['product_id']=$product->product_id;
-				$product_save['company_id']=$product->company_id;	
-				$this->projectmodel->save_records_model($product_balance_companywise_id,'product_balance_companywise',$product_save);
-			
-			}
-			//CLEARSTONE - 30ML			
-			
-			$tot_purchase=$tot_sale=$tot_issue=0;	
-			//RACK WISE UPDATE
-
-			$records = "select sum(qnty) totqnty from invoice_summary a, invoice_details b where  
-			a.id=b.invoice_summary_id and     a.status='PURCHASE' and b.rackno=".$product->rackno." 
-			and b.product_id=".$product->product_id." and a.company_id=".$product->company_id;
-			$records = $this->get_records_from_sql($records);
-			if(count($records)>0){foreach ($records as $record){$tot_purchase=$record->totqnty;}}
-
-			$records = "select sum(qnty) totqnty from invoice_summary a, invoice_details b where  
-			a.id=b.invoice_summary_id and a.status='SALE' and b.rackno=".$product->rackno." 
-			and b.product_id=".$product->product_id." and a.company_id=".$product->company_id;
-			$records = $this->get_records_from_sql($records);
-			if(count($records)>0){foreach ($records as $record){$tot_sale=$record->totqnty;}}
-
-			$records = "select sum(qnty) totqnty from invoice_summary a, invoice_details b where  
-			a.id=b.invoice_summary_id and a.status='ISSUE' and b.rackno=".$product->rackno." 
-			and b.product_id=".$product->product_id." and a.company_id=".$product->company_id;
-			$records = $this->get_records_from_sql($records);
-			if(count($records)>0){foreach ($records as $record){$tot_issue=$record->totqnty;}}
-
-			$rack_save['total_available_qnty']=$tot_purchase-$tot_sale-$tot_issue;
-			
-			if($operation_type=='MINUS_STOCK')
-			{
-				if($product->status=='PURCHASE')
-				{$rack_save['total_available_qnty']=$rack_save['total_available_qnty']-intval($product->qnty); }
-				if($product->status=='SALE' || $product->status=='ISSUE')
-				{$rack_save['total_available_qnty']=$rack_save['total_available_qnty']+intval($product->qnty); }
-			}
-
-			if($product->rackno>0 )
-			{$this->save_records_model($product->rackno,'rack_master',$rack_save);}
-			$tot_purchase=$tot_sale=$tot_issue=0;	
-
-		}
-
-		
-			
-	}
 			
 	function batch_wise_available_stock($product_id=0,$MRP='',$exp_monyr='',$company_id=1)
 	{
@@ -920,7 +1025,14 @@ function gethierarchy_list($parentuid='',$returntype='HQ')
 			$records = $this->projectmodel->get_records_from_sql($records);
 			$sale_qnty=$records[0]->qnty;
 
-			$totqnty=$purchase_qnty-$sale_qnty;
+			$issue_qnty=0;
+			$records="select SUM(b.qnty) qnty	from invoice_summary a,invoice_details b 
+			where a.id=b.invoice_summary_id and  b.product_id=".$product_id." 
+			and b.mrp='".$MRP."' and b.exp_monyr='".$exp_monyr."'  and a.status='ISSUE' and a.company_id=".$company_id;
+			$records = $this->projectmodel->get_records_from_sql($records);
+			$issue_qnty=$records[0]->qnty;
+
+			$totqnty=$purchase_qnty-$sale_qnty-$issue_qnty;
 			return $totqnty;
 	}	
 
@@ -968,6 +1080,73 @@ function gethierarchy_list($parentuid='',$returntype='HQ')
 
 
 	}
+
+	function doctor_wise_calculation($party_id=0,$doctor_mstr_id=0,$prescription_date='')
+	{
+		$data=array();
+
+		$whr="id=".$doctor_mstr_id;
+		$doc_id=$this->GetSingleVal('ref_table_id','acc_group_ledgers',$whr);
+
+		$whr="id=".$doc_id."";
+		$VISIT_1=$this->GetSingleVal('VISIT_1','doctor_mstr',$whr);
+		$NEXT_VISIT=$this->GetSingleVal('NEXT_VISIT','doctor_mstr',$whr);
+		$GAP_DAYS=$this->GetSingleVal('GAP_DAYS','doctor_mstr',$whr);
+
+		$data['VISIT_1']=$VISIT_1;
+		$data['NEXT_VISIT']=$NEXT_VISIT;
+		$data['GAP_DAYS']=$GAP_DAYS;
+
+	
+		$sqlfields="select count(*) cnt from patient_prescription
+		where patient_registration_id=".$party_id." and token_status='VALID' and doctor_mstr_id=".$doctor_mstr_id ;
+		$fields = $this->get_records_from_sql($sqlfields);
+		foreach ($fields as $field)
+		{$cnt=$field->cnt;}
+		
+
+		//AAISHI DAS
+		// $CURRENT_DATE
+		$MX_PRES_DATE=$prescription_date;
+		$NEXT_VISIT_DATE=date('Y-m-d');
+		if($cnt>0)
+		{
+
+			$sqlfields="select MAX(prescription_date) MX_PRES_DATE  from patient_prescription
+			where patient_registration_id=".$party_id."  and token_status='VALID'  and doctor_mstr_id=".$doctor_mstr_id ;
+			$fields = $this->get_records_from_sql($sqlfields);
+			foreach ($fields as $field)
+			{
+				$MX_PRES_DATE=$field->MX_PRES_DATE;
+				$NEXT_VISIT_DATE=$this->general_library->get_date($MX_PRES_DATE,$GAP_DAYS,0,0);
+			}
+		}
+		
+
+		if($cnt==0)
+		{
+			$data['ACTUAL_VISIT_AMT']=$VISIT_1;
+		}
+		else
+		{
+			
+			if($NEXT_VISIT_DATE<=$prescription_date) //NEXT VISIT
+			{
+				$data['ACTUAL_VISIT_AMT']=$NEXT_VISIT;
+			}
+			else  //REPORT VISIT
+			{
+				$data['ACTUAL_VISIT_AMT']=0;
+			}
+
+		}
+		
+		return $data;
+
+
+	}	
+
+	
 
 	function rack_wise_available_stock()
 	{
@@ -1479,7 +1658,12 @@ $Inputvalue,$RecordSet)
 			<input type="text" id="'.$InputName.'" class="form-control"
 			  value="'.$Inputvalue.'" name="'.$InputName.'" />';
 	}				   
-		
+	
+	if($InputType=='text_area')
+	{
+			$inputval='<label>'.$LabelName.'</label>
+			<textarea name="'.$InputName.'"  id="'.$InputName.'" cols="50" rows="3">'.$Inputvalue.'"</textarea>';
+	}		
 	
 	return $inputval;
 	
