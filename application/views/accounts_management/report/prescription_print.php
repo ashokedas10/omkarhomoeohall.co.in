@@ -55,7 +55,7 @@ $total_height=550;
 }
 .style12{
 font-family:Bookman Old Style; 
-font-size:10px;
+font-size:9px;
 }
 
 @page {
@@ -69,11 +69,42 @@ body
     margin: 2px;  
 } 
 
+/* Red border */
+hr.new1 {
+  border-top: 1px solid red;
+}
+
+/* Dashed red border */
+hr.new2 {
+  border-top: 1px dashed red;
+}
+
+/* Dotted red border */
+hr.new3 {
+  border-top: 1px dotted red;
+}
+
+/* Thick red border */
+hr.new4 {
+  border: 1px solid red;
+}
+
+/* Large rounded green border */
+hr.new5 {
+  border: 10px solid green;
+  border-radius: 5px;
+}
+.vl {
+  border-left: 1px solid green;
+ 
+}
+
 </style>
 	
 	<html>
 	<head></head>
 	<body onLoad="window.print();" onafterprint="self.close()">
+	<!--<body >-->
 	<?php
 		
 	//	echo $table_id;
@@ -184,44 +215,97 @@ body
 			</tr>	
 			<tr><td  colspan="4"><div style="border-top:solid;">&nbsp;</div></td></tr>	
 			
-			<tr >
+			<!--<tr >
 			<td align="left"    >&nbsp;</td>
 			<td align="left"  colspan="3"   >&nbsp;&nbsp;Rx</td>
-			</tr>	
+			</tr>	-->
 			
 			
 		<?php  
-		$product_print='Dt:'.$prescription_date.' Visit:'.$ACTUAL_VISIT_AMT;
-		if($invoice_summary_id>0){
-		$product_print='';
-		$records = "select * from invoice_details 
-		where invoice_summary_id=".$invoice_summary_id." order by id";
+		
+		//$product_print='<tr><td>&nbsp;</td><td>|</td><td>Rx</td></tr>';			
+		
+		$print_count_total=18;
+		$product_print='';	
+		$print_count=1;
+		$prescriptions="select * from patient_prescription 
+		where patient_registration_id=".$patient_registration_id." 
+		and doctor_mstr_id=".$doctor_mstr_id." ORDER BY ID DESC LIMIT 0 , 4";
+		$prescriptions = $this->projectmodel->get_records_from_sql($prescriptions);			
+		foreach ($prescriptions as $prescription)
+		{
+			$product_print=$product_print.'Dt:'.$prescription->prescription_date.' Visit:'.$prescription->ACTUAL_VISIT_AMT.'<br>';
+			$print_count=$print_count+1;
+		}
+		
+		$product_print=$product_print.'<br>';
+		$print_count=$print_count+1;
+		
+		$prescription_id=$table_id;
+		
+		$records = "select *
+		from invoice_summary where patient_id=".$patient_registration_id." 
+		and doctor_ledger_id=".$doctor_mstr_id." order by id desc limit 0,3" ;
 		$records = $this->projectmodel->get_records_from_sql($records);	
 		foreach ($records as $record)
-		{
+		{ 
+			$invoice_summary_id=$record->id;
 					
-			$product_name=
-			$this->projectmodel->GetSingleVal('productname','productmstr',' id='.$record->product_id);
+			if($invoice_summary_id>0)
+			{
+				if($print_count<=$print_count_total)
+				{
+				$product_print=$product_print.'Bill:'.$record->invoice_no.' Dt:'.$record->invoice_date.'<br>';
+				$print_count=$print_count+1;
+				}
+				
+				$products=array();
+				$products=$this->projectmodel->bill_wise_item_formating($invoice_summary_id);
+				
+				//print_r($products);
+				//echo '<br><br>';
+				
+				foreach ($products as $product)
+				{
+					foreach ($product as $prd)
+					{
+						if($print_count<=$print_count_total)
+						{
+							$product_print=$product_print.$prd.'<br>';
+							$print_count=$print_count+1;
+						}
+					
+					}
+				}
 			
-			if($record->product_Synonym<>'')
-			{$product_name=$record->product_Synonym;}
-			$product_name=ucwords($product_name);
-			$product_print=$product_print.'<br>'.$product_name;
-		}}
+			}}
+			
+			$rc=$print_count;
+			for($rc=$print_count;$rc<=$print_count_total;$rc++)
+			{$product_print=$product_print.'<br>';}
+			
 		 ?>
+		 
+		 <?php //echo $product_print; ?>
+		 
 		<tr>
-			<td  class="style12" >&nbsp;&nbsp;<?php echo $product_print; ?></td>
-			<td  class="style12" colspan="3"  >| </td>
+			<td  class="style12" >&nbsp;<?php echo $product_print; ?></td>
+			<td  class="style12 vl" style=" vertical-align: text-top;"    >Rx</td>
+			
+			<!--<td  class="style12" colspan="2"  align="left" style="margin-top:1px;" >&nbsp;Rx</td>-->
 	     </tr>
 	     
 				
 		
-		<?php   for($rc=1;$rc<=11;$rc++){ ?>
+		<?php /*?><?php  
+		$rc=$print_count;
+		 for($rc=$print_count;$rc<=15;$rc++){ ?>
 		<tr>
 			<td  class="style12" >&nbsp;&nbsp; </td>
-			<td  class="style12" colspan="3"  >| </td>
+			<td  class="style12 v1" ></td>
+			<td  class="style12" colspan="2"  >| </td>
 	     </tr>
-	     <?php } ?>
+	     <?php } ?><?php */?>
 		
 		
 		
@@ -234,15 +318,16 @@ body
 		        <span class="address"><?php echo 'Mobile:'.$MOB_NOS; ?></span><br>
 		        <span class="address"><?php echo 'Timing:'.$WORKING_HOUR; ?></span><br>
 			  </td>
-			
+			  <td  class="style12 vl"   colspan="3" style=" vertical-align: text-bottom;"  align="right" ></td>
+			 <!--<td   style=" vertical-align: text-bottom;"  colspan="2"  align="right"  >Next Visit / Reporting &nbsp;&nbsp;</td>-->
 	    </tr>
 		
-		<tr>
+		<!--<tr>
 			<td   colspan="4" align="right"  class="style12"><strong>
 			Next Visit / Reporting &nbsp;&nbsp;</strong></td>
-	    </tr>
+	    </tr>-->
 		
-		<tr><td  colspan="4"><div style="border-bottom:solid;">&nbsp;</div></td></tr>
+		<tr><td  colspan="4" align="right"><div style="border-bottom:solid;" class="style12">Next Visit / Reporting &nbsp;&nbsp;</div></td></tr>
 		<tr>
 			<td   colspan="4" align="CENTER"  class="style12"><strong>
 			IN CASE OF EMERGENCY ,PLEASE CONSULT DOCTOR OR HOSPITAL</strong></td>

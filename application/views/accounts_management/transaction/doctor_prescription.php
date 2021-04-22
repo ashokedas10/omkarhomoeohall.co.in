@@ -234,13 +234,13 @@ font-weight:200;
 </script>  
 
 
-<div ng-app="Accounts"   >
+<div ng-app="Accounts">
 
-<div ng-controller="main_transaction_controller" class="panel panel-primary" id="myBody" onchange = "shortcut()" >
+<div ng-controller="prescription_entry" class="panel panel-primary" id="myBody" onchange = "shortcut()" >
 																
 	<table class="table table-bordered table-striped" >
 	
-			
+			<!--{{patient_list_array}}-->
 	<tr>		
 		
 		<td  align="center" colspan="2"  class="activeTR">
@@ -249,9 +249,7 @@ font-weight:200;
 		
 		
 		<!--{{main_grid_array}}-->
-		
-		</span>	
-		</td> 
+		</span>		</td> 
 		
 		<td  align="center" colspan="2" style="background-color:#CC6633">
 		<span class="style4"><strong>{{server_msg}}<strong></span>	<br />
@@ -260,19 +258,22 @@ font-weight:200;
 		<strong></span><br />
 
 		<span class="style4"><strong>Token No :{{token_no }} | Patient  Id :{{id_header }}
-		<strong></span>	
-		
-		</td> 
+		<strong></span>		</td> 
 		
 		<td  align="left" colspan="2" class="activeTR"><strong>Shortcut Keys</strong> :
-		Bill Print (<strong>F9</strong>) |  New Entry(<strong>F10</strong>)  
+		Bill Print (<strong>F9</strong>) |  New Entry(<strong>F10</strong>)
+		
+		
+		{{FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']}}
+		{{FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue_id']}}
+		
 		</td> 	
 	</tr>	
 
 
 <tr>
 	<td  align="left">{{get_field_name(0,'LabelName','prescription_date')}}</td> 
-	<td  align="left">{{get_field_name(0,'LabelName','token_shift')}}</td>
+	<!--<td  align="left">{{get_field_name(0,'LabelName','token_shift')}}</td>-->
 </tr>
 <tr>
 			
@@ -288,12 +289,10 @@ ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['prescription_date
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['prescription_date']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,
 FormInputArray[0]['header'][0]['fields'][0]['prescription_date']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"   />
-
-</td> 
+class="form-control" onfocus="this.select();" onmouseup="return false;"   /></td> 
 
 
-<td>		
+<!--<td>		
 
 <input id="{{FormInputArray[0]['header'][0]['fields'][0]['token_shift']['input_id_index']}}" 
 autofocus type="text" name=""   autocomplete="off" 
@@ -306,22 +305,37 @@ ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['token_shift']['Inp
 ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['token_shift']['input_id_index'])"
 class="form-control" onfocus="this.select();" onmouseup="return false;"   />
 
-</td> 
-
+</td> -->
 </tr>
 
 
 <tr>
+		<td  align="left">{{get_field_name(0,'LabelName','id')}}</td> 
 		<td  align="left">{{get_field_name(0,'LabelName','party_name')}}</td> 
 		<td  align="left" >{{get_field_name(0,'LabelName','SEX')}}</td> 
 		<td  align="left">{{get_field_name(0,'LabelName','PATIENT_TYPE')}}</td> 
 		<td  align="left">{{get_field_name(0,'LabelName','mobno')}}</td> 
 		<td  align="left">{{get_field_name(0,'LabelName','emailid')}}</td> 
-		
 </tr>
 
 
 <tr>
+	
+<td>
+
+<input id="{{FormInputArray[0]['header'][0]['fields'][0]['id']['input_id_index']}}" 
+autofocus type="text" name=""   autocomplete="off" 
+placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['id']['LabelName']}}" 				 
+ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['id']['input_id_index'])" 
+ng-keyup="checkKeyUp($event)" 
+ng-model="FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']"
+ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['id']['InputName'],0,0,0,0,'search')" 			
+ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['id']['InputName'],0,0,0,0,'search')" 	
+ng-keypress="mainOperation($event,0,0,0,0,
+FormInputArray[0]['header'][0]['fields'][0]['id']['input_id_index'])"
+class="form-control" onfocus="this.select();" onmouseup="return false;"   /></td> 	
+	
+	
 			
 <td>		
 
@@ -335,9 +349,7 @@ ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['party_name']['Inp
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['party_name']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,
 FormInputArray[0]['header'][0]['fields'][0]['party_name']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"   />
-
-</td> 
+class="form-control" onfocus="this.select();" onmouseup="return false;"   /></td> 
 				
 <td >		
 
@@ -350,8 +362,7 @@ ng-model="FormInputArray[0]['header'][0]['fields'][0]['SEX']['Inputvalue']"
 ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['SEX']['InputName'],0,0,0,0,'search')" 			
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['SEX']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['SEX']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-</td>
+class="form-control" onfocus="this.select();" onmouseup="return false;"  /></td>
 	
 				
 <td>
@@ -364,9 +375,7 @@ ng-model="FormInputArray[0]['header'][0]['fields'][0]['PATIENT_TYPE']['Inputvalu
 ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['PATIENT_TYPE']['InputName'],0,0,0,0,'search')" 			
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['PATIENT_TYPE']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['PATIENT_TYPE']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-
-</td>  
+class="form-control" onfocus="this.select();" onmouseup="return false;"  /></td>  
 
 
 <td>				
@@ -380,9 +389,7 @@ ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['mobno']['InputNam
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['mobno']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,
 FormInputArray[0]['header'][0]['fields'][0]['mobno']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-
-</td>  
+class="form-control" onfocus="this.select();" onmouseup="return false;"  /></td>  
 
 <td>				
 <input id="{{FormInputArray[0]['header'][0]['fields'][0]['emailid']['input_id_index']}}" 
@@ -395,20 +402,16 @@ ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['emailid']['InputN
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['emailid']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,
 FormInputArray[0]['header'][0]['fields'][0]['emailid']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-
-</td>  
-				
+class="form-control" onfocus="this.select();" onmouseup="return false;"  /></td>  
 </tr>
 
 <tr>
 		<td  align="left">{{get_field_name(0,'LabelName','address')}}</td> 
 		<td  align="left">{{get_field_name(0,'LabelName','Address2')}}</td> 
-		<td  align="left">{{get_field_name(0,'LabelName','REGDATE')}}</td> 
+		<!--<td  align="left">{{get_field_name(0,'LabelName','REGDATE')}}</td> -->
 		<td  align="left" >{{get_field_name(0,'LabelName','age_yy')}}</td> 
 		<td  align="left" >{{get_field_name(0,'LabelName','age_mm')}}</td> 
 		<td  align="left" >{{get_field_name(0,'LabelName','DOB')}}</td> 
-		
 </tr>
 
 
@@ -425,8 +428,7 @@ ng-model="FormInputArray[0]['header'][0]['fields'][0]['address']['Inputvalue']"
 ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['address']['InputName'],0,0,0,0,'search')" 			
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['address']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['address']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-</td>
+class="form-control" onfocus="this.select();" onmouseup="return false;"  /></td>
 	
 				
 <td>
@@ -439,11 +441,9 @@ ng-model="FormInputArray[0]['header'][0]['fields'][0]['Address2']['Inputvalue']"
 ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['Address2']['InputName'],0,0,0,0,'search')" 			
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['Address2']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['Address2']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
+class="form-control" onfocus="this.select();" onmouseup="return false;"  /></td>  
 
-</td>  
-
-<td>
+<!--<td>
 <input id="{{FormInputArray[0]['header'][0]['fields'][0]['REGDATE']['input_id_index']}}" 
 autofocus type="text" name=""   autocomplete="off" 
 placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['REGDATE']['LabelName']}}" 				 
@@ -455,7 +455,7 @@ ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['REGDATE']['InputNa
 ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['REGDATE']['input_id_index'])"
 class="form-control" onfocus="this.select();" onmouseup="return false;"  />
 
-</td>  
+</td>  -->
 
 
 <td>
@@ -468,9 +468,7 @@ ng-model="FormInputArray[0]['header'][0]['fields'][0]['age_yy']['Inputvalue']"
 ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['age_yy']['InputName'],0,0,0,0,'search')" 			
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['age_yy']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['age_yy']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-
-</td>  
+class="form-control" onfocus="this.select();" onmouseup="return false;"  /></td>  
 
 
 <td>
@@ -483,9 +481,7 @@ ng-model="FormInputArray[0]['header'][0]['fields'][0]['age_mm']['Inputvalue']"
 ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['age_mm']['InputName'],0,0,0,0,'search')" 			
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['age_mm']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['age_mm']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-
-</td>  
+class="form-control" onfocus="this.select();" onmouseup="return false;"  /></td>  
 
 <td>
 <input id="{{FormInputArray[0]['header'][0]['fields'][0]['DOB']['input_id_index']}}" 
@@ -497,12 +493,7 @@ ng-model="FormInputArray[0]['header'][0]['fields'][0]['DOB']['Inputvalue']"
 ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['DOB']['InputName'],0,0,0,0,'search')" 			
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['DOB']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['DOB']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-
-</td>  
-
-
-
+class="form-control" onfocus="this.select();" onmouseup="return false;"  /></td>  
 </tr>
 
 
@@ -529,15 +520,13 @@ ng-model="FormInputArray[0]['header'][0]['fields'][0]['agent_id']['Inputvalue']"
 ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['agent_id']['InputName'],0,0,0,0,'search')" 			
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['agent_id']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['agent_id']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-
-</td>  	
+class="form-control" onfocus="this.select();" onmouseup="return false;"  /></td>  	
 
 			
-<td >		
+<td >
 
 <input id="{{FormInputArray[0]['header'][0]['fields'][0]['doctor_mstr_id']['input_id_index']}}" 
-autofocus type="text" name=""   autocomplete="off" 
+autofocus type="text" name="Input"   autocomplete="off" 
 placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['doctor_mstr_id']['LabelName']}}" 				 
 ng-keydown="checkKeyDown($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['doctor_mstr_id']['input_id_index'])" 
 ng-keyup="checkKeyUp($event)" 
@@ -545,8 +534,7 @@ ng-model="FormInputArray[0]['header'][0]['fields'][0]['doctor_mstr_id']['Inputva
 ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['doctor_mstr_id']['InputName'],0,0,0,0,'search')" 			
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['doctor_mstr_id']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['doctor_mstr_id']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-</td>
+class="form-control" onfocus="this.select();" onmouseup="return false;"  /></td>
 	
 <td>
 <input id="{{FormInputArray[0]['header'][0]['fields'][0]['token_status']['input_id_index']}}" 
@@ -558,9 +546,7 @@ ng-model="FormInputArray[0]['header'][0]['fields'][0]['token_status']['Inputvalu
 ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['token_status']['InputName'],0,0,0,0,'search')" 			
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['token_status']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['token_status']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-
-</td>  	
+class="form-control" onfocus="this.select();" onmouseup="return false;"  /></td>  	
 	
 				
 <td>
@@ -573,9 +559,7 @@ ng-model="FormInputArray[0]['header'][0]['fields'][0]['VISIT_1']['Inputvalue']"
 ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['VISIT_1']['InputName'],0,0,0,0,'search')" 			
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['VISIT_1']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['VISIT_1']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  readonly="" />
-
-</td>  
+class="form-control" onfocus="this.select();" onmouseup="return false;"  readonly="" /></td>  
 
 <td>
 <input id="{{FormInputArray[0]['header'][0]['fields'][0]['NEXT_VISIT']['input_id_index']}}" 
@@ -587,9 +571,7 @@ ng-model="FormInputArray[0]['header'][0]['fields'][0]['NEXT_VISIT']['Inputvalue'
 ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['NEXT_VISIT']['InputName'],0,0,0,0,'search')" 			
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['NEXT_VISIT']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['NEXT_VISIT']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  readonly="" />
-
-</td>  
+class="form-control" onfocus="this.select();" onmouseup="return false;"  readonly="" /></td>  
 
 
 <td>
@@ -602,9 +584,7 @@ ng-model="FormInputArray[0]['header'][0]['fields'][0]['GAP_DAYS']['Inputvalue']"
 ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['GAP_DAYS']['InputName'],0,0,0,0,'search')" 			
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['GAP_DAYS']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['GAP_DAYS']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  readonly="" />
-
-</td>  
+class="form-control" onfocus="this.select();" onmouseup="return false;"  readonly="" /></td>  
 
 
 <td>
@@ -618,9 +598,7 @@ ng-model="FormInputArray[0]['header'][0]['fields'][0]['NEXT_VISIT_DATE']['Inputv
 ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['NEXT_VISIT_DATE']['InputName'],0,0,0,0,'search')" 			
 ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['NEXT_VISIT_DATE']['InputName'],0,0,0,0,'search')" 	
 ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['NEXT_VISIT_DATE']['input_id_index'])"
-class="form-control" onfocus="this.select();" onmouseup="return false;"  />-->
-
-</td>  	
+class="form-control" onfocus="this.select();" onmouseup="return false;"  />--></td>  	
 </tr>
 
 
@@ -636,11 +614,8 @@ class="form-control" onfocus="this.select();" onmouseup="return false;"  />-->
 		ng-change="search(FormInputArray[0]['header'][0]['fields'][0]['ACTUAL_VISIT_AMT']['InputName'],0,0,0,0,'search')" 			
 		ng-focus="search(FormInputArray[0]['header'][0]['fields'][0]['ACTUAL_VISIT_AMT']['InputName'],0,0,0,0,'search')" 	
 		ng-keypress="mainOperation($event,0,0,0,0,FormInputArray[0]['header'][0]['fields'][0]['ACTUAL_VISIT_AMT']['input_id_index'])"
-		class="form-control" onfocus="this.select();" onmouseup="return false;"  />
-		</td> 
-		
+		class="form-control" onfocus="this.select();" onmouseup="return false;"  />		</td> 
 </tr>
-			
 </table>	
 		
 	
@@ -757,7 +732,7 @@ class="form-control" onfocus="this.select();" onmouseup="return false;"  />-->
 					class="btn btn-primary"><i class="fa fa-pencil"></i> SHOW BARCODE</a>-->
 
 				</td> 
-			</tr>	
+	  </tr>	
 	</table>
 	
 	
@@ -817,6 +792,11 @@ class="form-control" onfocus="this.select();" onmouseup="return false;"  />-->
 				<button class="btn-block btn-info" ng-click="print_prescription(value)" >Print</button>
 				</td>
 				
+				<td ng-repeat="(key,value) in values" ng-if="key=='id'" >
+				<button class="btn-block btn-info" ng-click="view_list_prescription(value)" >Edit</button>
+				</td>
+			
+			
 			<?php /*?>	<td ng-repeat="(key,value) in values" ng-if="key=='id'" >
 				<button class="btn-block btn-info" ng-click="print_label(value)" >Label</button>
 				</td>

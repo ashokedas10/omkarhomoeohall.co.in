@@ -33,14 +33,7 @@ class Project_model extends CI_Model {
 		
         if($cnt>0)
         {
-			//$row = $query->row();			
-			//$this->session->set_userdata('billing_emp_desig', 13);
-			//$this->session->set_userdata('billing_emp_id',141);
-			 
-			// if($row->login_status=='MANAGEMENT' or 	$row->login_status=='SUPER_STOCKIST' or $row->login_status=='ADMIN')
-			// {$this->session->set_userdata('HIERARCHY_STATUS','SUPERUSER');}
-			// else
-			// {$this->session->set_userdata('HIERARCHY_STATUS','NORMAL_USER');}
+
 			$records="select * from tbl_employee_mstr where userid='$username' and password='$password' and status<>'INACTIVE'";
 			$records = $this->get_records_from_sql($records);
 			 
@@ -55,16 +48,7 @@ class Project_model extends CI_Model {
 				'validated' => true
 				);
 									           
-            // $data = array(
-            //         'login_userid' => $row->userid,
-            //         'login_name' => $row->name,
-            //         'login_emp_id' => $row->id,
-			// 		'login_tbl_designation_id'=> $row->tbl_designation_id,
-			// 		'login_status'=> $row->login_status,
-			// 		'activity_status'=> $row->status,
-			// 		'COMP_ID'=> $row->company_id,
-            //         'validated' => true
-			// 		);
+          
 					
             $this->session->set_userdata($data);
             return true;
@@ -78,6 +62,7 @@ class Project_model extends CI_Model {
 	public function tran_no_generate($TRAN_TYPE='',$invoice_date='')
 	{
 		$tran_no=array();
+		$company_id=$this->session->userdata('COMP_ID');		
 
 		$finyr=$this->general_library->get_fin_yr($invoice_date);
 		$tran_no['finyr']=$finyr;	
@@ -96,7 +81,7 @@ class Project_model extends CI_Model {
 		else
 		{
 			$invsrl=1;
-			$sql="select max(srl) srl  from invoice_summary where  finyr='$finyr' and status='$TRAN_TYPE' ";				
+			$sql="select max(srl) srl  from invoice_summary where  finyr='$finyr' and status='$TRAN_TYPE' and company_id=".$company_id;				
 			$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
 			foreach ($rowrecord as $row1)
 			{ $invsrl=$row1->srl+1;}
@@ -1002,10 +987,6 @@ function gethierarchy_list($parentuid='',$returntype='HQ')
 	
 }
 
-	
-
-
-
 			
 	function batch_wise_available_stock($product_id=0,$MRP='',$exp_monyr='',$company_id=1)
 	{
@@ -1013,7 +994,7 @@ function gethierarchy_list($parentuid='',$returntype='HQ')
 			$purchase_qnty=0;
 			$records="select SUM(b.qnty) qnty	from invoice_summary a,invoice_details b 
 			where a.id=b.invoice_summary_id and  b.product_id=".$product_id." 
-			and b.mrp='".$MRP."' and b.exp_monyr='".$exp_monyr."' and a.status='PURCHASE' and a.company_id=".$company_id;
+			and b.mrp='".$MRP."' and a.status='PURCHASE' and a.company_id=".$company_id;
 			$records = $this->projectmodel->get_records_from_sql($records);
 			$purchase_qnty=$records[0]->qnty;
 
@@ -1021,14 +1002,15 @@ function gethierarchy_list($parentuid='',$returntype='HQ')
 			$sale_qnty=0;
 			$records="select SUM(b.qnty) qnty	from invoice_summary a,invoice_details b 
 			where a.id=b.invoice_summary_id and  b.product_id=".$product_id." 
-			and b.mrp='".$MRP."' and b.exp_monyr='".$exp_monyr."'  and a.status='SALE' and a.company_id=".$company_id;
+			and b.mrp='".$MRP."' and ITEM_DELETE_STATUS='NOT_DELETED'  
+			and a.status='SALE' and a.company_id=".$company_id;
 			$records = $this->projectmodel->get_records_from_sql($records);
 			$sale_qnty=$records[0]->qnty;
 
 			$issue_qnty=0;
 			$records="select SUM(b.qnty) qnty	from invoice_summary a,invoice_details b 
 			where a.id=b.invoice_summary_id and  b.product_id=".$product_id." 
-			and b.mrp='".$MRP."' and b.exp_monyr='".$exp_monyr."'  and a.status='ISSUE' and a.company_id=".$company_id;
+			and b.mrp='".$MRP."' and a.status='ISSUE' and a.company_id=".$company_id;
 			$records = $this->projectmodel->get_records_from_sql($records);
 			$issue_qnty=$records[0]->qnty;
 
@@ -1036,15 +1018,68 @@ function gethierarchy_list($parentuid='',$returntype='HQ')
 			return $totqnty;
 	}	
 
+	
+
+	function view_bill_wise_item($invoice_summary_id=0)
+	{
+		$data=array();
+		//id,main_group_id,product_group_id,product_id,potency_id,pack_id,no_of_dose,label_print,mrp,qnty,rate,subtotal,ITEM_DELETE_STATUS
+
+		$records = "select * from invoice_details where invoice_summary_id=".$invoice_summary_id." ";
+		$records = $this->get_records_from_sql($records);
+		// $records =json_decode(json_encode($records), true);
+		foreach ($records as $key=>$record)
+		{
+				$data[$key]['id']=$record->id;
+				$product_group_id=$this->projectmodel->GetSingleVal('group_id','productmstr','id='.$record->product_id); 
+				$brand_id=$this->projectmodel->GetSingleVal('brand_id','productmstr','id='.$record->product_id); 
+				$comp_shor_name=$this->projectmodel->GetSingleVal('name_value','misc_mstr','id='.$brand_id); 
+
+				$data[$key]['Main_Group']=$this->projectmodel->GetSingleVal('FieldID','frmrptgeneralmaster','id='.$record->main_group_id); 
+				$data[$key]['Group']=$this->projectmodel->GetSingleVal('name','misc_mstr','id='.$product_group_id); 
+								
+				if($record->product_Synonym<>'')
+				{$data[$key]['Product_name']=$record->product_Synonym;}
+				else
+				{$data[$key]['Product_name']=$this->projectmodel->GetSingleVal('productname','productmstr','id='.$record->product_id); }
+				$data[$key]['Product_name']=$data[$key]['Product_name'].' ('.$comp_shor_name.')';
+				
+
+				if($record->Synonym<>'')
+				{$data[$key]['Potency_name']=$record->Synonym;}
+				else
+				{$data[$key]['Potency_name']=$this->projectmodel->GetSingleVal('name','misc_mstr','id='.$record->potency_id); }
+
+				if($record->pack_synonym<>'')
+				{$data[$key]['Pack_name']=$record->pack_synonym;}
+				else
+				{$data[$key]['Pack_name']=$this->projectmodel->GetSingleVal('name','misc_mstr','id='.$record->pack_id); }
+
+				$data[$key]['No_of_Dose']=$record->no_of_dose;
+				$data[$key]['MRP']=$record->mrp;
+				$data[$key]['Qnty']=$record->qnty;
+				$data[$key]['Rate']=$record->rate;
+
+				$data[$key]['Sub_total']=$record->subtotal;
+				$data[$key]['Label']=$record->label_print;
+				$data[$key]['ITEM_DELETE_STATUS']=$record->ITEM_DELETE_STATUS;
+				
+		}
+
+		return $data;
+	}
+
+
 	function batch_list($product_id=0,$company_id=1)
 	{
 		$data=array();
 		$key=0;
-		$records = "select b.batchno FieldID,b.batchno FieldVal,b.rackno ,b.mrp MRP,b.exp_monyr ,b.product_id ,b.id, c.productname 
+		$records = "select b.batchno FieldID,b.batchno FieldVal,b.rackno ,b.mrp MRP,
+		b.exp_monyr ,b.product_id ,b.id, c.productname , a.invoice_no, a.invoice_date
 		from invoice_summary a ,invoice_details b ,productmstr c
 		where a.id=b.invoice_summary_id and c.id=b.product_id and 
 		(a.status='OPEN_BALANCE' or a.status='PURCHASE' or a.status='SALE_RTN') and b.product_id=".$product_id." 
-		and a.company_id=".$company_id." group by b.exp_monyr,b.mrp" ;
+		and a.company_id=".$company_id." group by b.mrp" ;
 
 		$records = $this->get_records_from_sql($records);	
 		foreach ($records as $record)
@@ -1065,7 +1100,9 @@ function gethierarchy_list($parentuid='',$returntype='HQ')
 				$data[$key]['Avilable_qnty']=intval($this->projectmodel->GetSingleVal('total_available_qnty','rack_master','id='.$record->rackno));
 				$data[$key]['Max_qnty']=intval($this->projectmodel->GetSingleVal('max_qnty','rack_master','id='.$record->rackno));
 				$data[$key]['Avilable_qnty']=$data[$key]['Max_qnty']-$data[$key]['Avilable_qnty'];
-							
+				
+				$data[$key]['PBill_No']=$record->invoice_no;
+				$data[$key]['PBill_Date']=$record->invoice_date;
 			
 				//calculate available qnty
 				
@@ -1081,12 +1118,391 @@ function gethierarchy_list($parentuid='',$returntype='HQ')
 
 	}
 
+
+	public function master_stored_session(){
+      
+			$company_id=$this->session->userdata('COMP_ID');
+
+			$PATIENT_LIST=$product_rate=array();
+
+
+			//PRODUCT SECTION
+			$sql="select a.id FieldID,a.productname FieldVal,b.name_value Company,c.available_qnty	,c.minimum_stock
+			from productmstr a, misc_mstr b,product_balance_companywise c  
+			where a.brand_id=b.id and  a.active_inactive='ACTIVE' and a.id=c.product_id
+			and c.company_id=".$company_id;
+			$patent_product_data =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select a.id FieldID,TRIM(a.productname) FieldVal from productmstr a,misc_mstr b
+			where a.group_short_name='M' and  a.group_id=b.id 
+			and b.mstr_type='PRODUCT_GROUP' and b.status='ACTIVE'";
+			$mother_product_data =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select a.id FieldID,TRIM(a.productname) FieldVal from productmstr a,misc_mstr b
+			where a.group_short_name='T' and  a.group_id=b.id 
+			and b.mstr_type='PRODUCT_GROUP' and b.status='ACTIVE'";
+			$tituration_product_data =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select a.id FieldID,TRIM(a.productname) FieldVal from productmstr a,misc_mstr b
+			where a.group_short_name='B' and  a.group_id=b.id 
+			and b.mstr_type='PRODUCT_GROUP' and b.status='ACTIVE'";
+			$biochemic_product_data =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select a.id FieldID,TRIM(a.productname) FieldVal from productmstr a,misc_mstr b
+			where a.group_short_name='D' and  a.group_id=b.id 
+			and b.mstr_type='PRODUCT_GROUP' and b.status='ACTIVE'";
+			$dilution_product_data =$this->projectmodel->get_records_from_sql($sql);
+
+
+			$sql="select a.id FieldID,TRIM(a.productname) FieldVal from productmstr a,misc_mstr b
+			where a.group_short_name='W' and  a.group_id=b.id 
+			and b.mstr_type='PRODUCT_GROUP' and b.status='ACTIVE'";
+			$water_product_data =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select a.id FieldID,TRIM(a.productname) FieldVal from productmstr a,misc_mstr b
+			where a.group_short_name='S' and  a.group_id=b.id 
+			and b.mstr_type='PRODUCT_GROUP' and b.status='ACTIVE'";
+			$sugar_product_data =$this->projectmodel->get_records_from_sql($sql);
+
+			//POTENCY SECTION
+
+			$sql="select id FieldID,name FieldVal from misc_mstr
+			where parent_id=50 and mstr_type='POTENCY' and status='ACTIVE' ";
+			$POTENCY_M =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select id FieldID,name FieldVal from misc_mstr
+			where parent_id=52 and mstr_type='POTENCY' and status='ACTIVE' ";
+			$POTENCY_T =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select id FieldID,name FieldVal from misc_mstr
+			where parent_id=53 and mstr_type='POTENCY' and status='ACTIVE' ";
+			$POTENCY_D =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select id FieldID,name FieldVal from misc_mstr
+			where parent_id=54 and mstr_type='POTENCY' and status='ACTIVE' ";
+			$POTENCY_B =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select id FieldID,name FieldVal from misc_mstr
+			where parent_id=55 and mstr_type='POTENCY' and status='ACTIVE' ";
+			$POTENCY_W =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select id FieldID,name FieldVal from misc_mstr
+			where parent_id=56 and mstr_type='POTENCY' and status='ACTIVE' ";
+			$POTENCY_S =$this->projectmodel->get_records_from_sql($sql);
+
+
+			//PACK SECTION
+
+			$sql="select id FieldID,name FieldVal from misc_mstr
+			where parent_id=50 and mstr_type='PACK_SIZE' and status='ACTIVE' ";
+			$PACK_SIZE_M =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select id FieldID,name FieldVal from misc_mstr
+			where parent_id=52 and mstr_type='PACK_SIZE' and status='ACTIVE' ";
+			$PACK_SIZE_T =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select id FieldID,name FieldVal from misc_mstr
+			where parent_id=53 and mstr_type='PACK_SIZE' and status='ACTIVE' ";
+			$PACK_SIZE_D =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select id FieldID,name FieldVal from misc_mstr
+			where parent_id=54 and mstr_type='PACK_SIZE' and status='ACTIVE' ";
+			$PACK_SIZE_B =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select id FieldID,name FieldVal from misc_mstr
+			where parent_id=55 and mstr_type='PACK_SIZE' and status='ACTIVE' ";
+			$PACK_SIZE_W =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select id FieldID,name FieldVal from misc_mstr
+			where parent_id=56 and mstr_type='PACK_SIZE' and status='ACTIVE' ";
+			$PACK_SIZE_S =$this->projectmodel->get_records_from_sql($sql);	
+
+			//PRODUCT RATE MASTER
+		
+			$records="select * from product_rate_mstr ";
+			$records = $this->get_records_from_sql($records);					
+			foreach ($records as $record)
+			{ 		
+				$product_rate[$record->GROUP_ID][$record->POTENCY_ID][$record->PACK_ID]['DOSE_1']['MRP']=$record->MRP;
+				$product_rate[$record->GROUP_ID][$record->POTENCY_ID][$record->PACK_ID]['DOSE_1']['RATE']=$record->RATE;
+
+				$product_rate[$record->GROUP_ID][$record->POTENCY_ID][$record->PACK_ID]['DOSE_2']['MRP']=$record->dose2_mrp;
+				$product_rate[$record->GROUP_ID][$record->POTENCY_ID][$record->PACK_ID]['DOSE_2']['RATE']=$record->dose2_rate;
+
+				$product_rate[$record->GROUP_ID][$record->POTENCY_ID][$record->PACK_ID]['DOSE_3']['MRP']=$record->dose3_mrp;
+				$product_rate[$record->GROUP_ID][$record->POTENCY_ID][$record->PACK_ID]['DOSE_3']['RATE']=$record->dose3_rate;
+
+				$product_rate[$record->GROUP_ID][$record->POTENCY_ID][$record->PACK_ID]['DOSE_4']['MRP']=$record->dose4_mrp;
+				$product_rate[$record->GROUP_ID][$record->POTENCY_ID][$record->PACK_ID]['DOSE_4']['RATE']=$record->dose4_rate;
+
+				$product_rate[$record->GROUP_ID][$record->POTENCY_ID][$record->PACK_ID]['DOSE_5']['MRP']=$record->dose5_mrp;
+				$product_rate[$record->GROUP_ID][$record->POTENCY_ID][$record->PACK_ID]['DOSE_5']['RATE']=$record->dose5_rate;
+
+			}
+			//PRODUCT RATE MASTER END 
+
+			//PRESCRIPTION RELATED
+
+			$sql="select id FieldID,id Patient_Id ,party_name FieldVal,address Address_1,Address2 Address_2,mobno Mob_No
+			from patient_registration  ORDER BY party_name";
+			$PRESCRIPTION_PATIENT_NAMES =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select id FieldID,id Patient_Id,address FieldVal,party_name patient_name,Address2 Address_2,mobno Mob_No
+			from patient_registration  ORDER BY party_name";
+			$PRESCRIPTION_PATIENT_ADDRESS =$this->projectmodel->get_records_from_sql($sql);
+
+			$sql="select id FieldID,id Patient_Id, mobno FieldVal,party_name patient_name,address Address_1,Address2 Address_2
+			from patient_registration  ORDER BY party_name";
+			$PRESCRIPTION_PATIENT_MOBNOS =$this->projectmodel->get_records_from_sql($sql);
+
+			//PATIENT MASTER WITH ALL RELEVANT DATA
+			$records="select * from patient_registration  ";
+			$records = $this->get_records_from_sql($records);					
+			foreach ($records as $key=>$record)
+			{ 	
+				$PATIENT_LIST[$record->id]=$record;
+			}	
+
+			//PRESCRIPTION RELATED END 
+
+
+				$data_tran = array(
+				'PRODUCT_P' => $patent_product_data,
+				'PRODUCT_M' => $mother_product_data,
+				'PRODUCT_T' => $tituration_product_data,
+				'PRODUCT_B'=> $biochemic_product_data,
+				'PRODUCT_D'=> $dilution_product_data,
+				'PRODUCT_W'=> $water_product_data,
+				'PRODUCT_S'=> $sugar_product_data,
+				'POTENCY_M'=> $POTENCY_M,
+				'POTENCY_T'=> $POTENCY_T,
+				'POTENCY_D'=> $POTENCY_D,
+				'POTENCY_B'=> $POTENCY_B,
+				'POTENCY_W'=> $POTENCY_W,
+				'POTENCY_S'=> $POTENCY_S,
+				'PACK_SIZE_M'=> $PACK_SIZE_M,
+				'PACK_SIZE_T'=> $PACK_SIZE_T,
+				'PACK_SIZE_D'=> $PACK_SIZE_D,
+				'PACK_SIZE_B'=> $PACK_SIZE_B,
+				'PACK_SIZE_W'=> $PACK_SIZE_W,
+				'PACK_SIZE_S'=> $PACK_SIZE_S,
+				'RATE_MASTER'=> $product_rate,
+				'PRESCRIPTION_PATIENT_NAMES'=> $PRESCRIPTION_PATIENT_NAMES,
+				'PRESCRIPTION_PATIENT_ADDRESS'=> $PRESCRIPTION_PATIENT_ADDRESS,
+				'PRESCRIPTION_PATIENT_MOBNOS'=> $PRESCRIPTION_PATIENT_MOBNOS,
+				'PATIENT_LIST'=> $PATIENT_LIST,
+				'validated' => true
+				);
+					
+					
+			$this->session->set_userdata($data_tran);
+			
+             
+       
+	}
+	
+
+	function bill_wise_item_formating($table_id=0)
+	{
+		
+		$return_array=array();
+		
+		$key =0;
+		$sql="select * from invoice_details where  	invoice_summary_id=".$table_id." 
+		and main_group_id not in (57,58,59,60,61,62) and ITEM_DELETE_STATUS='NOT_DELETED' order by  id ";
+		$rowrecord = $this->get_records_from_sql($sql);					
+		foreach ($rowrecord as $row)
+		{ 			
+				
+				$stotal=0;		
+				$tax_per=$row->tax_per;		
+				
+				$product_name=$this->GetSingleVal('productname',
+				'productmstr',' id='.$row->product_id);
+				$brand_id=$this->GetSingleVal('brand_id','productmstr',' id='.$row->product_id);
+					
+				
+				//potency
+				if($row->potency_id>0)
+				{
+					$potency_name=
+					$this->GetSingleVal('name','misc_mstr',' id='.$row->potency_id);
+				}
+				else
+				{ $potency_name='';}
+				
+				if($row->Synonym<>'')
+				{$potency_name=$row->Synonym;}
+			
+				//pack			
+				if($row->pack_id>0)
+				{$pack_name=$this->GetSingleVal('name','misc_mstr',' id='.$row->pack_id);}
+				else
+				{ $pack_name='';}
+				
+				
+				$no_of_dose=$row->no_of_dose;
+				$dose_formula=$row->dose_Synonym;
+								
+				if($row->main_group_id==50) //MOTHER
+				{
+					if($row->product_Synonym<>'')
+					{$product_name=$row->product_Synonym;}
+					if($row->pack_synonym<>'')
+					{$pack_name=$row->pack_synonym;}
+					$product_name=$product_name.' '.$potency_name;
+					$return_array[$key]['PRODUCT']=$product_name;
+				}
+				
+				if($row->main_group_id==52) //TRITURATION
+				{
+					if($row->product_Synonym<>'')
+					{$product_name=$row->product_Synonym;}
+					if($row->pack_synonym<>'')
+					{$pack_name=$row->pack_synonym;}
+					$product_name=$product_name;
+					$return_array[$key]['PRODUCT']=$product_name;
+				}
+				
+				if($row->main_group_id==53) //DILUTION
+				{
+					if($row->product_Synonym<>'')
+					{$product_name=$row->product_Synonym;}
+					$product_name=$product_name.' '.$potency_name;
+										
+					if($row->pack_synonym<>'')
+					{$product_name=$product_name.' GL :'.$row->pack_synonym;}
+					$return_array[$key]['PRODUCT']=$product_name;
+				}
+				
+				if($row->main_group_id==54) //BIOCHEMIC
+				{
+					if($row->product_Synonym<>'')
+					{$product_name=$row->product_Synonym;}
+					if($row->pack_synonym<>'')
+					{$pack_name=$row->pack_synonym;}
+					$product_name=$product_name.' '.$potency_name;
+					$return_array[$key]['PRODUCT']=$product_name;
+				}
+				
+				if($row->main_group_id==55) //WATER
+				{
+					if($row->product_Synonym<>'')
+					{$product_name=$row->product_Synonym;}
+					if($row->pack_synonym<>'')
+					{$pack_name=$row->pack_synonym;}
+					$product_name=$product_name.' '.$potency_name.' DO:'.$no_of_dose;
+					$return_array[$key]['PRODUCT']=$product_name;
+				}
+				
+				if($row->main_group_id==56) //SUGAR_OF_MILK
+				{
+					if($row->product_Synonym<>'')
+					{$product_name=$row->product_Synonym;}
+					if($row->pack_synonym<>'')
+					{$pack_name=$row->pack_synonym;}
+					$pack_name='';
+					
+					$product_name=$product_name.' '.$potency_name; 
+				    //$pack_name=$dose_formula.'='.$no_of_dose.' Dose ';
+					if($dose_formula<>'')
+					{$product_name=$product_name.' DO:'.$dose_formula.'='.$no_of_dose;}
+					else
+					{$product_name=$product_name.' DO:'.$no_of_dose;}
+					$return_array[$key]['PRODUCT']=$product_name;
+					
+				}
+				
+				if($row->main_group_id==51) //PATENT
+				{
+					$brand_name=$this->projectmodel->GetSingleVal('name_value','misc_mstr',' id='.$brand_id);
+					$product_name=$product_name.' ('.$brand_name.')';
+					$pack_name='';
+					$return_array[$key]['PRODUCT']=$product_name;
+				}
+				
+				
+				$key =$key +1;
+
+		}
+
+		//MOTHER MIX
+		$key =$key +1;
+		$i=0;
+		$mixno=0;				
+		$mother_name='Mother T.Mix';
+		 $groups="select main_group_id from  invoice_details where 
+		invoice_summary_id =".$table_id." and  main_group_id in (57,58,59,60,61,62) and ITEM_DELETE_STATUS='NOT_DELETED' group by main_group_id";
+		$groups = $this->projectmodel->get_records_from_sql($groups);
+		foreach ($groups as $group)
+		{
+			$i =$i +1;
+			$mixno=$mixno+1;	
+
+
+			$sql="select * from invoice_details where  	invoice_summary_id=".$table_id." 
+			and main_group_id=".$group->main_group_id." and ITEM_DELETE_STATUS='NOT_DELETED' order by id";
+			$rowrecord = $this->projectmodel->get_records_from_sql($sql);			
+			foreach ($rowrecord as $row)
+			{ 
+					$stotal=0;		
+					$tax_per=$row->tax_per;		
+					
+					$product_name=
+					$this->projectmodel->GetSingleVal('productname','productmstr',' id='.$row->product_id);
+									
+					if($row->product_Synonym<>'')
+					{$product_name=$row->product_Synonym;}
+					
+					//potency
+					if($row->potency_id>0)
+					{
+						$potency_name=
+						$this->projectmodel->GetSingleVal('name','misc_mstr',' id='.$row->potency_id);
+					}
+					else
+					{ $potency_name='';}
+					
+					if($row->Synonym<>'')
+					{$potency_name=$row->Synonym;}
+				
+					//pack			
+					if($row->pack_id>0)
+					{$pack_name=$this->projectmodel->GetSingleVal('name','misc_mstr',' id='.$row->pack_id);}
+					else
+					{ $pack_name='';}
+					
+					if($row->pack_synonym<>'')
+					{$pack_name=$row->pack_synonym;}
+					
+					$no_of_dose=$row->no_of_dose;
+					$dose_formula=$row->dose_Synonym;
+									
+					$product_name=$product_name.' '.$potency_name.' '.$pack_name;
+					
+					$return_array[$key]['PRODUCT']='MM:'.$mixno.' - '.$product_name;
+					$key =$key +1;
+			}	
+
+			
+
+			
+
+		}
+		return $return_array;
+
+
+	}
+
 	function doctor_wise_calculation($party_id=0,$doctor_mstr_id=0,$prescription_date='')
 	{
 		$data=array();
 
 		$whr="id=".$doctor_mstr_id;
 		$doc_id=$this->GetSingleVal('ref_table_id','acc_group_ledgers',$whr);
+
+		$whr="id=".$party_id."";
+		$PATIENT_TYPE=$this->GetSingleVal('PATIENT_TYPE','patient_registration',$whr);
 
 		$whr="id=".$doc_id."";
 		$VISIT_1=$this->GetSingleVal('VISIT_1','doctor_mstr',$whr);
@@ -1097,7 +1513,7 @@ function gethierarchy_list($parentuid='',$returntype='HQ')
 		$data['NEXT_VISIT']=$NEXT_VISIT;
 		$data['GAP_DAYS']=$GAP_DAYS;
 
-	
+		$cnt=0;
 		$sqlfields="select count(*) cnt from patient_prescription
 		where patient_registration_id=".$party_id." and token_status='VALID' and doctor_mstr_id=".$doctor_mstr_id ;
 		$fields = $this->get_records_from_sql($sqlfields);
@@ -1112,8 +1528,8 @@ function gethierarchy_list($parentuid='',$returntype='HQ')
 		if($cnt>0)
 		{
 
-			$sqlfields="select MAX(prescription_date) MX_PRES_DATE  from patient_prescription
-			where patient_registration_id=".$party_id."  and token_status='VALID'  and doctor_mstr_id=".$doctor_mstr_id ;
+			$sqlfields="select max(prescription_date) MX_PRES_DATE  from patient_prescription
+			where patient_registration_id=".$party_id."  and token_status='VALID' and ACTUAL_VISIT_AMT>0  and doctor_mstr_id=".$doctor_mstr_id ;
 			$fields = $this->get_records_from_sql($sqlfields);
 			foreach ($fields as $field)
 			{
@@ -1122,24 +1538,21 @@ function gethierarchy_list($parentuid='',$returntype='HQ')
 			}
 		}
 		
-
-		if($cnt==0)
+		if($PATIENT_TYPE=='PAID')
 		{
-			$data['ACTUAL_VISIT_AMT']=$VISIT_1;
+			if($cnt==0)
+			{$data['ACTUAL_VISIT_AMT']=$VISIT_1;}
+			else
+			{
+				if($NEXT_VISIT_DATE<=$prescription_date) //NEXT VISIT
+				{$data['ACTUAL_VISIT_AMT']=$NEXT_VISIT;}
+				else  //REPORT VISIT
+				{$data['ACTUAL_VISIT_AMT']=0;}
+			}
 		}
 		else
-		{
-			
-			if($NEXT_VISIT_DATE<=$prescription_date) //NEXT VISIT
-			{
-				$data['ACTUAL_VISIT_AMT']=$NEXT_VISIT;
-			}
-			else  //REPORT VISIT
-			{
-				$data['ACTUAL_VISIT_AMT']=0;
-			}
-
-		}
+		{$data['ACTUAL_VISIT_AMT']=0;}
+	
 		
 		return $data;
 

@@ -48,8 +48,6 @@ distil water rate master correction
 WHOLE SALE 
 41.CORRECTION WATER AS RETAIL
 
-
-
 //RECENT PROBLEM SOLVE
 
 problem in edit ing bill
@@ -61,6 +59,12 @@ PRODUCT WISE DISCOUNT AS PER PARTY AND PRODUCT
 
 after editing the bill if go to new entry bill deleted
 save bill,print bill or print label --> product will be minus
+
+
+product wise delete section.....
+product master not added ...chk for nature
+GENERATE PRESCRIPTION
+
 
 AT ISSUE 
 ------------
@@ -85,9 +89,7 @@ EXP DATE WILL BE CALCULATE =PURCHASE DATE + 12 MONTH
 
 //PENDING PROBLEMS
 
-product wise delete section.....
-product master not added ...chk for nature
-GENERATE PRESCRIPTION
+
 
 
 
@@ -136,3 +138,36 @@ WHOLE SALE BILL ISSUES
 
 26.bill footer ...description not require ...connect with company setting field
 will display at footer
+
+30/03/21
+//MINIMUM STOCK WILL BE AVAILABLE STOCK AS ON DATE
+
+COMP NAME
+PRODUCT NAME | AVAILABLE STOCK  | MINIMUM STOCK | ORDER QNTY
+PRINT OUT
+
+RETAIL BILL
+PRINT-1
+PRINT-2
+
+PRODUCT SHORT NAME AT SCREEN
+BILL EDIT PORTING CURRENT DATE EDITED
+
+ORDER BY DISPLAY AT SCREEN PRODUCT LIST
+
+WHOLE SALE BILL PRODUCT DELETE
+
+DELETE PRODUCT REPORT FOR RETAIL AND WHOLESALE
+
+
+
+
+6594-9417
+
+
+
+
+
+
+
+

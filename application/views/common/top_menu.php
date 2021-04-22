@@ -116,6 +116,8 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
 		<i class="fa fa-circle-o"></i>Urgent Codes</a>
 		</li> 
 		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/test_code/"><i class="fa fa-circle-o"></i>Test Code</a> </li>
+		
 				 
         </ul>
 	  </li> 
@@ -179,17 +181,6 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
               </a>
               <ul class="treeview-menu">
 			
-				
-		<?php /*?><li><a href="<?php echo ADMIN_BASE_URL?>Accounts_controller/load_form_report/Purchase"><i class="fa fa-circle-o"></i>Purchase</a></li>
-		<li><a href="<?php echo ADMIN_BASE_URL?>Accounts_controller/load_form_report/Sale_test"><i class="fa fa-circle-o"></i>Sale</a></li>
-		<li><a href="<?php echo ADMIN_BASE_URL?>Accounts_controller/load_form_report/purchase_rtn"><i class="fa fa-circle-o"></i>Purchase Return</a></li>		
-        <li><a href="<?php echo ADMIN_BASE_URL?>Accounts_controller/load_form_report/sale_return"><i class="fa fa-circle-o"></i>Sale Return</a></li> 
-		
-		
-		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/purchase_entry/acc_tran/47/">
-		<i class="fa fa-circle-o"></i>Purchase</a></li>
-		
-		<?php */?>
 		
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/invoice_entry/acc_tran/47/">
 		<i class="fa fa-circle-o"></i>Sale Retail</a></li>
@@ -208,7 +199,17 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/doctor_prescription/acc_tran/47/">
 		<i class="fa fa-circle-o"></i>Prescription</a></li>
 					
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/receipt_whole_sale/acc_tran/47/">
+		<i class="fa fa-circle-o"></i>Receipt</a></li>
+				
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/payment_expense/acc_tran/47/">
+		<i class="fa fa-circle-o"></i>Payment</a></li>			
 		
+		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/retail_bill_experiment/acc_tran/47/">
+		<i class="fa fa-circle-o"></i>Sale Retail Experiment</a></li>
+		
+	
 		
               </ul>
             </li>	
@@ -260,6 +261,11 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
 		
 		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/DOCTOR_PRESCRIPTIONS/">
 		<i class="fa fa-circle-o"></i>Doctor Prescription</a></li>
+		
+		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/Product_minimum_stock"><i class="fa fa-circle-o"></i>Product Minimum Stock</a></li>
+		
+		
 		
               </ul>
        </li>	

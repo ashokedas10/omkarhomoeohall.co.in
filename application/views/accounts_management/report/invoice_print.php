@@ -364,7 +364,7 @@ td{
 				//$grand_total=0;	
 													
 				$sql="select * from invoice_details where  	invoice_summary_id=".$table_id." 
-				and main_group_id not in (57,58,59,60,61,62) order by  id ";
+				and main_group_id not in (57,58,59,60,61,62) and ITEM_DELETE_STATUS='NOT_DELETED' order by  id ";
 				$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
 				$i =0;
 				if(count($rowrecord) > 0){
@@ -560,7 +560,8 @@ td{
 				$mixno=0;				
 				$mother_name='Mother T.Mix';
 				$groups="select main_group_id from  invoice_details where 
-				invoice_summary_id =".$table_id." and  main_group_id in (57,58,59,60,61,62) group by main_group_id";
+				invoice_summary_id =".$table_id." and  main_group_id in (57,58,59,60,61,62) and ITEM_DELETE_STATUS='NOT_DELETED'
+				 group by main_group_id";
 				$groups = $this->projectmodel->get_records_from_sql($groups);
 				foreach ($groups as $group)
 				{
@@ -571,7 +572,9 @@ td{
 				$total_qnty=$total_qnty+1;
 				$pack_calc='';
 				
-				$sql="select * from invoice_details where  	invoice_summary_id=".$table_id."  and main_group_id=".$group->main_group_id." order by id";
+				$sql="select * from invoice_details where  	invoice_summary_id=".$table_id."  and main_group_id=".$group->main_group_id." 
+				and ITEM_DELETE_STATUS='NOT_DELETED'
+				 order by id";
 				$rowrecord = $this->projectmodel->get_records_from_sql($sql);						
 				foreach ($rowrecord as $row)
 				{
@@ -616,7 +619,8 @@ td{
 			</tr>
 				
 		<?php		
-					$sql="select * from invoice_details where  	invoice_summary_id=".$table_id."  and main_group_id=".$group->main_group_id." order by id";
+					$sql="select * from invoice_details where  	invoice_summary_id=".$table_id."  and main_group_id=".$group->main_group_id." 
+					and ITEM_DELETE_STATUS='NOT_DELETED' order by id";
 					$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
 					
 					if(count($rowrecord) > 0){
@@ -776,7 +780,7 @@ td{
 								<span class="style2">[ Your Savings Rs.<?php 
 								
 								$mrpsum="SELECT SUM( mrp * qnty ) totmrp 
-								FROM invoice_details WHERE invoice_summary_id =".$table_id;					
+								FROM invoice_details WHERE  ITEM_DELETE_STATUS='NOT_DELETED' and invoice_summary_id =".$table_id;					
 								$mrpsum = $this->projectmodel->get_records_from_sql($mrpsum);
 								$totmrp=$mrpsum[0]->totmrp;
 								$totmrp=$totmrp-$invoice_summary[0]->total_amt;

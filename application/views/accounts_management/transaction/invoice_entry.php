@@ -670,7 +670,7 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 				<td    colspan="3">
 				<td>
 				<button type="button" class="btn btn-success" id="Save" name="Save" 
-				ng-click="final_submit()">Save Bill</button>
+				ng-click="final_submit(value)">Save Bill</button>
 				
 				<button type="button" class="btn btn-success" id="Save" name="Save" 
 				ng-click="print_label()">Print Label</button>
@@ -679,7 +679,7 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 				ng-click="print_documents('POS_INVOICE',value)"> Print Bill</button>
 				
 				<button type="button" class="btn btn-success"  
-				ng-click="new_entry()">New Entry </button>
+				ng-click="new_entry(value)">New Entry </button>
 				
 				<!--<a data-toggle="modal" data-target="#shortModal" 
 					class="btn btn-primary"><i class="fa fa-pencil"></i> SHOW BARCODE</a>-->

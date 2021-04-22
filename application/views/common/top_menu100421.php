@@ -116,6 +116,8 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
 		<i class="fa fa-circle-o"></i>Urgent Codes</a>
 		</li> 
 		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/test_code/"><i class="fa fa-circle-o"></i>Test Code</a> </li>
+		
 				 
         </ul>
 	  </li> 
@@ -135,15 +137,31 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
 			
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/8/list/"><i class="fa fa-circle-o"></i>Company Setting</a></li> 
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/31/list/"><i class="fa fa-circle-o"></i>User Master</a></li> 		
-		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/26/list/"><i class="fa fa-circle-o"></i>State Master</a></li> 		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/26/list/"><i class="fa fa-circle-o"></i>State Master</a></li>
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/44/list/"><i class="fa fa-circle-o"></i>Rack Master</a></li> 	 		
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/21/list/"><i class="fa fa-circle-o"></i>Brand Master</a></li> 		
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/22/list/"><i class="fa fa-circle-o"></i>Product Group Master</a></li> 		 
 		<?php /*?><li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/2/list/"><i class="fa fa-circle-o"></i>Product Master Old</a></li> 	<?php */?>	
+	<?php /*?>	<li><a href="<?php echo ADMIN_BASE_URL?>Accounts_controller/load_form_report/product_master"><i class="fa fa-circle-o"></i>Product Master -old</a></li><?php */?>
 		
-		<li><a href="<?php echo ADMIN_BASE_URL?>Accounts_controller/load_form_report/product_master"><i class="fa fa-circle-o"></i>Product Master</a></li>
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/product_master"><i class="fa fa-circle-o"></i>Product Master</a></li>
 		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/38/list/"><i class="fa fa-circle-o"></i>Potency Master</a></li> 
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/39/list/"><i class="fa fa-circle-o"></i>Pack Size Master</a></li> 
+		
+		<?php /*?><li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/40/list/"><i class="fa fa-circle-o"></i>Dose Discount Set</a></li> <?php */?>
+		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/product_rate_master/master/47/">
+		<i class="fa fa-circle-o"></i>Rate Master</a></li>
 				
-		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/9/list/"><i class="fa fa-circle-o"></i>Party/Vendor Master</a></li> 
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/9/list/"><i class="fa fa-circle-o"></i>Vendor Master</a></li> 
+		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/41/list/"><i class="fa fa-circle-o"></i>Party Master</a></li> 
+		
+			<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/42/list/"><i class="fa fa-circle-o"></i>Agent Master</a></li> 
+			
+				<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/43/list/"><i class="fa fa-circle-o"></i>Patient Registration</a></li> 
+		
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/23/list/"><i class="fa fa-circle-o"></i>Account Group Manage</a></li>					
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/24/list/"><i class="fa fa-circle-o"></i>Ledger Manage</a></li>			
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/25/list/"><i class="fa fa-circle-o"></i>Doctor master</a></li>			
@@ -164,7 +182,7 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
               <ul class="treeview-menu">
 			
 				
-		<li><a href="<?php echo ADMIN_BASE_URL?>Accounts_controller/load_form_report/Purchase"><i class="fa fa-circle-o"></i>Purchase</a></li>
+		<?php /*?><li><a href="<?php echo ADMIN_BASE_URL?>Accounts_controller/load_form_report/Purchase"><i class="fa fa-circle-o"></i>Purchase</a></li>
 		<li><a href="<?php echo ADMIN_BASE_URL?>Accounts_controller/load_form_report/Sale_test"><i class="fa fa-circle-o"></i>Sale</a></li>
 		<li><a href="<?php echo ADMIN_BASE_URL?>Accounts_controller/load_form_report/purchase_rtn"><i class="fa fa-circle-o"></i>Purchase Return</a></li>		
         <li><a href="<?php echo ADMIN_BASE_URL?>Accounts_controller/load_form_report/sale_return"><i class="fa fa-circle-o"></i>Sale Return</a></li> 
@@ -173,20 +191,35 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/purchase_entry/acc_tran/47/">
 		<i class="fa fa-circle-o"></i>Purchase</a></li>
 		
-		
-		
-		
-		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/purchase_entry/acc_tran/47/">
-		<i class="fa fa-circle-o"></i>Purchase Entry New</a></li>	
+		<?php */?>
 		
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/invoice_entry/acc_tran/47/">
-		<i class="fa fa-circle-o"></i>Sale Entry New</a></li>
+		<i class="fa fa-circle-o"></i>Sale Retail</a></li>
 		
-	
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/invoice_entry_wholesale/acc_tran/47/">
+		<i class="fa fa-circle-o"></i>Sale Entry-Wholesale </a></li>
+		
+				
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/purchase_entry/acc_tran/47/">
+		<i class="fa fa-circle-o"></i>Purchase Entry</a></li>	
+		
+		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/issue_entry/acc_tran/47/">
+		<i class="fa fa-circle-o"></i>Issue Entry</a></li>	
+		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/doctor_prescription/acc_tran/47/">
+		<i class="fa fa-circle-o"></i>Prescription</a></li>
+					
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/receipt_whole_sale/acc_tran/47/">
+		<i class="fa fa-circle-o"></i>Receipt</a></li>
+				
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/payment_expense/acc_tran/47/">
+		<i class="fa fa-circle-o"></i>Payment</a></li>			
+		
 		
               </ul>
             </li>	
-			
+	
 	<li class="header">BILLING REPORTS</li>
 		
 	<li class="treeview">
@@ -194,39 +227,70 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
 		<i class="fa fa-table"></i> <span>Reports</span>
 		<i class="fa fa-angle-left pull-right"></i>
 	  </a>
-              <ul class="treeview-menu">
-			
-		<?php /*?><li>
-		<a 	href="<?php echo ADMIN_BASE_URL?>Accounts_controller/reports/30/list/">		
-		<i class="fa fa-circle-o"></i>Purchase Register</a>
-		</li><?php */?>
+        <ul class="treeview-menu">
+	
+		<li><a href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/PURCHASE_REGISTER/0/0/"><i class="fa fa-circle-o"></i>
+		Purchase Register</a></li>
 		
-		<li><a href="<?php echo ADMIN_BASE_URL?>
-		Accounts_controller/sale_purchase_crnote_drnote_register/27/list/">
-		<i class="fa fa-circle-o"></i>Purchase Report</a></li>
-		
-		<?php /*?><li>
-		<a 	href="<?php echo ADMIN_BASE_URL?>Accounts_controller/reports/29/list/">		
-		<i class="fa fa-circle-o"></i>Sale Register</a>
-		</li><?php */?>
-		
-		<li><a href="<?php echo ADMIN_BASE_URL?>
-		Accounts_controller/sale_purchase_crnote_drnote_register/28/list/">
-		<i class="fa fa-circle-o"></i>Sale Report</a></li>
-		
-		<?php /*?>	
-		<li>
-		<a target ="_self" 
-		href="<?php echo ADMIN_BASE_URL?>Accounts_controller/gst_reports/">		
-		<i class="fa fa-circle-o"></i>GST Reports</a>
-		</li><?php */?>
-		
-		<li><a href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/PRODUCT_GROUP/"><i class="fa fa-circle-o"></i>Trade Stock Register</a></li>
+		<li><a href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/SALE_REGISTER/0/0/"><i class="fa fa-circle-o"></i>
+		Sales Register</a></li>
+				
+		<li><a href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/STOCK_REGISTER/"><i class="fa fa-circle-o"></i>Stock Register</a></li>
 				
 		<li><a href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/PRODUCT_WISE_PURCHASE/0/0/"><i class="fa fa-circle-o"></i>
 		Product Wise Purchase</a></li>
 		
-		<li><a href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/PRODUCT_WISE_SALE/0/0/"><i class="fa fa-circle-o"></i>Product Wise Sale</a></li>
+		<li><a href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/PRODUCT_WISE_SALE/0/0/"><i class="fa fa-circle-o"></i>
+		Product Wise Sale</a></li>
+		
+		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/EXPIRY_REGISTER/">
+		<i class="fa fa-circle-o"></i>Expiry Register</a></li>
+						
+		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/DEBTORS_SUMMARY/">
+		<i class="fa fa-circle-o"></i>Party Ledger Summary </a></li>
+		
+		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/DEBTORS_DETAILS/">
+		<i class="fa fa-circle-o"></i>Party Ledger Detail </a></li>
+		
+		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/CREDITORS_SUMMARY/">
+		<i class="fa fa-circle-o"></i>Vendor Ledger Summary</a></li>
+		
+		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/CREDITORS_DETAILS/">
+		<i class="fa fa-circle-o"></i>Vendor Ledger Details</a></li>
+		
+		
+		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/DOCTOR_COMMISSION_SUMMARY/">
+		<i class="fa fa-circle-o"></i>Doctor Commission Summary</a></li>
+		
+		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/DOCTOR_COMMISSION_DETAILS/">
+		<i class="fa fa-circle-o"></i>Doctor Commission Details</a></li>
+		
+		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/DOCTOR_PRESCRIPTIONS/">
+		<i class="fa fa-circle-o"></i>Doctor Prescription</a></li>
+		
+              </ul>
+       </li>	
+	
+	
+	
+			
+	<?php /*?><li class="header">GST REPORTS</li>
+		
+	<li class="treeview">
+	  <a href="#">
+		<i class="fa fa-table"></i> <span>Reports</span>
+		<i class="fa fa-angle-left pull-right"></i>
+	  </a>
+              <ul class="treeview-menu">
+			  
+		<li><a href="<?php echo ADMIN_BASE_URL?>
+		Accounts_controller/sale_purchase_crnote_drnote_register/27/list/">
+		<i class="fa fa-circle-o"></i>Purchase Report</a></li>
+		
+			
+		<li><a href="<?php echo ADMIN_BASE_URL?>
+		Accounts_controller/sale_purchase_crnote_drnote_register/28/list/">
+		<i class="fa fa-circle-o"></i>Sale Report</a></li>	  
 		
 		<li><a href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/BILL_WISE_PURCHASE/0/0/"><i class="fa fa-circle-o"></i>
 		Bill Wise Purchase</a></li>
@@ -243,27 +307,9 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
 		<li><a href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/GST_REPORT/0/0/"><i class="fa fa-circle-o"></i>
 		GST Report</a></li>
 		
-		<!--Solution123#@!-->
-		
-		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/EXPIRY_REGISTER/">
-		<i class="fa fa-circle-o"></i>Expiry Register</a></li>
-		
-		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/DOCTOR_COMMISSION_SUMMARY/">
-		<i class="fa fa-circle-o"></i>Doctor Commission Summary</a></li>
-		
-		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/DOCTOR_COMMISSION_DETAILS/">
-		<i class="fa fa-circle-o"></i>Doctor Commission Details</a></li>
-		
-		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/DEBTORS_SUMMARY/">
-		<i class="fa fa-circle-o"></i>Debtor Ledger </a></li>
-		
-		<li><a target ="_self" 	href="<?php echo ADMIN_BASE_URL?>accounts_controller/all_mis_reports/CREDITORS_SUMMARY/">
-		<i class="fa fa-circle-o"></i>Creditors Ledger </a></li>
-	
-		
               </ul>
        </li>	
-		
+		<?php */?>
 	
 	<li class="header">ACCOUNT TRANSACTION</li>
 		

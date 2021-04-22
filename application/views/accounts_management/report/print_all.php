@@ -240,7 +240,7 @@ $image_path=BASE_PATH_ADMIN.'uploads/'.'logo_label.jpg';
 	//and product_group_id not in (102,191,192,276,277,278,279,280)
 	$top=0;
 	$sql="select * from  invoice_details 
-	where invoice_summary_id =".$table_id." and label_print='Y' and  main_group_id not in (57,58,59,60,61,62)  ";
+	where invoice_summary_id =".$table_id." and label_print='Y' and  main_group_id not in (57,58,59,60,61,62) and ITEM_DELETE_STATUS='NOT_DELETED' ";
 	
 	$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
 	$label_count=sizeof($rowrecord);
@@ -417,7 +417,7 @@ $image_path=BASE_PATH_ADMIN.'uploads/'.'logo_label.jpg';
 			
 			
 	$groups="select main_group_id,qnty from  invoice_details where 
-	invoice_summary_id =".$table_id." and  main_group_id in (57,58,59,60,61,62) group by main_group_id";
+	invoice_summary_id =".$table_id." and  main_group_id in (57,58,59,60,61,62) and ITEM_DELETE_STATUS='NOT_DELETED' group by main_group_id";
 	$groups = $this->projectmodel->get_records_from_sql($groups);
 	foreach ($groups as $group)
 	{
@@ -426,7 +426,7 @@ $image_path=BASE_PATH_ADMIN.'uploads/'.'logo_label.jpg';
 		$total_pack=0;
 		$pack_calc='';
 		$sql="select * from  invoice_details 	
-		where invoice_summary_id =".$table_id." and label_print='Y' and main_group_id=".$group->main_group_id;
+		where invoice_summary_id =".$table_id." and label_print='Y' and ITEM_DELETE_STATUS='NOT_DELETED' and main_group_id=".$group->main_group_id;
 		$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
 		$label_count=sizeof($rowrecord);
 		

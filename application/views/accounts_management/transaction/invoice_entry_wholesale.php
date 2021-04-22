@@ -711,7 +711,8 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 				</td>
 				
 				<td ng-repeat="(key,value) in values" ng-if="key=='id'" >
-				<button class="btn-block btn-info" ng-click="delete_bill(value)" >Delete</button>
+				<!--<button class="btn-block btn-info" ng-click="delete_bill(value)" >Delete</button>-->
+				<button class="btn-block btn-info"  >Delete</button>
 				</td>
 				
 				<td ng-repeat="(key,value) in values" ng-if="key=='id'" >
