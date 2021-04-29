@@ -513,7 +513,7 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 			<td ng-repeat="steps in FormInputArray[0]['header'][1]['fields'][0]"  
 			 ng-if="steps['InputType']!= 'hidden'">	
 			
-				<div ng-if="steps['InputType']== 'text'">
+				<div ng-if="steps['InputType']== 'text'">{{steps.InputName}} - {{steps.input_id_index}}
 				<input id="{{steps.input_id_index}}" autofocus type="text" name=""  
 				 placeholder="{{steps.LabelName}}"  
 				ng-keydown="checkKeyDown($event,1,0,0,0,steps.input_id_index)" 
@@ -528,7 +528,7 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 				</div>
 				
 				
-				<div ng-if="steps['InputType']== 'datefield'">
+				<div ng-if="steps['InputType']== 'datefield'">{{steps.InputName}} - {{steps.input_id_index}}
 					<input id="{{steps.input_id_index}}"  data-inputmask="'alias': 'date'" autofocus type="text" name=""  
 					 placeholder="{{steps.LabelName}}"  
 					ng-keydown="checkKeyDown($event,1,0,0,0,steps.input_id_index)" 
@@ -542,7 +542,7 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 				
 				
 				
-				<div ng-if="steps['InputType']== 'LABEL'">
+				<div ng-if="steps['InputType']== 'LABEL'">{{steps.InputName}} - {{steps.input_id_index}}
 				
 				<input id="{{steps.input_id_index}}" autofocus type="text" name=""  
 				 placeholder="{{steps.LabelName}}"  
@@ -670,7 +670,7 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 				<td    colspan="3">
 				<td>
 				<button type="button" class="btn btn-success" id="Save" name="Save" 
-				ng-click="final_submit(value)">Save Bill</button>
+				ng-click="final_submit()">Save Bill</button>
 				
 				<button type="button" class="btn btn-success" id="Save" name="Save" 
 				ng-click="print_label()">Print Label</button>
@@ -679,7 +679,7 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 				ng-click="print_documents('POS_INVOICE',value)"> Print Bill</button>
 				
 				<button type="button" class="btn btn-success"  
-				ng-click="new_entry(value)">New Entry </button>
+				ng-click="new_entry()">New Entry </button>
 				
 				<!--<a data-toggle="modal" data-target="#shortModal" 
 					class="btn btn-primary"><i class="fa fa-pencil"></i> SHOW BARCODE</a>-->

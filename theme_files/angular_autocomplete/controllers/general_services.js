@@ -62,8 +62,8 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 			{
 				$rootScope.FormInputArray[0] ={	header:value.header};
 			});
-				$scope.$apply();
-				$rootScope.spiner=false;	
+				//$scope.$apply();
+				//$rootScope.spiner=false;	
 	   },	   
 	   function error(response)
 	   {
@@ -94,7 +94,7 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 			{
 				$rootScope.FormInputArray[0] ={	header:value.header};
 			});
-			$scope.$apply();
+			//$scope.$apply();
 	   },	   
 	   function error(response)
 	   {
@@ -107,10 +107,185 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
    }	
 
 
+   ///SALE SECTION MAIN FUNTIONS START
+
+//    {"MainTable":"productmstr","LinkField":"productname","frmrpttemplatehdrID":"35","DIVClass":"3","Section":"0",
+//    "SectionType":"HEADER","input_id_index":9,"LabelName":"Product","InputName":"product_id","Inputvalue":"",
+//    "Inputvalue_id":"","InputType":"text","validation_type":"0","validation_msg":"","datafields":[],"under_fields":[]}
+
+   factoryobj.all_master=function(BaseUrl)
+   {
+
+	   var data_link=BaseUrl;	   
+	   var success={};	
+	   var data = JSON.stringify($rootScope.FormInputArray);
+	   var data_save = {'form_name':$rootScope.current_form_report,'subtype':'all_master'};
+	   var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
+	   $http.post(data_link,data_save,config).then (function success(response)
+	   {	
+			
+		// 	$rootScope.test=response.data.PRODUCT_B;
+		// //$rootScope.productlist.push({id: value.id,name:value.productname,available_qnty:value.available_qnty});
+		// 	angular.forEach($rootScope.test,function(value,key){
+		// 	//	$rootScope.all_master.push({FieldID: value.FieldID,FieldVal:value.FieldVal});			
+		// 	});
+			
+			
+	   },	   
+	   function error(response)
+	   {
+		   $scope.errorMessage = 'Error adding user!';
+		   $scope.message = '';
+	   }
+	 
+	   );
+	   return $rootScope.all_master;
+   }	
+   
+
+   factoryobj.download_all_master=function(BaseUrl)
+   {
+
+	   var data_link=BaseUrl;	   
+	   var success={};	
+	   var data_save = {'form_name':$rootScope.current_form_report,'subtype':'download_all_master'};
+	   var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
+	   $http.post(data_link,data_save,config).then (function success(response)
+	   {	
+						
+			$rootScope.all_master['MAIN_PRODUCT_GROUP']=response.data.MAIN_PRODUCT_GROUP;
+			$rootScope.all_master['PRODUCT_M']=response.data.PRODUCT_M;
+			$rootScope.all_master['PRODUCT_T']=response.data.PRODUCT_T;
+			$rootScope.all_master['PRODUCT_B']=response.data.PRODUCT_B;
+			$rootScope.all_master['PRODUCT_D']=response.data.PRODUCT_D;
+			$rootScope.all_master['PRODUCT_W']=response.data.PRODUCT_W;
+			$rootScope.all_master['PRODUCT_S']=response.data.PRODUCT_S;
+
+			$rootScope.all_master['POTENCY_M']=response.data.POTENCY_M;
+			$rootScope.all_master['POTENCY_T']=response.data.POTENCY_T;
+			$rootScope.all_master['POTENCY_D']=response.data.POTENCY_D;
+			$rootScope.all_master['POTENCY_B']=response.data.POTENCY_B;
+			$rootScope.all_master['POTENCY_W']=response.data.POTENCY_W;
+			$rootScope.all_master['POTENCY_S']=response.data.POTENCY_S;
+
+			$rootScope.all_master['PACK_SIZE_M']=response.data.PACK_SIZE_M;
+			$rootScope.all_master['PACK_SIZE_T']=response.data.PACK_SIZE_T;
+			$rootScope.all_master['PACK_SIZE_D']=response.data.PACK_SIZE_D;
+			$rootScope.all_master['PACK_SIZE_B']=response.data.PACK_SIZE_B;
+			$rootScope.all_master['PACK_SIZE_W']=response.data.PACK_SIZE_W;
+			$rootScope.all_master['PACK_SIZE_S']=response.data.PACK_SIZE_S;
+
+			$rootScope.all_master['RATE_MASTER']=response.data.RATE_MASTER;
+			
+
+			//console.log('MAIN_PRODUCT_GROUP ID : '+$rootScope.all_master['MAIN_PRODUCT_GROUP']['FieldVal'].findIndex('D'));
+			
+	   },	   
+	   function error(response)
+	   {
+		   $scope.errorMessage = 'Error adding user!';
+		   $scope.message = '';
+	   }
+	 
+	   );
+	 
+   }	
+
+   
+
+   factoryobj.populate_data=function(indx1,index2,searchelement)
+   {
+
+		if(searchelement=='main_group_id' )	
+		{
+			 
+			var Inputvalue= $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2][searchelement]['Inputvalue'];
+			var Inputvalue_id= $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2][searchelement]['Inputvalue_id'];
+
+
+			//FIELD OPEN AND HIDDEN
+			if(Inputvalue=='M' || Inputvalue=='T' || Inputvalue=='B')
+			{var field_list=['product_Synonym','potency_id','Synonym','pack_id','mrp','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
+
+			if(Inputvalue=='S')
+			{var field_list=['product_Synonym','potency_id','Synonym','no_of_dose','dose_Synonym','mrp','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
+
+			if(Inputvalue=='D' )
+			{var field_list=['product_Synonym','potency_id','Synonym','pack_id','pack_synonym','mrp','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
+
+			if(Inputvalue=='W' )
+			{var field_list=['product_Synonym','potency_id','Synonym','pack_id','no_of_dose','mrp','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
+
+			if(Inputvalue=='P' )
+			{var field_list=['product_Synonym','batchno','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
+
+			angular.forEach(field_list, function (values, key) 
+			{ 
+				$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['InputType']='text';
+				$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['input_id_index']=10+key;			
+				
+			}); 
+
+
+			//MASTER LOAD
+			angular.forEach($rootScope.all_master['MAIN_PRODUCT_GROUP'], function (values, key) 
+			{ 				
+				if(values.FieldVal==Inputvalue)
+				{ 
+					$rootScope.FormInputArray[0]['header'][1]['fields'][0]['main_group_name']['Inputvalue']=values.MAIN_GROUP_NAME;
+					//console.log('PRODUCT_'+Inputvalue);
+
+					$rootScope.product_master=[];
+					angular.forEach($rootScope.all_master['PRODUCT_'+Inputvalue],function(product,product_key){
+						$rootScope.product_master.push({FieldID: product.FieldID,FieldVal:product.FieldVal});			
+					});			
+					
+					$rootScope.potency_master=[];
+					angular.forEach($rootScope.all_master['POTENCY_'+Inputvalue],function(potency,potency_key){
+						$rootScope.potency_master.push({FieldID: potency.FieldID,FieldVal:potency.FieldVal});			
+					});		
+
+					$rootScope.pack_master=[];
+					angular.forEach($rootScope.all_master['PACK_SIZE_'+Inputvalue],function(pack,pack_key){
+						$rootScope.pack_master.push({FieldID: pack.FieldID,FieldVal:pack.FieldVal});			
+					});						
+				
+				}
+							
+			}); 			
+
+		}
+		
+		if(searchelement=='product_id' )	
+		{
+
+			var Inputvalue= $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2][searchelement]['Inputvalue'];
+			var Inputvalue_id= $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2][searchelement]['Inputvalue_id'];
+
+			angular.forEach($rootScope.all_master['MAIN_PRODUCT_GROUP'], function (values, key) 
+			{ 				
+				if(values.FieldVal==Inputvalue)
+				{ 
+					$rootScope.FormInputArray[0]['header'][1]['fields'][0]['main_group_name']['Inputvalue']=values.MAIN_GROUP_NAME;
+
+				}
+			}); 	
+
+
+		}	
+
+   }
+
    factoryobj.set_rate=function()
    {
 
 		var main_group_val =$rootScope.FormInputArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue'];
+
+		if(main_group_val=='MM1' | main_group_val=='MM2' | main_group_val=='MM3' 
+		| main_group_val=='MM4' | main_group_val=='MM5' | main_group_val=='MM6')
+		{
+			main_group_val='M';
+		}
 
 		if(main_group_val=='M' || main_group_val=='T' || main_group_val=='B' || main_group_val=='D' 
 		|| main_group_val=='W'  || main_group_val=='S' )
@@ -119,6 +294,7 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 			var potency_id =Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['potency_id']['Inputvalue_id']);
 			var pack_id =Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['pack_id']['Inputvalue_id']);
 			var no_of_dose =Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['no_of_dose']['Inputvalue']); 
+			
 			console.log(main_group_val);
 
 			if(main_group_val=='M' || main_group_val=='T' || main_group_val=='B' || main_group_val=='D')
@@ -126,10 +302,10 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 				if(product_group_id>0 && potency_id>0 && pack_id>0)
 				{
 					$rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=
-					$rootScope.product_rate_mstr_array[product_group_id][potency_id][pack_id]['DOSE_1']['MRP'];
+					$rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_1']['MRP'];
 
 					$rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=
-					$rootScope.product_rate_mstr_array[product_group_id][potency_id][pack_id]['DOSE_1']['RATE'];
+					$rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_1']['RATE'];
 
 				}		
 			}
@@ -139,20 +315,20 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 				if(product_group_id>0 && potency_id>0 && pack_id>0)
 				{
 
-					var dose1_rate=	$rootScope.product_rate_mstr_array[product_group_id][potency_id][pack_id]['DOSE_1']['RATE'];
-					var dose1_mrp=	$rootScope.product_rate_mstr_array[product_group_id][potency_id][pack_id]['DOSE_1']['MRP'];
+					var dose1_rate=	$rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_1']['RATE'];
+					var dose1_mrp=	$rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_1']['MRP'];
 
-					var dose2_rate=	$rootScope.product_rate_mstr_array[product_group_id][potency_id][pack_id]['DOSE_2']['RATE'];
-					var dose2_mrp=	$rootScope.product_rate_mstr_array[product_group_id][potency_id][pack_id]['DOSE_2']['MRP'];
+					var dose2_rate=	$rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_2']['RATE'];
+					var dose2_mrp=	$rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_2']['MRP'];
 
-					var dose3_rate=	$rootScope.product_rate_mstr_array[product_group_id][potency_id][pack_id]['DOSE_3']['RATE'];
-					var dose3_mrp=	$rootScope.product_rate_mstr_array[product_group_id][potency_id][pack_id]['DOSE_3']['MRP'];
+					var dose3_rate=	$rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_3']['RATE'];
+					var dose3_mrp=	$rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_3']['MRP'];
 
-					var dose4_rate=	$rootScope.product_rate_mstr_array[product_group_id][potency_id][pack_id]['DOSE_4']['RATE'];
-					var dose4_mrp=	$rootScope.product_rate_mstr_array[product_group_id][potency_id][pack_id]['DOSE_4']['MRP'];
+					var dose4_rate=	$rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_4']['RATE'];
+					var dose4_mrp=	$rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_4']['MRP'];
 
-					var dose5_rate=	$rootScope.product_rate_mstr_array[product_group_id][potency_id][pack_id]['DOSE_5']['RATE'];
-					var dose5_mrp=	$rootScope.product_rate_mstr_array[product_group_id][potency_id][pack_id]['DOSE_5']['MRP'];
+					var dose5_rate=	$rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_5']['RATE'];
+					var dose5_mrp=	$rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_5']['MRP'];
 
 					console.log(no_of_dose);
 
@@ -190,8 +366,8 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 			{
 				if(product_group_id>0 && potency_id>0 && pack_id>0)
 				{
-					var dose1_rate=	$rootScope.product_rate_mstr_array[product_group_id][potency_id][pack_id]['DOSE_1']['RATE'];
-					var dose1_mrp=	$rootScope.product_rate_mstr_array[product_group_id][potency_id][pack_id]['DOSE_1']['MRP'];			
+					var dose1_rate=	$rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_1']['RATE'];
+					var dose1_mrp=	$rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_1']['MRP'];			
 					
 					$rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=dose1_rate*no_of_dose;
 					$rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=dose1_mrp*no_of_dose;
@@ -202,59 +378,9 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 		}
    }	
 
-
-   factoryobj.product_rates=function(BaseUrl)
-   {
-
-	   var data_link=BaseUrl;	   
-	   var success={};	
-	   var data_save = {'form_name':$rootScope.current_form_report,'subtype':'product_rate_master'};
-	   var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
-	   $http.post(data_link,data_save,config).then (function success(response)
-	   {	
-			$rootScope.product_rate_mstr_array=response.data;
-
-			//console.log(' Test -------'+$rootScope.product_rate_mstr_array[69][250][261]['DOSE_1']['MRP']);				
-			$scope.$apply();
-	   },	   
-	   function error(response)
-	   {
-		   $scope.errorMessage = 'Error adding user!';
-		   $scope.message = '';
-	   }
-	 
-	   );
-	 
-   }	
+   ///SALE SECTION MAIN FUNTIONS
 
 
-
-
-
-
-   factoryobj.prescription_edit=function(BaseUrl,id)
-   {
-
-	   var data_link=BaseUrl;
-	   var success={};	
-	   var data_save = {'form_name':$rootScope.current_form_report,'subtype':'prescription_edit','id':id};
-	  
-	   console.log(data_save);
-
-	   var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
-	   $http.post(data_link,data_save,config).then (function success(response){	
-	   angular.forEach(response.data,function(value,key)
-	   {
-		 $rootScope.FormInputArray[0] ={	header:value.header};});
-		 $scope.$apply();
-	   },
-	   function error(response){
-		   $scope.errorMessage = 'Error adding user!';
-		   $scope.message = '';
-	   });
-
-	   return $rootScope.FormInputArray;
-   }	
 
    factoryobj.delete_bill=function(form_name,subtype,BaseUrl,id)
    {
@@ -389,6 +515,32 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
    }	
 
    //PRESCRIPTION PORTION
+   
+
+   factoryobj.prescription_edit=function(BaseUrl,id)
+   {
+
+	   var data_link=BaseUrl;
+	   var success={};	
+	   var data_save = {'form_name':$rootScope.current_form_report,'subtype':'prescription_edit','id':id};
+	  
+	   console.log(data_save);
+
+	   var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
+	   $http.post(data_link,data_save,config).then (function success(response){	
+	   angular.forEach(response.data,function(value,key)
+	   {
+		 $rootScope.FormInputArray[0] ={	header:value.header};});
+		 $scope.$apply();
+	   },
+	   function error(response){
+		   $scope.errorMessage = 'Error adding user!';
+		   $scope.message = '';
+	   });
+
+	   return $rootScope.FormInputArray;
+   }	
+
    factoryobj.prescription_list=function(form_name,subtype,BaseUrl,id,startdate,enddate)
    {
 	   var data_link=BaseUrl;
@@ -413,14 +565,17 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 
    factoryobj.patient_list=function(BaseUrl)
    {
-	   var data_link=BaseUrl;	   
+	  $rootScope.server_msg="Patient Data Loading....";
+	  var data_link=BaseUrl;	   
 	   var success={};	
 	   var data_save = {'form_name':$rootScope.current_form_report,'subtype':'patient_list'};
 	   var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
 	   $http.post(data_link,data_save,config).then (function success(response)
 	   {	
+			
 			$rootScope.patient_list_array=response.data;
 			$scope.$apply();
+			$rootScope.server_msg="Patient Data Loaded";
 	   },	   
 	   function error(response)
 	   {
@@ -432,6 +587,41 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 	 
    }	
 
+   
+   factoryobj.set_patient_records=function(id)
+   {
+		
+
+		$rootScope.FormInputArray[0]['header'][0]['fields'][0]['party_name']['Inputvalue']=$rootScope.patient_list_array[id]['records']['party_name'];
+		$rootScope.FormInputArray[0]['header'][0]['fields'][0]['SEX']['Inputvalue']=$rootScope.patient_list_array[id]['records']['SEX'];
+		$rootScope.FormInputArray[0]['header'][0]['fields'][0]['PATIENT_TYPE']['Inputvalue']=$rootScope.patient_list_array[id]['records']['PATIENT_TYPE'];
+
+		$rootScope.FormInputArray[0]['header'][0]['fields'][0]['mobno']['Inputvalue']=$rootScope.patient_list_array[id]['records']['mobno'];
+		$rootScope.FormInputArray[0]['header'][0]['fields'][0]['emailid']['Inputvalue']=$rootScope.patient_list_array[id]['records']['emailid'];
+		$rootScope.FormInputArray[0]['header'][0]['fields'][0]['address']['Inputvalue']=$rootScope.patient_list_array[id]['records']['address'];
+		$rootScope.FormInputArray[0]['header'][0]['fields'][0]['Address2']['Inputvalue']=$rootScope.patient_list_array[id]['records']['Address2'];
+
+		$rootScope.FormInputArray[0]['header'][0]['fields'][0]['age_yy']['Inputvalue']=$rootScope.patient_list_array[id]['records']['age_yy'];
+		$rootScope.FormInputArray[0]['header'][0]['fields'][0]['age_mm']['Inputvalue']=$rootScope.patient_list_array[id]['records']['age_mm'];
+		$rootScope.FormInputArray[0]['header'][0]['fields'][0]['DOB']['Inputvalue']=$rootScope.patient_list_array[id]['records']['DOB'];
+
+		$rootScope.FormInputArray[0]['header'][0]['fields'][0]['agent_id']['Inputvalue_id']=$rootScope.patient_list_array[id]['records']['agent_id'];
+		$rootScope.FormInputArray[0]['header'][0]['fields'][0]['agent_id']['Inputvalue']=$rootScope.patient_list_array[id]['agent_name'];
+
+		$rootScope.FormInputArray[0]['header'][0]['fields'][0]['doctor_mstr_id']['Inputvalue_id']=$rootScope.patient_list_array[id]['records']['doctor_mstr_id'];
+		$rootScope.FormInputArray[0]['header'][0]['fields'][0]['doctor_mstr_id']['Inputvalue']=$rootScope.patient_list_array[id]['doctor_name'];
+		
+
+		// $rootScope.FormInputArray[0]['header'][0]['fields'][0]['agent_id']['Inputvalue']=$rootScope.patient_list_array[id]['agent_id'];
+		// $rootScope.FormInputArray[0]['header'][0]['fields'][0]['agent_id']['Inputvalue']=$rootScope.patient_list_array[id]['agent_id'];
+		// $rootScope.FormInputArray[0]['header'][0]['fields'][0]['agent_id']['Inputvalue']=$rootScope.patient_list_array[id]['agent_id'];
+		// $rootScope.FormInputArray[0]['header'][0]['fields'][0]['agent_id']['Inputvalue']=$rootScope.patient_list_array[id]['agent_id'];
+		// $rootScope.FormInputArray[0]['header'][0]['fields'][0]['agent_id']['Inputvalue']=$rootScope.patient_list_array[id]['agent_id'];
+
+		//return true;
+
+   }	
+  
    //PRESCRIPTION PORTION
    	
    factoryobj.receipt_payment_list=function(form_name,subtype,BaseUrl,id,startdate,enddate)

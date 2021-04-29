@@ -6,21 +6,103 @@
 'use strict';
 
 
+var domain_name="http://localhost/Subhojit_DEPAK_BHUIYA/homeopathi/omkar_homeo/";
+
 
 //var domain_name="https://omkarhomoeohall.co.in/";
 
-//var domain_name="http://localhost/omkar_homeo/";
-
-var domain_name="http://localhost/Subhojit_DEPAK_BHUIYA/homeopathi/omkar_homeo/";
 
 var query_result_link=domain_name+"Accounts_controller/query_result/";
 
 //************************ACCOUNT RECEIVE START*****************************************//
 var app = angular.module('Accounts',['GeneralServices']);
 
-//************************ACCOUNT PURCHASE START*****************************************//
 
 
+app.directive('scrollToBottom', function($timeout, $window) {
+	return {
+			scope: {
+					scrollToBottom: "="
+			},
+			restrict: 'A',
+			link: function(scope, element, attr) {
+					scope.$watchCollection('scrollToBottom', function(newVal) {
+							if (newVal) {
+									$timeout(function() {
+											element[0].scrollTop =  element[0].scrollHeight;
+									}, 0);
+							}
+
+					});
+			}
+	};
+});
+
+//************************ACCOUNT -RECEIVE,PAYMENT,JOURNAL,CONTRA START*****************************************//
+
+app.directive('selectOnClick', ['$window', function ($window) {
+    return {
+        restrict: 'A',
+        link: function (scope, element, attrs) {
+            element.on('blur', function () {
+                if (!$window.getSelection().toString()) {
+                    // Required for mobile Safari
+                    this.setSelectionRange(0, this.value.length)
+                }
+            });
+        }
+    };
+}]);
+
+app.filter('toRange', function(){
+	return function(input) {
+	  var lowBound, highBound;
+	  if (input.length == 1) {       
+		lowBound = 0;
+		highBound = +input[0] - 1;      
+	  } else if (input.length == 2) {      
+		lowBound = +input[0];
+		highBound = +input[1];
+	  }
+	  var i = lowBound;
+	  var result = [];
+	  while (i <= highBound) {
+		result.push(i);
+		i++;
+	  }
+	  return result;
+	}
+	});
+	
+	app.run(['$anchorScroll', function($anchorScroll) {
+		$anchorScroll.yOffset =1000;   // always scroll by 50 extra pixels
+	}]);
+
+
+
+
+app.directive('ngConfirmClick', [
+  function(){
+    return {
+      priority: -1,
+      restrict: 'A',
+      link: function(scope, element, attrs){
+        element.bind('click', function(e){
+          var message = attrs.ngConfirmClick;
+          // confirm() requires jQuery
+          if(message && !confirm(message)){
+            e.stopImmediatePropagation();
+            e.preventDefault();
+          }
+        });
+      }
+    }
+  }
+]);
+
+
+
+//DONE ALL
 app.controller('retail_bill_experiment',['$scope','$rootScope','$http','$window','general_functions','$location',
 function($scope,$rootScope,$http,$window,general_functions,$location)
 {
@@ -38,13 +120,13 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 		//$scope.barcodeimg=domain_name+'uploads/BILL-2.png';
 
 		//$scope.input_id_index=0;
-		$rootScope.fld_arr=[];	
+		// $rootScope.fld_arr=[];	
 
-		$rootScope.sec_indx0=0;	
-		$rootScope.sec_indx1=1;	
-		$rootScope.sec_indx2=2;	
-		$rootScope.sec_indx3=3;	
-		$rootScope.sec_indx4=4;	
+		// $rootScope.sec_indx0=0;	
+		// $rootScope.sec_indx1=1;	
+		// $rootScope.sec_indx2=2;	
+		// $rootScope.sec_indx3=3;	
+		// $rootScope.sec_indx4=4;	
 
 	//	$rootScope.final_array=[];
 		$rootScope.FormInputArray_template=[];	
@@ -56,9 +138,20 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 		$rootScope.main_grid_array=[];
 		$rootScope.dtlist_array=[];
 		$rootScope.dtlist_total_array=[];
-		$rootScope.product_rate_mstr={};
+	
 		$rootScope.product_rate_mstr_array=[];
 		$rootScope.product_rates=[];
+
+		$rootScope.test=[];
+		$rootScope.all_master=[];
+
+		$rootScope.product_master=[];
+		$rootScope.potency_master=[];
+		$rootScope.pack_master=[];
+
+
+
+
 
 
 		$rootScope.savedone_status='SAVE_NOT_DONE';
@@ -85,12 +178,13 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 
 			
 
-			$scope.product_rates=function(id)
+			$scope.download_all_master=function(id)
 			{	
-				general_functions.product_rates(BaseUrl);
+				general_functions.download_all_master(BaseUrl);
+				//general_functions.all_master(BaseUrl);
 				//console.log('PRODUCT LIST :------------------------'+$rootScope.product_rate_mstr_array);
 			}
-			$scope.product_rates(1);
+			$scope.download_all_master(1);
 
 
 			$scope.main_grid=function(id)
@@ -365,9 +459,20 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 									{
 										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
 										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']='';	
+									}		
+
+									if(key!='main_group_id' && key!='main_group_name' && key!='product_id' && key!='product_Synonym' )
+									{
+										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['InputType']='hidden';
+										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['input_id_index']=9000;	
 									}				
+
 								}); 
-								$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement,input_id_index);
+
+								general_functions.populate_data($rootScope.indx1,$rootScope.index2,$rootScope.searchelement);
+
+
+							//	$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement,input_id_index);
 								document.getElementById(input_id_index).focus();	
 							
 							}
@@ -376,7 +481,7 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 							 $rootScope.searchelement=='disc_per2'  ||  $rootScope.searchelement=='patient_name' ||  $rootScope.searchelement=='product_Synonym' 
 							 ||  $rootScope.searchelement=='product_id')	
 							 {
-								 $scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement,input_id_index);
+								 //$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement,input_id_index);
 								 document.getElementById(input_id_index).focus();	
 							 }	
 							 else  if($rootScope.searchelement=='potency_id' ||  $rootScope.searchelement=='pack_id'  ||  $rootScope.searchelement=='no_of_dose')	
@@ -467,7 +572,7 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 					
 					if(key=='Inputvalue')
 					{	$rootScope.searchTextSmallLetters = angular.uppercase(values);}
-				
+					
 					if(values!='' && key=='datafields')
 					{
 							var array_length=values.length;
@@ -479,7 +584,27 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 								//block none											
 							}
 					}
+					
 				}); 
+
+
+				if($rootScope.searchelement=='product_id')
+				{
+					$rootScope.searchItems=$rootScope.product_master;
+					$rootScope.search_div_display='block';
+				}
+
+				if($rootScope.searchelement=='potency_id')
+				{
+					$rootScope.searchItems=$rootScope.potency_master;
+					$rootScope.search_div_display='block';
+				}
+
+				if($rootScope.searchelement=='pack_id')
+				{
+					$rootScope.searchItems=$rootScope.pack_master;
+					$rootScope.search_div_display='block';
+				}
 
 			
 
@@ -705,14 +830,15 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 					//$http.post(data_link, data,config)
 					$http.post(data_link,data_save,config)
 					.then (function success(response){
-
 							$scope.server_msg=response.data.server_msg;
-
 					},
 					function error(response){
 						$scope.errorMessage = 'Error adding user!';
 						$scope.message = '';
 					});
+
+					$scope.save_check();
+
 		}
 
 
@@ -756,57 +882,45 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 			$scope.showarray='YES';
 		
 
-			if($rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=='')
-			{
-				$scope.server_msg='Enter Rate';
-			}
-			else
-			{
-
-							var data_link=BaseUrl;
-							var success={};	
-							var data = JSON.stringify($rootScope.final_array);	
-							var data_save = {'form_name':$scope.current_form_report,'subtype':'SAVE_DATA','raw_data':data};
-				
-							var config = {headers : 
-								{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'	}
-							}
-							//$http.post(data_link, data,config)
-							$http.post(data_link,data_save,config)
-							.then (function success(response){
-				
-									$scope.server_msg=response.data.server_msg;
-									$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']=response.data.id_header;
-									$rootScope.FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['Inputvalue']=response.data.invoice_no;
-									
-									$scope.view_bill_wise_item(response.data.id_header);
-									$scope.dtlist_total(response.data.id_header);	
-									$scope.main_grid(1);
-									angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
-									{ 
-										if(key!='main_group_id' )
-										{
-											$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
-											$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']='';	
-										}				
-									}); 
-				
-								//CHANGES HERE FORM BASIS
-								if($rootScope.current_form_report=='retail_bill_experiment')
-								{document.getElementById(7).focus();}
-				
-								$rootScope.savedone_status='SAVE_NOT_DONE';
-						
-							},
-							function error(response){
-								$scope.errorMessage = 'Error adding user!';
-								$scope.message = '';
-							});
-
-
-			}
-		
-
+						var data_link=BaseUrl;
+						var success={};	
+						var data = JSON.stringify($rootScope.final_array);	
+						var data_save = {'form_name':$scope.current_form_report,'subtype':'SAVE_DATA','raw_data':data};
+			
+						var config = {headers : 
+							{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'	}
+						}
+						//$http.post(data_link, data,config)
+						$http.post(data_link,data_save,config)
+						.then (function success(response){
+			
+								$scope.server_msg=response.data.server_msg;
+								$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']=response.data.id_header;
+								$rootScope.FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['Inputvalue']=response.data.invoice_no;
+								
+								$scope.view_bill_wise_item(response.data.id_header);
+								$scope.dtlist_total(response.data.id_header);	
+								$scope.main_grid(1);
+								angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
+								{ 
+									if(key!='main_group_id' )
+									{
+										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
+										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']='';	
+									}				
+								}); 
+			
+							//CHANGES HERE FORM BASIS
+							if($rootScope.current_form_report=='retail_bill_experiment')
+							{document.getElementById(7).focus();}
+			
+							$rootScope.savedone_status='SAVE_NOT_DONE';
+					
+						},
+						function error(response){
+							$scope.errorMessage = 'Error adding user!';
+							$scope.message = '';
+						});
 
 		}
 
@@ -856,7 +970,7 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 }]);
 
 
-
+//DONE ALL
 app.controller('prescription_entry',['$scope','$rootScope','$http','$window','general_functions','$location',
 function($scope,$rootScope,$http,$window,general_functions,$location)
 {
@@ -1014,7 +1128,6 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 
 			$scope.delete_item=function(id)
 			{
-				
 				general_functions.delete_item($rootScope.current_form_report,'delete_item',BaseUrl,id);
 				var mainid=	$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];				
 				$scope.dtlist(mainid);
@@ -1023,19 +1136,15 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 
 			}
 			
-
 		 $scope.new_entry=function(id)
 			{	
-
 				if(id>0)
 				{$scope.delete_bill(id);}	
 
 				$scope.view_list(0);
 				document.getElementById(2).focus();
-
 			}
 
-	
 
 		$scope.mainOperation=function(event,header_index,field_index,Index2,index3,input_id_index)
 		{	
@@ -1044,9 +1153,8 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 				{						
 												
 						//CHANGES HERE FORM BASIS
-					
-						if($rootScope.current_form_report=='doctor_prescription' )
-						{
+																
+							/*
 							if($rootScope.searchelement=='party_name' 
 							|| $rootScope.searchelement=='mobno' 
 							|| $rootScope.searchelement=='address' 
@@ -1093,19 +1201,103 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 								document.getElementById(input_id_index).focus();
 							}	
 
+							*/
+
+							if($rootScope.searchelement=='ACTUAL_VISIT_AMT')	
+							{$scope.save_prescription('PRINT_PRESCRIPTION');}	
+
+							if($rootScope.searchelement=='age_yy' ||  $rootScope.searchelement=='age_mm' )	
+							{$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement);}
+
 						
-						}	
+							if($rootScope.searchelement=='id')	
+							{									 
+							  								
+									if($rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']!=='')
+									{
+										var id=	$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue'];
+										general_functions.set_patient_records(id);
+										input_id_index=Number(input_id_index+1);	
+										document.getElementById(input_id_index).focus();	
+									}
+									else
+									{
+										input_id_index=Number(input_id_index+1);			
+										document.getElementById(input_id_index).focus();		
+									}
 
-						if($rootScope.current_form_report=='receipt_whole_sale' ||  $rootScope.current_form_report=='payment_expense')
-						{
-							input_id_index=Number(input_id_index+1);			
-							document.getElementById(input_id_index).focus();
-						}	
 
+							}	
+							else if($rootScope.searchelement=='party_name')	
+							{		
+								
+									 if($rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']!=='')
+									 {
+										var id=	$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue'];
+										general_functions.set_patient_records(id);									 
+										$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement);
+										document.getElementById(14).focus();
+										
+										}
+									 else
+									 {
+										 input_id_index=Number(input_id_index+1);			
+										 document.getElementById(input_id_index).focus();		
+									 }
 
-				
+							}		
+							else if($rootScope.searchelement=='mobno')	
+							{		
+								
+									 if($rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']!=='')
+									 {
+										var id=	$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue'];
+										general_functions.set_patient_records(id);									 
+										$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement);
+										document.getElementById(14).focus();
+										
+										}
+									 else
+									 {
+										 input_id_index=Number(input_id_index+1);			
+										 document.getElementById(input_id_index).focus();		
+									 }
 
-					
+							}		
+							else if($rootScope.searchelement=='address')	
+							{		
+								
+									 if($rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']!=='')
+									 {
+										var id=	$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue'];
+										general_functions.set_patient_records(id);									 
+										$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement);
+										document.getElementById(14).focus();
+										
+										}
+									 else
+									 {
+										 input_id_index=Number(input_id_index+1);			
+										 document.getElementById(input_id_index).focus();		
+									 }
+
+							}		
+							else if($rootScope.searchelement=='doctor_mstr_id')	
+							{							
+								$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement);
+								if($rootScope.FormInputArray[0]['header'][0]['fields'][0]['doctor_mstr_id']['Inputvalue']!='')
+								{document.getElementById(19).focus();}
+								else
+								{
+									input_id_index=Number(input_id_index+1);			
+									document.getElementById(input_id_index).focus();
+								}
+							}					
+							else
+							{
+								input_id_index=Number(input_id_index+1);			
+								document.getElementById(input_id_index).focus();
+							}			
 
 				}		
 				if(event.keyCode === 39)
@@ -1137,93 +1329,10 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 				$rootScope.index2=index2;
 				$rootScope.index3=index3;
 				$rootScope.index3=index4;
-
-
-
-				//console.log('searchelement '+$rootScope.searchelement+' indx1 '+$rootScope.indx1);
-				//console.log('Input Inputvalue :'+$rootScope.FormInputArray[0]['header'][0]['fields'][0]['patient_name']['Inputvalue']);
-				
-
-				if($rootScope.current_form_report=='purchase_entry' )
-				{
-					if(searchelement=='batchno' || searchelement=='disc_per'  || searchelement=='qnty' )
-					{
-						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=
-						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['batchno']['Inputvalue'];
-
-							$rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=
-							Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue'])-
-							(Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue'])*
-							Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['disc_per']['Inputvalue'])/100);
-
-							$rootScope.FormInputArray[0]['header'][1]['fields'][0]['subtotal']['Inputvalue']=
-							$rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']*
-							$rootScope.FormInputArray[0]['header'][1]['fields'][0]['qnty']['Inputvalue'];
-
-					}
-				}
-
-				if($rootScope.current_form_report=='issue_entry' )
-				{
-					if(searchelement=='batchno' || searchelement=='qnty' )
-					{
-						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=
-						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['batchno']['Inputvalue'];
-					}
-				}
-
-
-				if($rootScope.current_form_report=='invoice_entry' )
-				{
-					if(searchelement=='mrp' || searchelement=='disc_per'  || searchelement=='qnty')
-					{
-						
-						if($rootScope.FormInputArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue']=='P' )
-						{
-							$rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=
-							$rootScope.FormInputArray[0]['header'][1]['fields'][0]['batchno']['Inputvalue'];
-						}
-
-						// $rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=
-						// Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue'])-
-						// (Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue'])*
-						// Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['disc_per']['Inputvalue'])/100);
-
-						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['subtotal']['Inputvalue']=
-						Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue'])*
-						Number($rootScope.FormInputArray[0]['header'][1]['fields'][0][searchelement]['Inputvalue']);
-					}
-				}
-
-				if($rootScope.current_form_report=='invoice_entry_wholesale' )
-				{
-					
-						if($rootScope.FormInputArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue']=='P' )
-						{
-							$rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=
-							$rootScope.FormInputArray[0]['header'][1]['fields'][0]['batchno']['Inputvalue'];
-						}
-
-						if(searchelement=='mrp' || searchelement=='disc_per'  || searchelement=='qnty' )
-						{
-						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=
-						Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue'])-
-						(Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue'])*
-						Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['disc_per']['Inputvalue'])/100);
-
-						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['subtotal']['Inputvalue']=
-						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']*
-						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['qnty']['Inputvalue'];
-
-						}
-
-				}
-
-
 			
 				$rootScope.searchItems=[];
 				$rootScope.searchTextSmallLetters='';
-				$rootScope.selectedIndex =0;
+			//	$rootScope.selectedIndex =0;
 				
 				angular.forEach($rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement], function (values, key) 
 				{ 
@@ -1243,13 +1352,8 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 							}
 					}
 				}); 
-
 			
-
-
-			
-				//console.log('$rootScope.searchItems'+$rootScope.searchItems);
-				//$rootScope.suggestions=$rootScope.searchItems;
+		
 				$rootScope.suggestions = [];
 				$rootScope.searchItems.sort();	
 				var myMaxSuggestionListLength = 0;
@@ -1376,198 +1480,94 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 			//Function To Call on ng-click
 				$rootScope.AssignValueAndHide = function(index)
 				{
-
-					
-
-					//console.log('mrp mrp' + $rootScope.searchelement + $rootScope.current_form_report);
-
-					if( $rootScope.current_form_report=='issue_entry')
-					{	
-								if($rootScope.searchelement=='batchno' )
-								{		
-									
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
-									$rootScope.suggestions[index]['FieldVal'];
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
-									$rootScope.suggestions[index]['FieldID'];
-
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue']
-									= $rootScope.suggestions[index]['Rack_No'];		
-
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue_id']
-									= $rootScope.suggestions[index]['Rkid'];	
-									
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['exp_monyr']['Inputvalue']
-									= $rootScope.suggestions[index]['exp_monyr'];
-
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['mrp']['Inputvalue']
-									= $rootScope.suggestions[index]['MRP'];
-								
-									// // $rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['PURCHASEID']['Inputvalue']
-									// // = $rootScope.suggestions[index]['pid'];
-																
-								}
-								else
-								{
-
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
-									$rootScope.suggestions[index]['FieldVal'];
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
-									$rootScope.suggestions[index]['FieldID'];
-
-								}
-
-				}
-
-
-
-					if( $rootScope.current_form_report=='purchase_entry')
-					{	
-						if($rootScope.searchelement=='batchno' )
-						{			
-									
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
-									$rootScope.suggestions[index]['FieldVal'];
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
-									$rootScope.suggestions[index]['FieldID'];
-							
-							
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['batchno']['Inputvalue_id']='';
-
-									// $rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue']
-									// = $rootScope.suggestions[index]['Rack_No'];		
-
-									// $rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue_id']
-									// = $rootScope.suggestions[index]['Rkid'];	
-
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['exp_monyr']['Inputvalue']
-									= $rootScope.suggestions[index]['exp_monyr'];
-
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rate']['Inputvalue']
-									= $rootScope.suggestions[index]['Rate'];
-
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['mrp']['Inputvalue']
-									= $rootScope.suggestions[index]['MRP'];
-
-						
-
-					
-						}
-						else
-						{
-
-							$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
-							$rootScope.suggestions[index]['FieldVal'];
-							$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
-							$rootScope.suggestions[index]['FieldID'];
-
-						}
-					}
-
-
-					if( $rootScope.current_form_report=='invoice_entry')
-					{	
-						if($rootScope.searchelement=='batchno' )
-						{			
-							
-							$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
-							$rootScope.suggestions[index]['FieldVal'];
-							$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
-							$rootScope.suggestions[index]['FieldID'];
-
-
-								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue']
-								= $rootScope.suggestions[index]['Rack_No'];		
-
-								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue_id']
-								= $rootScope.suggestions[index]['Rkid'];	
-
-								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['exp_monyr']['Inputvalue']
-								= $rootScope.suggestions[index]['exp_monyr'];
-
-								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rate']['Inputvalue']
-								= $rootScope.suggestions[index]['rate'];
-							
-								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['mrp']['Inputvalue']
-								= $rootScope.suggestions[index]['MRP'];																
-						}
-						else
-						{
-
-							$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
-							$rootScope.suggestions[index]['FieldVal'];
-							$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
-							$rootScope.suggestions[index]['FieldID'];
-
-						}
-					}
-
-
-					if( $rootScope.current_form_report=='invoice_entry_wholesale')
-					{	
-						if($rootScope.searchelement=='batchno' )
-						{			
-								
-							$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
-							$rootScope.suggestions[index]['FieldVal'];
-							$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
-							$rootScope.suggestions[index]['FieldID'];
-									
-							
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue']
-									= $rootScope.suggestions[index]['Rack_No'];		
-
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue_id']
-									= $rootScope.suggestions[index]['Rkid'];	
-
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['exp_monyr']['Inputvalue']
-									= $rootScope.suggestions[index]['exp_monyr'];
-								
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['mrp']['Inputvalue']
-									= $rootScope.suggestions[index]['MRP'];
-
-									$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rate']['Inputvalue']
-									= $rootScope.suggestions[index]['rate'];
-						}
-						else
-						{
-
-							$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
-							$rootScope.suggestions[index]['FieldVal'];
-							$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
-							$rootScope.suggestions[index]['FieldID'];
-
-						}
-					}
-
-
-					if( $rootScope.current_form_report=='doctor_prescription')
-					{	
-					
-					
+		
 						
 						if($rootScope.searchelement=='party_name' )
 						{			
-							if($rootScope.FormInputArray[0]['header'][0]['fields'][0]['party_name']['Inputvalue']=='')
-							{	
-								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue']
-								= $rootScope.suggestions[index]['FieldID'];		
+									if($rootScope.FormInputArray[0]['header'][0]['fields'][0]['party_name']['Inputvalue']=='')
+									{	
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue']
+										= $rootScope.suggestions[index]['FieldID'];		
 
-								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue_id']
-								= $rootScope.suggestions[index]['FieldID'];	
-								
-								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['party_name']['Inputvalue']
-								= $rootScope.suggestions[index]['FieldVal'];										
-							}
-							else
-							{
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue_id']
+										= $rootScope.suggestions[index]['FieldID'];	
+										
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['party_name']['Inputvalue']
+										= $rootScope.suggestions[index]['FieldVal'];										
+									}
+									else
+									{
 
-								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
-								$rootScope.suggestions[index]['FieldVal'];
-								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
-								$rootScope.suggestions[index]['FieldID'];
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue']
+										= $rootScope.suggestions[index]['FieldID'];		
 
-							}
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue_id']
+										= $rootScope.suggestions[index]['FieldID'];	
+
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
+										$rootScope.suggestions[index]['FieldVal'];
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
+										$rootScope.suggestions[index]['FieldID'];
+
+									}
+						}
+					else	if($rootScope.searchelement=='mobno' )
+						{			
+									if($rootScope.FormInputArray[0]['header'][0]['fields'][0]['mobno']['Inputvalue']=='')
+									{	
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue']
+										= $rootScope.suggestions[index]['FieldID'];		
+
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue_id']
+										= $rootScope.suggestions[index]['FieldID'];	
+										
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['mobno']['Inputvalue']
+										= $rootScope.suggestions[index]['FieldVal'];										
+									}
+									else
+									{
+
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue']
+										= $rootScope.suggestions[index]['FieldID'];		
+
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue_id']
+										= $rootScope.suggestions[index]['FieldID'];	
+
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
+										$rootScope.suggestions[index]['FieldVal'];
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
+										$rootScope.suggestions[index]['FieldID'];
+
+									}
+						}
+						else	if($rootScope.searchelement=='address' )
+						{			
+									if($rootScope.FormInputArray[0]['header'][0]['fields'][0]['address']['Inputvalue']=='')
+									{	
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue']
+										= $rootScope.suggestions[index]['FieldID'];		
+
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue_id']
+										= $rootScope.suggestions[index]['FieldID'];	
+										
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['address']['Inputvalue']
+										= $rootScope.suggestions[index]['FieldVal'];										
+									}
+									else
+									{
+
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue']
+										= $rootScope.suggestions[index]['FieldID'];		
+
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['id']['Inputvalue_id']
+										= $rootScope.suggestions[index]['FieldID'];	
+
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
+										$rootScope.suggestions[index]['FieldVal'];
+										$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
+										$rootScope.suggestions[index]['FieldID'];
+
+									}
 						}
 						else
 						{
@@ -1578,38 +1578,6 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 							$rootScope.suggestions[index]['FieldID'];
 
 						}
-
-						// if($rootScope.FormInputArray[0]['header'][0]['fields'][0]['party_name']['Inputvalue']!='')
-						// {
-						
-						// 	if($rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']!=0)
-						// 	{
-						// 		document.getElementById(14).focus();
-						// 	}
-						// 	else
-						// 	{
-						// 		input_id_index=Number(input_id_index+1);			
-						// 		document.getElementById(input_id_index).focus();		
-						// 	}
-							
-						// }
-
-
-
-					}
-
-
-					
-
-					if($rootScope.current_form_report=='receipt_whole_sale' ||  $rootScope.current_form_report=='payment_expense')
-					{
-						$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
-						$rootScope.suggestions[index]['FieldVal'];
-						$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
-						$rootScope.suggestions[index]['FieldID'];
-					}	
-
-				
 
 
 				$rootScope.suggestions=[];
@@ -1648,193 +1616,12 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 				
 		}
 
-
-		// $scope.final_submit=function()
-		// {					
-		// 		// $rootScope.FormInputArray[0]['header'][0]['fields'][0]['BILL_STATUS']['Inputvalue']='BILL_SAVED';
-		// 		// $scope.save_check();
-		// 		// $scope.savedata();			
-				
-				
-
-
-		// }
-
-		$scope.final_submit=function(id)
-		{
-				  $scope.save_check();
-
-					var data_link=BaseUrl;
-					var success={};	
-					var id=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
-					var data_save = {'form_name':$scope.current_form_report,'subtype':'FINAL_SUBMIT','id':id};
-
-					console.log('data_save final id : '+id);
-					
-					var config = {headers : 
-						{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'	}
-					}
-					//$http.post(data_link, data,config)
-					$http.post(data_link,data_save,config)
-					.then (function success(response){
-
-							$scope.server_msg=response.data.server_msg;
-					},
-					function error(response){
-						$scope.errorMessage = 'Error adding user!';
-						$scope.message = '';
-					});
-
-
-		}
-
-		$scope.save_check=function()
-		{	
-
-				$rootScope.final_array=[];
-				$rootScope.final_array = JSON.parse(JSON.stringify($rootScope.FormInputArray));
-				$rootScope.save_status='OK';
-
-				for(var i=0;i<2;i++)
-				{
-					angular.forEach($rootScope.final_array[0]['header'][i]['fields'][0], function (values, key) 
-					{ 
-						$rootScope.final_array[0]['header'][i]['fields'][0][key]['datafields']='';	
-
-						if($rootScope.final_array[0]['header'][i]['fields'][0][key]['validation_type']=='NOT_OK' 
-						&& $rootScope.save_status=='OK')
-						{ 
-							$rootScope.save_status='NOT_OK'; 
-							$scope.server_msg='Record Can Not Be Save! Please Rectify the '+
-							$rootScope.final_array[0]['header'][i]['fields'][0][key]['LabelName'] +' Related data';
-						}
-						
-					}); 
-				}		
-
-				console.log('$rootScope.save_status :'+$rootScope.savedone_status);
-
-				if($rootScope.save_status=='OK' && $rootScope.savedone_status=='SAVE_NOT_DONE')
-				{$rootScope.savedone_status='SAVE_DONE'; $scope.savedata();}
-			
-		}	
-
-		//SAVE SECTION...
-		$scope.savedata=function()
-		{
-			$scope.showarray='YES';
-			$scope.spiner='ON';
-			//	$scope.savemsg='Please Wait data saving....';
-			//var data_link=BaseUrl+"SAVE";
-			var data_link=BaseUrl;
-			var success={};	
-			var data = JSON.stringify($rootScope.final_array);	
-			var data_save = {'form_name':$scope.current_form_report,'subtype':'SAVE_DATA','raw_data':data};
-
-			console.log('data_save final : '+data);
-			
-			var config = {headers : 
-				{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'	}
-			}
-			//$http.post(data_link, data,config)
-			$http.post(data_link,data_save,config)
-			.then (function success(response){
-
-					$scope.server_msg=response.data.server_msg;
-					$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']=response.data.id_header;
-					$rootScope.FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['Inputvalue']=response.data.invoice_no;
-
-					$scope.dtlist(response.data.id_header);
-					$scope.dtlist_total(response.data.id_header);							
-					$scope.main_grid(1);
-
-					angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
-					{ 
-						if(key!='main_group_id' )
-						{
-							$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
-							$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']='';	
-						}
-				
-					}); 
-
-
-				//CHANGES HERE FORM BASIS
-
-				if($rootScope.current_form_report=='invoice_entry')
-				{
-					document.getElementById(7).focus();
-				
-				}
-
-				if( $rootScope.current_form_report=='invoice_entry_wholesale')
-				{
-					document.getElementById(6).focus();
-				}
-
-				if($rootScope.current_form_report=='purchase_entry' )
-				{document.getElementById(8).focus();}
-
-				if($rootScope.current_form_report=='issue_entry')
-				{
-					document.getElementById(2).focus();
-				}
-
-				$rootScope.savedone_status='SAVE_NOT_DONE';
-		
-			},
-			function error(response){
-				$scope.errorMessage = 'Error adding user!';
-				$scope.message = '';
-			});
-
-
-		}
-
-		//SAVE SECTION...
-
-
-		//FOR BILL PRINT
-		$scope.print_documents = function(printtype) 
-		{ 
-			var printtype='POS_INVOICE';
-			//var BaseUrl=domain_name+"Project_controller/experimental_form/";
-			var id=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
-			var data_link=domain_name+"Project_controller/print_documents/"+printtype+'/'+id;
-			console.log(data_link);
-			//	$http.get(data_link).then(function(response){});
-			window.popup(data_link); 
-			
-		};
 	
-
-		$scope.print_label = function() 
-		{ 
-			
-			var PRINTTYPE='LABEL';
-			var id_header=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
-			var BaseUrl=domain_name+"Project_controller/print_all/";
-			var data_link=BaseUrl+id_header+'/'+PRINTTYPE;
-			window.popup(data_link); 				 
-		};
-
-		$scope.print_slip = function(printtype) 
-		{ 
-			var printtype='PRINT_SLIP';
-			//var BaseUrl=domain_name+"Project_controller/experimental_form/";
-			var id=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
-			var data_link=domain_name+"Project_controller/print_documents/"+printtype+'/'+id;
-			console.log(data_link);
-			//	$http.get(data_link).then(function(response){});
-			window.popup(data_link); 
-			
-		};
-
 
 		//DOCTOR PRESCRIPTION
 
 			//SAVE SECTION...
-			$scope.save_prescription=function()
+			$scope.save_prescription=function(PRINT_STATUS)
 			{
 				var data_link=BaseUrl;
 				var success={};	
@@ -1854,7 +1641,15 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 						$scope.token_no=response.data.token_no;
 						$scope.id_header=response.data.id_header;
 						
-						$scope.print_prescription($scope.prescription_id);
+						if(PRINT_STATUS=='PRINT_PRESCRIPTION')
+						{$scope.print_prescription($scope.prescription_id);}
+						else
+						{
+							$scope.new_entry();
+							document.getElementById(2).focus();
+						}
+						$scope.prescription_list(1);
+				
 						
 						
 						console.log($scope.prescription_id);
@@ -1969,9 +1764,678 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 
 
 
+app.controller('wholesale_bill_experiment',['$scope','$rootScope','$http','$window','general_functions','$location',
+function($scope,$rootScope,$http,$window,general_functions,$location)
+{
+	"use strict";
 
 
+		var CurrentDate=new Date();
+		var year = CurrentDate.getFullYear();
+		var month = CurrentDate.getMonth()+1;
+		var dt = CurrentDate.getDate();
+		if (dt < 10) {	dt = '0' + dt;}
+		if (month < 10) {month = '0' + month;}
+		$scope.tran_date=year+'-' + month + '-'+dt;
+		$scope.startdate=$scope.enddate=	$scope.tran_date;
+		//$scope.barcodeimg=domain_name+'uploads/BILL-2.png';
 
+		//$scope.input_id_index=0;
+		$rootScope.fld_arr=[];	
+
+		$rootScope.sec_indx0=0;	
+		$rootScope.sec_indx1=1;	
+		$rootScope.sec_indx2=2;	
+		$rootScope.sec_indx3=3;	
+		$rootScope.sec_indx4=4;	
+
+	//	$rootScope.final_array=[];
+		$rootScope.FormInputArray_template=[];	
+		$rootScope.FormInputArray=[];	
+		$rootScope.returnobject={};
+		$rootScope.returnArray=[];	
+		$rootScope.spiner=false;
+
+		$rootScope.main_grid_array=[];
+		$rootScope.dtlist_array=[];
+		$rootScope.dtlist_total_array=[];
+		$rootScope.product_rate_mstr={};
+		$rootScope.product_rate_mstr_array=[];
+		$rootScope.product_rates=[];
+
+
+		$rootScope.savedone_status='SAVE_NOT_DONE';
+		$rootScope.grandtotal=0;
+		$scope.formname='';
+		$rootScope.array_name='';
+
+		var BaseUrl=domain_name+"Project_controller/experimental_form/";
+		$rootScope.search_div_display='none';
+		//block none
+
+		//$scope.codestructure1_id=0;
+		$scope.server_msg='Enter Form';
+		//$rootScope.current_form_report='grn_entry';
+
+		 $rootScope.current_form_report=localStorage.getItem("TranPageName");
+		 console.log('page name :'+$rootScope.current_form_report);
+
+		 var data_save = domain_name+'Project_controller/experimental_form_grid/'+$rootScope.searchelement+'/'+$rootScope.indx1+'/'+$rootScope.index2;
+		 console.log(data_save);
+
+			//GENERAL FUNCTIONS START			
+
+			$scope.product_rates=function(id)
+			{	
+				general_functions.product_rates(BaseUrl);
+			}
+			$scope.product_rates(1);
+
+
+			$scope.main_grid=function(id)
+			{	
+				$rootScope.grandtotal=0;
+				general_functions.main_grid($rootScope.current_form_report,'main_grid',BaseUrl,id,$scope.startdate,$scope.enddate);
+				
+			}
+			$scope.main_grid(1);
+
+			$scope.setTotals = function(item)
+			{
+				angular.forEach(item, function (values, key) 
+					{ 	
+						if(key=='Grand Total')
+						{
+							console.log(key+' '+values)	;		
+							$rootScope.grandtotal =Number($rootScope.grandtotal) +Number(values);
+						
+						}								
+					}); 
+			}
+			
+			
+
+			$scope.view_bill_wise_item=function(id)
+			{general_functions.view_bill_wise_item(BaseUrl,id);}
+
+			$scope.dtlist=function(id)
+			{general_functions.dtlist(BaseUrl,id);}
+
+			$scope.dtlist_total=function(id)
+			{general_functions.dtlist_total(BaseUrl,id);}
+			
+			$scope.dtlist_view=function(indx)
+			{
+							
+			}
+
+			$scope.other_search=function(id,subtype,header_index,field_index,searchelement,input_id_index)
+			{
+				general_functions.other_search_new($rootScope.current_form_report,'other_search',BaseUrl,id,input_id_index);		
+				$rootScope.suggestions = [];	
+			}
+
+			$scope.view_detail=function(id,subtype,header_index,field_index,searchelement)
+			{
+				general_functions.view_detail($rootScope.current_form_report,BaseUrl,id);										
+			}
+			
+					
+			$scope.view_list=function(id)
+			{		
+				general_functions.list_items($rootScope.current_form_report,'view_list',BaseUrl,id);				
+				$scope.view_bill_wise_item(id);
+				$scope.dtlist_total(id);	
+			}
+			$scope.view_list(0);
+
+			$scope.get_field_name=function(header_index,field_param,field_name)
+			{return $rootScope.FormInputArray[0]['header'][header_index]['fields'][0][field_name][field_param];}
+
+			$scope.create_date_field=function(inputid)
+			{	
+				//console.log('inputid :'+inputid);
+
+				$( function() {			
+					$("#"+inputid ).datepicker({changeMonth: true,dateFormat: 'yy-mm-dd',changeYear: true});
+					$("#"+inputid).change(function() {var  trandate = $("#"+inputid).val();
+					$("#"+inputid).val(trandate);});
+				} );	
+
+			}
+			$scope.create_date_field('startdate');
+			$scope.create_date_field('enddate');
+			
+
+			$scope.gotoAnchor = function(x) 
+			{
+			 var newHash = 'innerAnchor' + x;
+
+			 if ($location.hash() !== newHash) {							
+				 $location.hash('innerAnchor' + x);
+			 } else {							
+				 $anchorScroll();
+			 }
+
+		 };
+
+		 $scope.test=function()
+		 {
+			 //console.log('searchelement '+$rootScope.searchelement+' header index '+$rootScope.indx1+' Field Index '+$rootScope.index2);
+			 var data_save = domain_name+'Project_controller/experimental_form_grid/'+$rootScope.searchelement+'/'+$rootScope.indx1+'/'+$rootScope.index2;
+			 console.log(data_save);
+
+			 for(var indx=0;indx<2;indx++)
+			 {
+					angular.forEach($rootScope.FormInputArray[0]['header'][indx]['fields'][0], function (values, key) 
+					{ 
+						if($rootScope.FormInputArray[0]['header'][indx]['fields'][0][key]['InputType']=='datefield')
+						{
+							var inputid=$rootScope.FormInputArray[0]['header'][indx]['fields'][0][key]['input_id_index'];
+							$scope.create_date_field(inputid);
+							$rootScope.FormInputArray[0]['header'][indx]['fields'][0][key]['Inputvalue']=$scope.tran_date;
+							
+						}							
+					}); 
+			 }
+			 
+
+			 $( function() {			
+				$('#exp_monyr').inputmask("datetime",{
+					mask: "1/y", 
+					placeholder: "mm/yyyy", 
+					leapday: "-02-29", 
+					separator: "/", 
+					alias: "dd/mm/yyyy"
+				});  
+			} );	
+
+			document.getElementById(3).focus();
+			 
+		 }
+			 
+			$scope.delete_bill=function(id)
+			{
+					general_functions.delete_bill($rootScope.current_form_report,'delete_bill',BaseUrl,id);
+					$scope.main_grid(1);
+					$scope.view_list(0);
+			}	
+
+			$scope.delete_item=function(id)
+			{
+				
+				general_functions.delete_item($rootScope.current_form_report,'delete_item',BaseUrl,id);									
+				var mainid=	$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
+				console.log('mainid:'+mainid);				
+				$scope.view_bill_wise_item(mainid);
+				// $scope.dtlist(mainid);
+				$scope.dtlist_total(mainid);
+				$scope.main_grid(1);
+
+			}
+			
+
+		 $scope.new_entry=function(id)
+			{	
+
+				if(id>0)
+				{
+					console.log('Delete bill '+id);
+					general_functions.delete_bill($rootScope.current_form_report,'delete_bill',BaseUrl,id);
+					$scope.main_grid(1);
+				}	
+
+				$scope.view_list(0);
+				document.getElementById(1).focus();
+			}
+
+		$scope.mainOperation=function(event,header_index,field_index,Index2,index3,input_id_index)
+		{	
+			
+			if(event.keyCode === 13)
+				{						
+												
+						//CHANGES HERE FORM BASIS					
+									
+							if($rootScope.searchelement=='qnty')	
+							{$scope.save_check();}	
+
+							input_id_index=Number(input_id_index+1);	
+
+							if($rootScope.searchelement=='main_group_id' )	
+							{
+								angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
+								{ 
+									if(key!='main_group_id' )
+									{
+										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
+										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']='';	
+									}				
+								}); 
+								$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement,input_id_index);
+								document.getElementById(input_id_index).focus();	
+							
+							}
+							else if($rootScope.searchelement=='tbl_party_id'  || $rootScope.searchelement=='batchno'|| 
+							 $rootScope.searchelement=='rate' ||  $rootScope.searchelement=='disc_per'	 ||
+							 $rootScope.searchelement=='disc_per2'  ||  $rootScope.searchelement=='patient_name' ||  $rootScope.searchelement=='product_Synonym' 
+							 ||  $rootScope.searchelement=='product_id')	
+							 {
+								 $scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement,input_id_index);
+								 document.getElementById(input_id_index).focus();	
+							 }	
+							 else  if($rootScope.searchelement=='potency_id' ||  $rootScope.searchelement=='pack_id'  ||  $rootScope.searchelement=='no_of_dose')	
+							 {										
+										general_functions.set_rate();
+										document.getElementById(input_id_index).focus();
+							 }
+								else
+								{		
+									document.getElementById(input_id_index).focus();									
+								}	
+
+
+				}		
+				if(event.keyCode === 39)
+				{	
+					input_id_index=Number(input_id_index+1);			
+					document.getElementById(input_id_index).focus();		
+				}		
+				if(event.keyCode === 37)
+				{	
+					input_id_index=Number(input_id_index-1);			
+					document.getElementById(input_id_index).focus();		
+				}					
+				
+
+		}
+
+		//	$rootScope.search = function(searchelement,indx1,index2,index3,index4,array_name)
+		$rootScope.search = function(searchelement,indx1,index2,index3,index4,array_name)
+		{		
+			
+			  $rootScope.spiner=false;
+				$rootScope.search_div_display='none';
+				$rootScope.searchelement=searchelement;
+				$rootScope.array_name=array_name;							
+				$rootScope.indx1=indx1;
+				$rootScope.index2=index2;
+				$rootScope.index3=index3;
+				$rootScope.index3=index4;
+
+					if(searchelement=='mrp' || searchelement=='disc_per'  || searchelement=='qnty')
+					{
+						
+						if($rootScope.FormInputArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue']=='P' )
+						{
+							$rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=
+							$rootScope.FormInputArray[0]['header'][1]['fields'][0]['batchno']['Inputvalue'];
+						}
+
+						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['subtotal']['Inputvalue']=
+						Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue'])*
+						Number($rootScope.FormInputArray[0]['header'][1]['fields'][0][searchelement]['Inputvalue']);
+
+					}
+			
+				$rootScope.searchItems=[];
+				$rootScope.searchTextSmallLetters='';
+				$rootScope.selectedIndex =0;
+				
+				angular.forEach($rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement], function (values, key) 
+				{ 
+					
+					if(key=='Inputvalue')
+					{	$rootScope.searchTextSmallLetters = angular.uppercase(values);}
+				
+					if(values!='' && key=='datafields')
+					{
+							var array_length=values.length;
+							if(array_length>0)
+							{
+								$rootScope.searchItems=values;
+								//console.log('$rootScope.searchItems:'+$rootScope.searchItems);
+								$rootScope.search_div_display='block';
+								//block none											
+							}
+					}
+				}); 
+
+				$rootScope.suggestions = [];
+				$rootScope.searchItems.sort();	
+				var myMaxSuggestionListLength = 0;
+				for(var i=0; i<$rootScope.searchItems.length; i++)
+				{					
+						var searchItemsSmallLetters = angular.uppercase($rootScope.searchItems[i].FieldVal);							
+						if( searchItemsSmallLetters.indexOf($rootScope.searchTextSmallLetters) >=0)
+						{									
+							
+							$rootScope.suggestions.push($rootScope.searchItems[i]);
+							myMaxSuggestionListLength += 1;
+							if(myMaxSuggestionListLength === 50)
+							{break;}
+							
+						}						
+				}
+
+		};
+
+			
+			$rootScope.$watch('selectedIndex',function(val)
+			{		
+				if(val !== -1) 
+				{
+					
+					if($rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][0][$rootScope.searchelement]['Inputvalue']!='')
+					{
+						$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
+						$rootScope.suggestions[$rootScope.selectedIndex]['FieldVal'];
+						$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
+						$rootScope.suggestions[$rootScope.selectedIndex]['FieldID'];
+					}
+					
+					$scope.gotoAnchor(val);
+				
+				}
+			});		
+			
+			$rootScope.checkKeyDown = function(event,header_index,field_index,Index2,index3,input_id_index)
+			{
+				
+				console.log(event.keyCode);
+					if(event.keyCode === 40){//down key, increment selectedIndex
+					event.preventDefault();
+					if($rootScope.selectedIndex+1 < $rootScope.suggestions.length){
+						$rootScope.selectedIndex++;
+					}else{
+						$rootScope.selectedIndex = 0;
+					}
+
+					//$scope.mainOperation(event,header_index,field_index,Index2,index3,input_id_index);
+					//console.log('event.keyCode:'+event.keyCode+' header_index:'+header_index+' field_index:'+field_index);
+					//console.log('Index2:'+Index2+' index3:'+index3+' input_id_index:'+input_id_index);
+				
+				}else if(event.keyCode === 38){ //up key, decrement selectedIndex
+					event.preventDefault();
+					if($rootScope.selectedIndex-1 >= 0){
+						$rootScope.selectedIndex--;
+					}else{
+						$rootScope.selectedIndex = $rootScope.suggestions.length-1;
+					}
+				}
+				else if(event.keyCode === 13){ //enter key, empty suggestions array
+					$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+					//$scope.mainOperation(event,header_index,field_index,Index2,index3,input_id_index);
+				}
+				else if(event.keyCode === 9){ //enter tab key
+					//console.log($rootScope.selectedIndex);
+					if($rootScope.selectedIndex>-1){
+						$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+					}			
+		
+				}
+				else if(event.keyCode === 27){ //ESC key, empty suggestions array
+					$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+				}
+				else if(event.keyCode === 39){ //right key
+					//$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+					$scope.mainOperation(event,header_index,field_index,Index2,index3,input_id_index);
+				}
+				else if(event.keyCode === 37){ //left key
+				//	$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+				$scope.mainOperation(event,header_index,field_index,Index2,index3,input_id_index);
+				}
+				else if(event.keyCode === 113){ //F2 KEY FOR ADD
+					//	$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+					$scope.mainOperation(event,header_index,field_index,Index2,index3,input_id_index);
+					}
+				
+				else{
+					$rootScope.search();	
+				}
+			};
+			
+			//ClickOutSide
+			var exclude1 = document.getElementById($rootScope.searchelement);
+			$rootScope.hideMenu = function($event){
+				$rootScope.search();
+				//make a condition for every object you wat to exclude
+				if($event.target !== exclude1) {
+				
+				}
+			};
+			//======================================
+			
+			//Function To Call on ng-keyup
+			$rootScope.checkKeyUp = function(event)
+			{ 
+				if(event.keyCode !== 8 || event.keyCode !== 46){//delete or backspace
+					if($scope[$rootScope.searchelement] === ""){
+						$rootScope.suggestions = [];
+						$rootScope.searchItems=[];			
+						$rootScope.selectedIndex = -1;
+					}
+				}
+			};
+			//======================================
+			//List Item Events
+			//Function To Call on ng-click
+				$rootScope.AssignValueAndHide = function(index)
+				{
+						
+						if($rootScope.searchelement=='batchno' )
+						{		
+								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
+								$rootScope.suggestions[index]['FieldVal'];
+								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
+								$rootScope.suggestions[index]['FieldID'];
+
+								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue']
+								= $rootScope.suggestions[index]['Rack_No'];		
+
+								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue_id']
+								= $rootScope.suggestions[index]['Rkid'];	
+
+								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['exp_monyr']['Inputvalue']
+								= $rootScope.suggestions[index]['exp_monyr'];
+
+								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rate']['Inputvalue']
+								= $rootScope.suggestions[index]['rate'];
+							
+								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['mrp']['Inputvalue']
+								= $rootScope.suggestions[index]['MRP'];		
+
+						}
+						else
+						{
+
+							$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
+							$rootScope.suggestions[index]['FieldVal'];
+							$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
+							$rootScope.suggestions[index]['FieldID'];
+
+						}
+
+				$rootScope.suggestions=[];
+				$rootScope.searchItems=[];		
+				$rootScope.selectedIndex = -1;
+			};
+
+
+		$scope.bill_process_functions=function()
+		{					
+				var txt;
+				if (confirm("Save Bill ?")) {
+					$scope.final_submit();
+
+					if (confirm("Label print ?")) {
+
+						$rootScope.FormInputArray[0]['header'][0]['fields'][0]['BILL_STATUS']['Inputvalue']='LABEL_PRINTED';
+						$scope.save_check();
+						$scope.savedata();
+
+						$scope.print_label();
+					}
+					if (confirm("Bill print ?")) {
+
+						$rootScope.FormInputArray[0]['header'][0]['fields'][0]['BILL_STATUS']['Inputvalue']='BILL_PRINTED';
+						$scope.save_check();
+						$scope.savedata();
+
+						$scope.print_documents();
+					}
+
+				} else {
+					txt = "You pressed Cancel!";
+				}
+			console.log('uou have pressed'+txt);
+				
+		}
+
+		$scope.final_submit=function(id)
+		{
+					var data_link=BaseUrl;
+					var success={};	
+					var id=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
+					var data_save = {'form_name':$scope.current_form_report,'subtype':'FINAL_SUBMIT','id':id};
+					console.log('data_save final id : '+id);					
+					var config = {headers : 
+						{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'	}
+					}
+					//$http.post(data_link, data,config)
+					$http.post(data_link,data_save,config)
+					.then (function success(response){
+							$scope.server_msg=response.data.server_msg;
+					},
+					function error(response){
+						$scope.errorMessage = 'Error adding user!';
+						$scope.message = '';
+					});
+
+					$scope.save_check();
+		}
+
+
+		
+	
+		$scope.save_check=function()
+		{	
+
+				$rootScope.final_array=[];
+				$rootScope.final_array = JSON.parse(JSON.stringify($rootScope.FormInputArray));
+				$rootScope.save_status='OK';
+				for(var i=0;i<2;i++)
+				{
+					angular.forEach($rootScope.final_array[0]['header'][i]['fields'][0], function (values, key) 
+					{ 
+						$rootScope.final_array[0]['header'][i]['fields'][0][key]['datafields']='';	
+
+						if($rootScope.final_array[0]['header'][i]['fields'][0][key]['validation_type']=='NOT_OK' 
+						&& $rootScope.save_status=='OK')
+						{ 
+							$rootScope.save_status='NOT_OK'; 
+							$scope.server_msg='Record Can Not Be Save! Please Rectify the '+
+							$rootScope.final_array[0]['header'][i]['fields'][0][key]['LabelName'] +' Related data';
+						}
+						
+					}); 
+				}		
+
+				$rootScope.savedone_status='SAVE_DONE'; 
+				$scope.savedata();
+			
+		}	
+
+		//SAVE SECTION...
+		$scope.savedata=function()
+		{
+			$scope.showarray='YES';
+		
+
+						var data_link=BaseUrl;
+						var success={};	
+						var data = JSON.stringify($rootScope.final_array);	
+						var data_save = {'form_name':$scope.current_form_report,'subtype':'SAVE_DATA','raw_data':data};
+			
+						var config = {headers : 
+							{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'	}
+						}
+						//$http.post(data_link, data,config)
+						$http.post(data_link,data_save,config)
+						.then (function success(response){
+			
+								$scope.server_msg=response.data.server_msg;
+								$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']=response.data.id_header;
+								$rootScope.FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['Inputvalue']=response.data.invoice_no;
+								
+								$scope.view_bill_wise_item(response.data.id_header);
+								$scope.dtlist_total(response.data.id_header);	
+								$scope.main_grid(1);
+								angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
+								{ 
+									if(key!='main_group_id' )
+									{
+										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
+										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']='';	
+									}				
+								}); 
+			
+							//CHANGES HERE FORM BASIS
+							document.getElementById(7).focus();
+							$rootScope.savedone_status='SAVE_NOT_DONE';
+					
+						},
+						function error(response){
+							$scope.errorMessage = 'Error adding user!';
+							$scope.message = '';
+						});
+
+		}
+
+		//SAVE SECTION...
+
+
+		//FOR BILL PRINT
+		$scope.print_documents = function(printtype) 
+		{ 
+			var printtype='POS_INVOICE';
+			//var BaseUrl=domain_name+"Project_controller/experimental_form/";
+			var id=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
+			var data_link=domain_name+"Project_controller/print_documents/"+printtype+'/'+id;
+			console.log(data_link);
+			//	$http.get(data_link).then(function(response){});
+			window.popup(data_link); 
+			
+		};
+	
+
+		$scope.print_label = function() 
+		{ 
+			
+			var PRINTTYPE='LABEL';
+			var id_header=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
+			var BaseUrl=domain_name+"Project_controller/print_all/";
+			var data_link=BaseUrl+id_header+'/'+PRINTTYPE;
+			window.popup(data_link); 				 
+		};
+
+		$scope.print_slip = function(printtype) 
+		{ 
+			var printtype='PRINT_SLIP';
+			//var BaseUrl=domain_name+"Project_controller/experimental_form/";
+			var id=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
+			var data_link=domain_name+"Project_controller/print_documents/"+printtype+'/'+id;
+			console.log(data_link);
+			//	$http.get(data_link).then(function(response){});
+			window.popup(data_link); 
+			
+		};
+
+
+		
+		
+
+}]);
 
 app.controller('Product_master',['$scope','$rootScope','$http',
 function($scope,$rootScope,$http)
@@ -3628,87 +4092,6 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 
 	
 //************************PRODUCT MASTER END*****************************************//
-
-app.directive('scrollToBottom', function($timeout, $window) {
-	return {
-			scope: {
-					scrollToBottom: "="
-			},
-			restrict: 'A',
-			link: function(scope, element, attr) {
-					scope.$watchCollection('scrollToBottom', function(newVal) {
-							if (newVal) {
-									$timeout(function() {
-											element[0].scrollTop =  element[0].scrollHeight;
-									}, 0);
-							}
-
-					});
-			}
-	};
-});
-
-//************************ACCOUNT -RECEIVE,PAYMENT,JOURNAL,CONTRA START*****************************************//
-
-app.directive('selectOnClick', ['$window', function ($window) {
-    return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-            element.on('blur', function () {
-                if (!$window.getSelection().toString()) {
-                    // Required for mobile Safari
-                    this.setSelectionRange(0, this.value.length)
-                }
-            });
-        }
-    };
-}]);
-
-app.filter('toRange', function(){
-	return function(input) {
-	  var lowBound, highBound;
-	  if (input.length == 1) {       
-		lowBound = 0;
-		highBound = +input[0] - 1;      
-	  } else if (input.length == 2) {      
-		lowBound = +input[0];
-		highBound = +input[1];
-	  }
-	  var i = lowBound;
-	  var result = [];
-	  while (i <= highBound) {
-		result.push(i);
-		i++;
-	  }
-	  return result;
-	}
-	});
-	
-	app.run(['$anchorScroll', function($anchorScroll) {
-		$anchorScroll.yOffset =1000;   // always scroll by 50 extra pixels
-	}]);
-
-
-
-
-app.directive('ngConfirmClick', [
-  function(){
-    return {
-      priority: -1,
-      restrict: 'A',
-      link: function(scope, element, attrs){
-        element.bind('click', function(e){
-          var message = attrs.ngConfirmClick;
-          // confirm() requires jQuery
-          if(message && !confirm(message)){
-            e.stopImmediatePropagation();
-            e.preventDefault();
-          }
-        });
-      }
-    }
-  }
-]);
 
 
 

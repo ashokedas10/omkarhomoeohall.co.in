@@ -410,7 +410,7 @@ class="form-control input_field_height" onfocus="this.select();" onmouseup="retu
 
 </td>  
 
-<td>				
+<td>	
 <input id="{{FormInputArray[0]['header'][0]['fields'][0]['doctor_ledger_id']['input_id_index']}}" 
 autofocus type="text" name=""   autocomplete="off" 
 placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['doctor_ledger_id']['LabelName']}}" 				 
@@ -529,7 +529,7 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 			<td ng-repeat="steps in FormInputArray[0]['header'][1]['fields'][0]"  
 			 ng-if="steps['InputType']!= 'hidden'">	
 		
-				<div ng-if="steps['InputType']== 'text'"><!--{{steps.Inputvalue_id}}-->
+				<div ng-if="steps['InputType']== 'text'">
 				<input id="{{steps.input_id_index}}" autofocus type="text" name=""  
 				 placeholder="{{steps.LabelName}}"  
 				ng-keydown="checkKeyDown($event,1,0,0,0,steps.input_id_index)" 
@@ -555,7 +555,6 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 					style="width:{{50*steps.DIVClass}}px;"  autocomplete="off" 
 					onfocus="this.select();" onmouseup="return false;" />					
 				</div>
-				
 				
 				
 				<div ng-if="steps['InputType']== 'LABEL'">
@@ -781,6 +780,17 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 			
 	
 
+
+<!--{{FormInputArray[0]['header'][1]['fields'][0]['product_id']}}-->
+
+<!--product id --{{FormInputArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue_id']}}-->
+
+<!--{{all_master}}-->
+<br />
+
+<!--{{all_master['RATE_MASTER']}}
+-->
+
 </div>
 
 <!--{{FormInputArray[0]}}-->
@@ -815,5 +825,3 @@ product_group_id-  {{FormInputArray[0]["header"][1]['fields'][0]['product_group_
 <!--{{FormInputArray[0]["header"][1]['fields'][0]['product_id']}}-->
 
 
-
-</font>

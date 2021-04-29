@@ -19,6 +19,18 @@ $(".modal-wide").on("show.bs.modal", function() {
 
 </script>
 <style>
+.CLASS_DELETE
+{
+	background-color:#FF3333;
+    color:black;	
+    font-weight:bold;
+}
+.CLASS_NORMAL
+{
+	background-color:#FFFFFF;
+    color:black;	
+    font-weight:bold;
+}
 
 div.ex1 {
   background-color: lightblue;
@@ -273,7 +285,7 @@ font-weight:200;
 
 <tr>
 	<td  align="left">{{get_field_name(0,'LabelName','prescription_date')}}</td> 
-	<!--<td  align="left">{{get_field_name(0,'LabelName','token_shift')}}</td>-->
+	<td  align="left"></td>
 </tr>
 <tr>
 			
@@ -524,7 +536,6 @@ class="form-control" onfocus="this.select();" onmouseup="return false;"  /></td>
 
 			
 <td >
-
 <input id="{{FormInputArray[0]['header'][0]['fields'][0]['doctor_mstr_id']['input_id_index']}}" 
 autofocus type="text" name="Input"   autocomplete="off" 
 placeholder="{{FormInputArray[0]['header'][0]['fields'][0]['doctor_mstr_id']['LabelName']}}" 				 
@@ -720,7 +731,7 @@ class="form-control" onfocus="this.select();" onmouseup="return false;"  />--></
 				<td    colspan="3">
 				<td>
 				<button type="button" class="btn btn-success" id="Save" name="Save" 
-				ng-click="save_prescription()">Save</button>
+				ng-click="save_prescription('SAVE_ONLY')">Save</button>
 				
 				<button type="button" class="btn btn-success" id="Save" name="Save" 
 				ng-click="print_prescription(FormInputArray[0]['header'][0]['fields'][0]['prescription_id']['Inputvalue_id'])">Print </button>				
@@ -785,14 +796,17 @@ class="form-control" onfocus="this.select();" onmouseup="return false;"  />--></
 			
 			</tr>	
 							
-			<tr ng-repeat="values in main_grid_array" ng-init="setTotals(values)">
+			<tr ng-repeat="values in main_grid_array" ng-init="setTotals(values)"
+			 ng-class="(values.Token_Status==='INVALID') ? 'CLASS_DELETE' : 'CLASS_NORMAL'">
 			
 				<td  align="right" ng-repeat="(key,value) in values" ng-if="key!='id'">{{value}}</td>	
-				<td    ng-repeat="(key,value) in values" ng-if="key=='id'" >
+				
+				
+				<td    ng-repeat="(key,value) in values" ng-if="key=='id' && values.Token_Status==='VALID'" >
 				<button class="btn-block btn-info" ng-click="print_prescription(value)" >Print</button>
 				</td>
 				
-				<td ng-repeat="(key,value) in values" ng-if="key=='id'" >
+				<td ng-repeat="(key,value) in values" ng-if="key=='id' && values.Token_Status==='VALID'" >
 				<button class="btn-block btn-info" ng-click="view_list_prescription(value)" >Edit</button>
 				</td>
 			
@@ -820,6 +834,7 @@ class="form-control" onfocus="this.select();" onmouseup="return false;"  />--></
 	
 
 </div>
+
 
 
 

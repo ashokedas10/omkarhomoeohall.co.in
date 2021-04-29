@@ -209,7 +209,8 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/retail_bill_experiment/acc_tran/47/">
 		<i class="fa fa-circle-o"></i>Sale Retail Experiment</a></li>
 		
-	
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/wholesale_bill_experiment/acc_tran/47/">
+		<i class="fa fa-circle-o"></i>Whole Sale Experiment</a></li>
 		
               </ul>
             </li>	
