@@ -458,7 +458,7 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 									if(key!='main_group_id' )
 									{
 										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
-										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']='';	
+										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']=0;	
 									}		
 
 									if(key!='main_group_id' && key!='main_group_name' && key!='product_id' && key!='product_Synonym' )
@@ -469,7 +469,7 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 
 								}); 
 
-								general_functions.populate_data($rootScope.indx1,$rootScope.index2,$rootScope.searchelement);
+								general_functions.populate_data($rootScope.indx1,$rootScope.index2,$rootScope.searchelement,BaseUrl);
 
 
 							//	$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement,input_id_index);
@@ -481,7 +481,9 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 							 $rootScope.searchelement=='disc_per2'  ||  $rootScope.searchelement=='patient_name' ||  $rootScope.searchelement=='product_Synonym' 
 							 ||  $rootScope.searchelement=='product_id')	
 							 {
-								 //$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement,input_id_index);
+								
+								general_functions.populate_data($rootScope.indx1,$rootScope.index2,$rootScope.searchelement,BaseUrl);
+								//$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement,input_id_index);
 								 document.getElementById(input_id_index).focus();	
 							 }	
 							 else  if($rootScope.searchelement=='potency_id' ||  $rootScope.searchelement=='pack_id'  ||  $rootScope.searchelement=='no_of_dose')	

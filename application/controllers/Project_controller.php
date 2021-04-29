@@ -159,15 +159,19 @@ public function test_code()
 		// 	echo '</pre>';
 
 		
-		$output['MAIN_PRODUCT_GROUP']=json_decode(json_encode($this->session->userdata('MAIN_PRODUCT_GROUP')), true);
+		//$output['MAIN_PRODUCT_GROUP']=json_decode(json_encode($this->session->userdata('MAIN_PRODUCT_GROUP')), true);
 		$output['RATE_MASTER']=$this->session->userdata('RATE_MASTER');
 
-	
-					echo '<pre>';
-					print_r($output['MAIN_PRODUCT_GROUP']);
-					echo '</pre>';
+		echo '<pre>';
+		print_r($output['RATE_MASTER'][233][236]);  
+		echo '</pre>';
 
-					// echo '<br><br>';
+
+					// echo '<pre>';
+					// print_r($output['RATE_MASTER']);
+					// echo '</pre>';
+
+					 echo '<br><br>';
 
 
 					// echo '<pre>';
@@ -5214,7 +5218,6 @@ public function experimental_form($datatype='',$cond=0)
 
 			if($subtype=='download_all_master')
 			{
-			
 				
 				$output['MAIN_PRODUCT_GROUP']=json_decode(json_encode($this->session->userdata('MAIN_PRODUCT_GROUP')), true);
 				$output['PRODUCT_M']=json_decode(json_encode($this->session->userdata('PRODUCT_M')), true);
@@ -5245,12 +5248,26 @@ public function experimental_form($datatype='',$cond=0)
 
 			}
 
-			if($subtype=='all_master')
+			if($subtype=='download_patent')
 			{
-			//	$someArray['PRODUCT_M']=json_decode(json_encode($this->session->userdata('PRODUCT_M')), true);
-				$someArray['PRODUCT_B']=json_decode(json_encode($this->session->userdata('PRODUCT_D')), true);
-				$this->FrmRptModel->tranfer_data($someArray);
+					$sql="select a.id FieldID,a.productname FieldVal,b.name_value Company,c.available_qnty	,c.minimum_stock
+					from productmstr a, misc_mstr b,product_balance_companywise c  
+					where a.brand_id=b.id and  a.active_inactive='ACTIVE' and a.id=c.product_id
+					and c.company_id=".$company_id;
+					$patent_product_data =$this->projectmodel->get_records_from_sql($sql);
+					$output['PRODUCT_P']=json_decode(json_encode($patent_product_data), true);
+					$this->FrmRptModel->tranfer_data($output);
+
+
 			}
+
+
+			// if($subtype=='all_master')
+			// {
+			// //	$someArray['PRODUCT_M']=json_decode(json_encode($this->session->userdata('PRODUCT_M')), true);
+			// 	$someArray['PRODUCT_B']=json_decode(json_encode($this->session->userdata('PRODUCT_D')), true);
+			// 	$this->FrmRptModel->tranfer_data($someArray);
+			// }
 
 
 

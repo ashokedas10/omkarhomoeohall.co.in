@@ -193,7 +193,7 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 
    
 
-   factoryobj.populate_data=function(indx1,index2,searchelement)
+   factoryobj.populate_data=function(indx1,index2,searchelement,BaseUrl)
    {
 
 		if(searchelement=='main_group_id' )	
@@ -201,76 +201,127 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 			 
 			var Inputvalue= $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2][searchelement]['Inputvalue'];
 			var Inputvalue_id= $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2][searchelement]['Inputvalue_id'];
-
-
-			//FIELD OPEN AND HIDDEN
-			if(Inputvalue=='M' || Inputvalue=='T' || Inputvalue=='B')
-			{var field_list=['product_Synonym','potency_id','Synonym','pack_id','mrp','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
-
-			if(Inputvalue=='S')
-			{var field_list=['product_Synonym','potency_id','Synonym','no_of_dose','dose_Synonym','mrp','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
-
-			if(Inputvalue=='D' )
-			{var field_list=['product_Synonym','potency_id','Synonym','pack_id','pack_synonym','mrp','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
-
-			if(Inputvalue=='W' )
-			{var field_list=['product_Synonym','potency_id','Synonym','pack_id','no_of_dose','mrp','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
-
+			
 			if(Inputvalue=='P' )
-			{var field_list=['product_Synonym','batchno','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
-
-			angular.forEach(field_list, function (values, key) 
-			{ 
-				$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['InputType']='text';
-				$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['input_id_index']=10+key;			
+			{
 				
-			}); 
+				if(Inputvalue=='P' )
+				{var field_list=['product_Synonym','batchno','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
 
-
-			//MASTER LOAD
-			angular.forEach($rootScope.all_master['MAIN_PRODUCT_GROUP'], function (values, key) 
-			{ 				
-				if(values.FieldVal==Inputvalue)
+				angular.forEach(field_list, function (values, key) 
 				{ 
-					$rootScope.FormInputArray[0]['header'][1]['fields'][0]['main_group_name']['Inputvalue']=values.MAIN_GROUP_NAME;
-					//console.log('PRODUCT_'+Inputvalue);
+					$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['InputType']='text';
+					$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['input_id_index']=10+key;			
+					
+				}); 
+
+
+				var data_link=BaseUrl;	   
+				var success={};	
+				var data_save = {'form_name':$rootScope.current_form_report,'subtype':'download_patent'};
+				var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
+				$http.post(data_link,data_save,config).then (function success(response)
+				{	
+					 $rootScope.all_master['PRODUCT_P']=response.data.PRODUCT_P;
 
 					$rootScope.product_master=[];
-					angular.forEach($rootScope.all_master['PRODUCT_'+Inputvalue],function(product,product_key){
-						$rootScope.product_master.push({FieldID: product.FieldID,FieldVal:product.FieldVal});			
+					angular.forEach($rootScope.all_master['PRODUCT_P'],function(product,product_key){
+						$rootScope.product_master.push({FieldID: product.FieldID,FieldVal:product.FieldVal,Company:product.Company
+							,Available_qnty:product.available_qnty,Minimum_Stock:product.minimum_stock});			
 					});			
-					
-					$rootScope.potency_master=[];
-					angular.forEach($rootScope.all_master['POTENCY_'+Inputvalue],function(potency,potency_key){
-						$rootScope.potency_master.push({FieldID: potency.FieldID,FieldVal:potency.FieldVal});			
-					});		
-
-					$rootScope.pack_master=[];
-					angular.forEach($rootScope.all_master['PACK_SIZE_'+Inputvalue],function(pack,pack_key){
-						$rootScope.pack_master.push({FieldID: pack.FieldID,FieldVal:pack.FieldVal});			
-					});						
-				
+					 
+				},	   
+				function error(response)
+				{
+					$scope.errorMessage = 'Error adding user!';
+					$scope.message = '';
 				}
+			  
+				);
+
+
+			}
+			else
+			{
+					//FIELD OPEN AND HIDDEN
+					if(Inputvalue=='M' || Inputvalue=='T' || Inputvalue=='B')
+					{var field_list=['product_Synonym','potency_id','Synonym','pack_id','mrp','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
+
+					if(Inputvalue=='S')
+					{var field_list=['product_Synonym','potency_id','Synonym','no_of_dose','dose_Synonym','mrp','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
+
+					if(Inputvalue=='D' )
+					{var field_list=['product_Synonym','potency_id','Synonym','pack_id','pack_synonym','mrp','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
+
+					if(Inputvalue=='W' )
+					{var field_list=['product_Synonym','potency_id','Synonym','pack_id','no_of_dose','mrp','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
+				
+
+					angular.forEach(field_list, function (values, key) 
+					{ 
+						$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['InputType']='text';
+						$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['input_id_index']=10+key;			
+						
+					}); 
+
+					//MASTER LOAD
+
+					angular.forEach($rootScope.all_master['MAIN_PRODUCT_GROUP'], function (values, key) 
+					{ 				
+						if(values.FieldVal==Inputvalue)
+						{ 
+							$rootScope.FormInputArray[0]['header'][1]['fields'][0]['main_group_name']['Inputvalue']=values.MAIN_GROUP_NAME;
+							//console.log('PRODUCT_'+Inputvalue);
+
+							$rootScope.product_master=[];
+							angular.forEach($rootScope.all_master['PRODUCT_'+Inputvalue],function(product,product_key){
+								$rootScope.product_master.push({FieldID: product.FieldID,FieldVal:product.FieldVal});			
+							});			
 							
-			}); 			
+							$rootScope.potency_master=[];
+							angular.forEach($rootScope.all_master['POTENCY_'+Inputvalue],function(potency,potency_key){
+								$rootScope.potency_master.push({FieldID: potency.FieldID,FieldVal:potency.FieldVal});			
+							});		
+
+							$rootScope.pack_master=[];
+							angular.forEach($rootScope.all_master['PACK_SIZE_'+Inputvalue],function(pack,pack_key){
+								$rootScope.pack_master.push({FieldID: pack.FieldID,FieldVal:pack.FieldVal});			
+							});						
+						
+						}
+									
+					}); 	
+
+			}
+
 
 		}
 		
 		if(searchelement=='product_id' )	
 		{
-
+			var main_group_id= $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['main_group_id']['Inputvalue'];
 			var Inputvalue= $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2][searchelement]['Inputvalue'];
-			var Inputvalue_id= $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2][searchelement]['Inputvalue_id'];
+			var Inputvalue_id= $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2][searchelement]['Inputvalue_id'];	
 
-			angular.forEach($rootScope.all_master['MAIN_PRODUCT_GROUP'], function (values, key) 
-			{ 				
-				if(values.FieldVal==Inputvalue)
-				{ 
-					$rootScope.FormInputArray[0]['header'][1]['fields'][0]['main_group_name']['Inputvalue']=values.MAIN_GROUP_NAME;
+			if(main_group_id=='P' )
+			{
 
-				}
-			}); 	
 
+
+			}
+			else
+			{
+				angular.forEach($rootScope.all_master['PRODUCT_'+main_group_id], function (values, key) 
+				{ 	
+					if(values.FieldID==Inputvalue_id)
+					{ 
+						//console.log('FieldID '+values.FieldID + ' group id :'+values.product_group_id);
+						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue']=values.product_group_id;
+						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue_id']=values.product_group_id;
+					}
+				}); 
+
+			}	
 
 		}	
 
@@ -295,7 +346,7 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 			var pack_id =Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['pack_id']['Inputvalue_id']);
 			var no_of_dose =Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['no_of_dose']['Inputvalue']); 
 			
-			console.log(main_group_val);
+			console.log('product_group_id:'+product_group_id+' potency_id:'+potency_id+' pack_id:'+pack_id+' no_of_dose:'+no_of_dose);
 
 			if(main_group_val=='M' || main_group_val=='T' || main_group_val=='B' || main_group_val=='D')
 			{
@@ -364,16 +415,15 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 
 			if(main_group_val=='S' )
 			{
+				pack_id=249; //1 DOSE
 				if(product_group_id>0 && potency_id>0 && pack_id>0)
 				{
-					var dose1_rate=	$rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_1']['RATE'];
-					var dose1_mrp=	$rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_1']['MRP'];			
+					var dose1_rate=	Number($rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_1']['RATE']);
+					var dose1_mrp=	Number($rootScope.all_master['RATE_MASTER'][product_group_id][potency_id][pack_id]['DOSE_1']['MRP']);			
 					
 					$rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=dose1_rate*no_of_dose;
 					$rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=dose1_mrp*no_of_dose;
-
-				}	
-
+				}
 			}
 		}
    }	

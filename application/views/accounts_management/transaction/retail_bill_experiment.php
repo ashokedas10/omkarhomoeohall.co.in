@@ -783,13 +783,16 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 
 <!--{{FormInputArray[0]['header'][1]['fields'][0]['product_id']}}-->
 
-<!--product id --{{FormInputArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue_id']}}-->
+<!--product_group_id --{{FormInputArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue_id']}}<br />
+potency_id --{{FormInputArray[0]['header'][1]['fields'][0]['potency_id']['Inputvalue_id']}}<br />
+pack_id --{{FormInputArray[0]['header'][1]['fields'][0]['pack_id']['Inputvalue_id']}}<br />
+no_of_dose --{{FormInputArray[0]['header'][1]['fields'][0]['no_of_dose']['Inputvalue_id']}}<br />
 
-<!--{{all_master}}-->
-<br />
 
-<!--{{all_master['RATE_MASTER']}}
+RATE --{{all_master['RATE_MASTER'][FormInputArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue_id']][FormInputArray[0]['header'][1]['fields'][0]['potency_id']['Inputvalue_id']][FormInputArray[0]['header'][1]['fields'][0]['pack_id']['Inputvalue_id']]['DOSE_1']['RATE']}}
 -->
+<!--{{all_master['RATE_MASTER'][233][236]}}-->
+
 
 </div>
 
