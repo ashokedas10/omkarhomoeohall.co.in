@@ -42,6 +42,33 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 	   return itm;
    }
 
+
+   factoryobj.download_master_for_product=function(BaseUrl)
+   {
+	   var data_link=BaseUrl+'DOWNLOAD_MASTER';	   
+	   var success={};	
+	   var data_save = {'subtype':'DOWNLOAD_MASTER'};
+	   var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
+	   $http.post(data_link,data_save,config).then (function success(response)
+	   {
+			$rootScope.all_master['PRODUCT_GROUP_LIST']=response.data.PRODUCT_GROUP_LIST;	
+			$rootScope.all_master['BRAND_LIST']=response.data.BRAND_LIST;
+			$rootScope.all_master['ACTIVE_INACTIVE_LIST']=response.data.ACTIVE_INACTIVE_LIST;
+
+			// $rootScope.all_master['TAX_LIST']=response.data.TAX_LIST;	
+			
+	   },	   
+	   function error(response)
+	   {
+		   $scope.errorMessage = 'Error adding user!';
+		   $scope.message = '';
+	   }
+	 
+	   );	 
+   }	
+
+
+
    factoryobj.other_search=function(form_name,subtype,BaseUrl,id)
    {
 
@@ -107,41 +134,7 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
    }	
 
 
-   ///SALE SECTION MAIN FUNTIONS START
-
-//    {"MainTable":"productmstr","LinkField":"productname","frmrpttemplatehdrID":"35","DIVClass":"3","Section":"0",
-//    "SectionType":"HEADER","input_id_index":9,"LabelName":"Product","InputName":"product_id","Inputvalue":"",
-//    "Inputvalue_id":"","InputType":"text","validation_type":"0","validation_msg":"","datafields":[],"under_fields":[]}
-
-   factoryobj.all_master=function(BaseUrl)
-   {
-
-	   var data_link=BaseUrl;	   
-	   var success={};	
-	   var data = JSON.stringify($rootScope.FormInputArray);
-	   var data_save = {'form_name':$rootScope.current_form_report,'subtype':'all_master'};
-	   var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
-	   $http.post(data_link,data_save,config).then (function success(response)
-	   {	
-			
-		// 	$rootScope.test=response.data.PRODUCT_B;
-		// //$rootScope.productlist.push({id: value.id,name:value.productname,available_qnty:value.available_qnty});
-		// 	angular.forEach($rootScope.test,function(value,key){
-		// 	//	$rootScope.all_master.push({FieldID: value.FieldID,FieldVal:value.FieldVal});			
-		// 	});
-			
-			
-	   },	   
-	   function error(response)
-	   {
-		   $scope.errorMessage = 'Error adding user!';
-		   $scope.message = '';
-	   }
-	 
-	   );
-	   return $rootScope.all_master;
-   }	
-   
+   ///SALE SECTION MAIN FUNTIONS START   
 
    factoryobj.download_all_master=function(BaseUrl)
    {
@@ -174,11 +167,10 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 			$rootScope.all_master['PACK_SIZE_B']=response.data.PACK_SIZE_B;
 			$rootScope.all_master['PACK_SIZE_W']=response.data.PACK_SIZE_W;
 			$rootScope.all_master['PACK_SIZE_S']=response.data.PACK_SIZE_S;
-
+			$rootScope.all_master['PATIENT_LIST']=response.data.PATIENT_LIST;
 			$rootScope.all_master['RATE_MASTER']=response.data.RATE_MASTER;
-			
 
-			//console.log('MAIN_PRODUCT_GROUP ID : '+$rootScope.all_master['MAIN_PRODUCT_GROUP']['FieldVal'].findIndex('D'));
+		
 			
 	   },	   
 	   function error(response)
@@ -208,11 +200,15 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 				if(Inputvalue=='P' )
 				{var field_list=['product_Synonym','batchno','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
 
+				if($rootScope.current_form_report=='retail_bill_experiment')
+				{ var startindex=10;}
+				if($rootScope.current_form_report=='wholesale_bill_experiment')
+				{ var startindex=9;}
+
 				angular.forEach(field_list, function (values, key) 
 				{ 
 					$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['InputType']='text';
-					$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['input_id_index']=10+key;			
-					
+					$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['input_id_index']=startindex+key;	
 				}); 
 
 
@@ -222,14 +218,14 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 				var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
 				$http.post(data_link,data_save,config).then (function success(response)
 				{	
-					 $rootScope.all_master['PRODUCT_P']=response.data.PRODUCT_P;
-
-					$rootScope.product_master=[];
-					angular.forEach($rootScope.all_master['PRODUCT_P'],function(product,product_key){
+					 //$rootScope.all_master['PRODUCT_P']=response.data.PRODUCT_P;		
+					 
+					 $rootScope.product_master=[];
+					 angular.forEach(response.data.PRODUCT_P,function(product,product_key){
 						$rootScope.product_master.push({FieldID: product.FieldID,FieldVal:product.FieldVal,Company:product.Company
 							,Available_qnty:product.available_qnty,Minimum_Stock:product.minimum_stock});			
-					});			
-					 
+					 });			
+
 				},	   
 				function error(response)
 				{
@@ -239,11 +235,22 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 			  
 				);
 
+				angular.forEach($rootScope.all_master['MAIN_PRODUCT_GROUP'], function (values, key) 
+				{ 				
+					if(values.FieldVal==Inputvalue)
+					{$rootScope.FormInputArray[0]['header'][1]['fields'][0]['main_group_name']['Inputvalue']=values.MAIN_GROUP_NAME;}
+								
+				}); 	
+
 
 			}
 			else
 			{
 					//FIELD OPEN AND HIDDEN
+					if(Inputvalue=='MM1' || Inputvalue=='MM2' || Inputvalue=='MM3' || Inputvalue=='MM4' || Inputvalue=='MM5' || Inputvalue=='MM6')
+					{Inputvalue='M';}
+
+
 					if(Inputvalue=='M' || Inputvalue=='T' || Inputvalue=='B')
 					{var field_list=['product_Synonym','potency_id','Synonym','pack_id','mrp','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
 
@@ -256,11 +263,16 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 					if(Inputvalue=='W' )
 					{var field_list=['product_Synonym','potency_id','Synonym','pack_id','no_of_dose','mrp','rate','qnty','subtotal','disc_per','disc_per2','label_print','exp_monyr', 'mfg_monyr'];}
 				
+					if($rootScope.current_form_report=='retail_bill_experiment')
+					{ var startindex=10;}
+					if($rootScope.current_form_report=='wholesale_bill_experiment')
+					{ var startindex=9;}
+
 
 					angular.forEach(field_list, function (values, key) 
 					{ 
 						$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['InputType']='text';
-						$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['input_id_index']=10+key;			
+						$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['input_id_index']=startindex+key;			
 						
 					}); 
 
@@ -297,16 +309,55 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 
 		}
 		
+		
+
 		if(searchelement=='product_id' )	
 		{
 			var main_group_id= $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['main_group_id']['Inputvalue'];
 			var Inputvalue= $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2][searchelement]['Inputvalue'];
 			var Inputvalue_id= $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2][searchelement]['Inputvalue_id'];	
 
+			if(main_group_id=='MM1' || main_group_id=='MM2' || main_group_id=='MM3' || main_group_id=='MM4' || main_group_id=='MM5' || main_group_id=='MM6')
+			{main_group_id='M';}
+
 			if(main_group_id=='P' )
 			{
+				
+					var data_link=BaseUrl;	   
+					var success={};	
+					var data_save = {'form_name':$rootScope.current_form_report,'subtype':'patent_wise_detail','product_id':Inputvalue_id};
+					var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
+					$http.post(data_link,data_save,config).then (function success(response)
+					{	
+						//$rootScope.all_master['PRODUCT_DETAIL']=response.data;		
+						
+						$rootScope.batch_list=[];
+						angular.forEach(response.data.batchno,function(batch_list,batch_list_key){
+							$rootScope.batch_list.push({FieldID: batch_list.FieldID,FieldVal:batch_list.FieldVal,Product_name:batch_list.Product_name
+								,MRP:batch_list.MRP,rate:batch_list.rate,exp_monyr:batch_list.exp_monyr,
+								available_qnty:batch_list.available_qnty,Rack_No:batch_list.Rack_No,Avilable_qnty:batch_list.Avilable_qnty
+								,Max_qnty:batch_list.Max_qnty,Avilable_qnty:batch_list.Avilable_qnty,PBill_No:batch_list.PBill_No,PBill_Date:batch_list.PBill_Date
+								,Rkid:batch_list.Rkid,pid:batch_list.pid});			
+						});		
 
+						$rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['batchno']['Inputvalue']=response.data.mrp;
+						$rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['mrp']['Inputvalue']=response.data.mrp;
+						$rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['rate']['Inputvalue']=response.data.rate;
+						$rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['exp_monyr']['Inputvalue']=response.data.exp_monyr;
+						$rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['rackno']['Inputvalue_id']=response.data.rackno;
+						$rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['disc_per']['Inputvalue']=response.data.disc_per;
+						$rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['label_print']['Inputvalue']=response.data.label_print;
+						$rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['qnty']['Inputvalue']=1;
+						$rootScope.searchItems=$rootScope.batch_list;
 
+					},	   
+					function error(response)
+					{
+						$scope.errorMessage = 'Error adding user!';
+						$scope.message = '';
+					}
+				
+					);
 
 			}
 			else
@@ -318,12 +369,44 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 						//console.log('FieldID '+values.FieldID + ' group id :'+values.product_group_id);
 						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue']=values.product_group_id;
 						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue_id']=values.product_group_id;
+						$rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['label_print']['Inputvalue']='Y';
+						$rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['qnty']['Inputvalue']=1;
 					}
 				}); 
 
 			}	
 
 		}	
+
+
+		if(searchelement=='patient_name')
+		{
+			var Inputvalue= Number($rootScope.FormInputArray[0]['header'][indx1]['fields'][index2][searchelement]['Inputvalue']);
+			if(Inputvalue>0)
+			{
+
+				$rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['patient_id']['Inputvalue']=Inputvalue;
+
+				$rootScope.FormInputArray[0]['header'][indx1]['fields'][index2][searchelement]['Inputvalue']=
+				$rootScope.all_master['PATIENT_LIST'][Inputvalue]['records']['party_name'];
+
+				$rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['patient_address']['Inputvalue']=
+				$rootScope.all_master['PATIENT_LIST'][Inputvalue]['records']['address'];
+
+				$rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['patient_address']['Inputvalue']=
+				$rootScope.all_master['PATIENT_LIST'][Inputvalue]['records']['address'];
+
+				$rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['doctor_ledger_id']['Inputvalue_id']=
+				$rootScope.all_master['PATIENT_LIST'][Inputvalue]['records']['doctor_mstr_id'];
+
+				$rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['doctor_ledger_id']['Inputvalue']=
+				$rootScope.all_master['PATIENT_LIST'][Inputvalue]['doctor_name'];
+				
+
+			}
+
+		}
+		
 
    }
 
@@ -430,7 +513,90 @@ GeneralServices.factory('general_functions',['$http','$rootScope',function($http
 
    ///SALE SECTION MAIN FUNTIONS
 
+   ///PURCHASE SECTION MAIN FUNTIONS START   
 
+   
+   factoryobj.populate_data_purchase=function(indx1,index2,searchelement,BaseUrl)
+   {
+
+
+			if(searchelement=='tbl_party_id' )
+			{
+
+				var data_link=BaseUrl;	   
+				var success={};	
+				var data_save = {'form_name':$rootScope.current_form_report,'subtype':'download_patent'};
+				var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
+				$http.post(data_link,data_save,config).then (function success(response)
+				{	
+					//$rootScope.all_master['PRODUCT_P']=response.data.PRODUCT_P;		
+					
+					$rootScope.product_master=[];
+					angular.forEach(response.data.PRODUCT_P,function(product,product_key){
+						$rootScope.product_master.push({FieldID: product.FieldID,FieldVal:product.FieldVal,Company:product.Company
+							,Available_qnty:product.available_qnty,Minimum_Stock:product.minimum_stock});			
+					});			
+
+				},	   
+				function error(response)
+				{
+					$scope.errorMessage = 'Error adding user!';
+					$scope.message = '';
+				}
+			
+				);
+				
+			}
+
+		if(searchelement=='product_id' )	
+		{
+				var data_link=BaseUrl;	   
+				var Inputvalue_id=$rootScope.FormInputArray[0]['header'][indx1]['fields'][0]['product_id']['Inputvalue_id'];
+				var success={};	
+				var data_save = {'form_name':$rootScope.current_form_report,'subtype':'patent_wise_detail','product_id':Inputvalue_id};
+				var config = {headers :{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'}}				
+				$http.post(data_link,data_save,config).then (function success(response)
+				{	
+					$rootScope.all_master['PRODUCT_DETAIL']=response.data;		
+					
+					$rootScope.batch_list=[];
+					angular.forEach(response.data.batchno,function(batch_list,batch_list_key){
+						$rootScope.batch_list.push({FieldID: batch_list.FieldID,FieldVal:batch_list.FieldVal,Product_name:batch_list.Product_name
+							,MRP:batch_list.MRP,rate:batch_list.rate,exp_monyr:batch_list.exp_monyr,
+							available_qnty:batch_list.available_qnty,Rack_No:batch_list.Rack_No,Avilable_qnty:batch_list.Avilable_qnty
+							,Max_qnty:batch_list.Max_qnty,Avilable_qnty:batch_list.Avilable_qnty,PBill_No:batch_list.PBill_No,PBill_Date:batch_list.PBill_Date
+							,Rkid:batch_list.Rkid,pid:batch_list.pid});			
+					});		
+
+					// $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['batchno']['Inputvalue']=response.data.mrp;
+					// $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['mrp']['Inputvalue']=response.data.mrp;
+					// $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['rate']['Inputvalue']=response.data.rate;
+					// $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['exp_monyr']['Inputvalue']=response.data.exp_monyr;
+					// $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['rackno']['Inputvalue_id']=response.data.rackno;
+					// $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['disc_per']['Inputvalue']=response.data.disc_per;
+					// $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['label_print']['Inputvalue']=response.data.label_print;
+					// $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['qnty']['Inputvalue']=1;
+
+					$rootScope.searchItems=$rootScope.batch_list;
+
+				},	   
+				function error(response)
+				{
+					$scope.errorMessage = 'Error adding user!';
+					$scope.message = '';
+				}
+			
+				);
+			
+
+		}	
+		
+
+   }
+
+
+
+   ///PURCHASE SECTION MAIN FUNTIONS END    
 
    factoryobj.delete_bill=function(form_name,subtype,BaseUrl,id)
    {

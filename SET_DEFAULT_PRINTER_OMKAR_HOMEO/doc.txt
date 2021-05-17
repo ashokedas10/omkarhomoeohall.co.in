@@ -1,0 +1,50 @@
+
+INSTALL PYTHON VERSION -python-3.6.5 (FOR WIN 7 SERVICE PACK 1)
+
+
+pip install pywin32
+pip install win32printing
+
+https://www.blog.pythonlibrary.org/2010/02/14/python-windows-and-printers/
+
+
+pip install requests
+
+https://www.datacamp.com/community/tutorials/making-http-requests-in-python?utm_source=adwords_ppc&utm_campaignid=1455363063&utm_adgroupid=65083631748&utm_device=c&utm_keyword=&utm_matchtype=b&utm_network=g&utm_adpostion=&utm_creative=332602034358&utm_targetid=aud-299261629574:dsa-429603003980&utm_loc_interest_ms=&utm_loc_physical_ms=1007828&gclid=CjwKCAjw1uiEBhBzEiwAO9B_Hc1X_pzsQuShCDZlHLnfgWP1qkALVtctRxYR_-wh7zeqO5VB7MJXOBoC9XUQAvD_BwE
+
+
+IF MOD_SEQUIRITY ISSUE COME --CONTACT HOSTGATOR
+You will not be able to whitelist the rule from your end. 
+If you want a rule to be whitelisted,
+ you will need to contact support and we will do it for you.
+
+
+https://blog.kiosksimple.com/2015/04/30/how-to-print-in-javascript-without-displaying-the-print-dialog-box/#:~:text=TO%20YOU%20WEBSITE.-,How%20to%20Print%20in%20JavaScript%20Without%20Displaying%20the%20Print%20Dialog,print()%3B%20and%20that's%20it!
+https://windowsreport.com/chrome-system-print-dialog/
+
+
+how to kiosk print from chorome 
+--kiosk-printing" after target
+
+
+
+HOW TO CHANGE THE CHROME DEFAULT PRINTER 
+=================================================================================================================
+https://admx.help/?Category=Chrome&Policy=Google.Policies.Chrome::PrintPreviewUseSystemDefaultPrinter
+
+Use System Default Printer as Default
+Causes Google Chrome to use the system default printer as the default choice in Print Preview instead of the most recently used printer.
+
+If you disable this setting or do not set a value, Print Preview will use the most recently used printer as the default destination choice.
+
+If you enable this setting, Print Preview will use the OS system default printer as the default destination choice.
+
+
+Registry Hive	HKEY_LOCAL_MACHINE or HKEY_CURRENT_USER
+Registry Path	Software\Policies\Google\Chrome
+Value Name	PrintPreviewUseSystemDefaultPrinter
+Value Type	REG_DWORD
+Enabled Value	1
+Disabled Value	0
+
+================================================================================================================

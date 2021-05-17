@@ -736,7 +736,7 @@ function all_mis_report($REPORT_NAME,$param_array)
 
 					$records = "select id,invoice_no,invoice_date
 					 from invoice_summary where invoice_date 	between '".$param_array['fromdate']."' and '".$param_array['todate']."'
-					and status='SALE' and  company_id=".$company_id." and doctor_ledger_id=".$ledger_ac ;
+					and status='SALE' and BILL_STATUS='BILL_SAVED' and  company_id=".$company_id." and doctor_ledger_id=".$ledger_ac ;
 					$records = $this->projectmodel->get_records_from_sql($records);
 					if(count($records)>0){
 					foreach ($records as $record){
@@ -767,9 +767,10 @@ function all_mis_report($REPORT_NAME,$param_array)
 									$rsval[$mainindx]['row_comm_total']=0;
 									
 
-									$details = "select a.main_group_id,sum(a.taxable_amt) taxable_amt
+									$details = "select a.main_group_id,sum(a.taxable_amt) taxable_amt, sum(a.taxable_amt*doctor_commission_percentage/100) total_commission 
 									from invoice_details a,productmstr b		
-									where a.invoice_summary_id=".$record->id." and a.product_id=b.id  group by a.main_group_id" ;
+									where a.invoice_summary_id=".$record->id." and a.product_id=b.id 
+									and ITEM_DELETE_STATUS='NOT_DELETED'  group by a.main_group_id" ;
 									$details = $this->projectmodel->get_records_from_sql($details);
 									if(count($details)>0)
 									{
@@ -784,8 +785,9 @@ function all_mis_report($REPORT_NAME,$param_array)
 											   $array_index = array_search($detail->main_group_id, $rsval[$mainindx]['group_id']);
 												$rsval[$mainindx]['group_wise_trade_val'][$array_index]=$detail->taxable_amt; 
 												$rsval[$mainindx]['group_commission'][$array_index]=$doc_commission;
-												$rsval[$mainindx]['group_commission_amt'][$array_index]=
-												round(($doc_commission*$detail->taxable_amt)/100,2);
+												$rsval[$mainindx]['group_commission_amt'][$array_index]=round($detail->total_commission);
+
+												//round(($doc_commission*$detail->taxable_amt)/100,2);
 
 												$rsval[$mainindx]['total_trade_value']=$rsval[$mainindx]['total_trade_value']+$detail->taxable_amt; 
 

@@ -215,7 +215,7 @@ td{
 <html>
 <head></head>
 <!--onafterprint="self.close()"-->
-<body onLoad="window.print();" >
+<body onLoad="window.print();" onafterprint="self.close()" >
 
 
 <div id="invoice-POS" >

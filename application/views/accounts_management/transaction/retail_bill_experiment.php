@@ -127,6 +127,7 @@ input.masked,
 
 
 <style type="text/css">
+.loading { border:0px; padding:100px; margin:40px 5px; width:200px; text-align:center}
     .scroll-div {
       height: 300px;
       overflow: scroll;
@@ -295,10 +296,8 @@ font-weight:300;
 <div ng-app="Accounts"   >
 
 <div ng-controller="retail_bill_experiment" class="panel panel-primary" id="myBody" onchange = "shortcut()" >
-		
-		
-		
-																
+	<shortcut></shortcut>
+																		
 	<table class="table table-bordered table-striped" >
 	<tr>		
 		
@@ -579,22 +578,28 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 	</table>
 	</div>		
 	
-	<div class="spinner" ng-show="loading"></div>
 	
-	<!--SEARCH SECTION-->									
-	<div class="scroll-div" id="anchor" style="display:{{search_div_display}}">
-		<table class="table table-bordered table-hover table-condensed "  >	
-			
-			<tr><td  ng-repeat="(key,value) in suggestions[0]" ng-if="key!='FieldID' ">{{key}}</td></tr>
-						
-			<tr ng-repeat="values in suggestions" ng-class="{'activeTR': selectedIndex == $index}" 
-			ng-click="AssignValueAndHide($index)" id="innerAnchor{{$index}}">
-			
-			<td   ng-repeat="(key,value) in values" ng-if="key!='FieldID'">{{value}}</td>	
-			</tr>																									
-		</table>
-	</div>
+	
+	<!--SEARCH SECTION-->	
+	<div   align="center">
+	
+		<loading></loading>
+									
+		<div class="scroll-div" id="anchor" style="display:{{search_div_display}}">
+		
+				<!--ng-class="{'activeTR': selectedIndex == $index}"-->
+			<table class="table table-bordered table-hover table-condensed "  >	
 				
+				<tr><td  ng-repeat="(key,value) in suggestions[0]" ng-if="key!='FieldID' ">{{key}}</td></tr>
+							
+				<tr ng-repeat="values in suggestions"  ng-class="{'activeTR': selectedIndex == $index}"
+				ng-click="AssignValueAndHide($index)" id="innerAnchor{{$index}}">
+				
+				<td   ng-repeat="(key,value) in values" ng-if="key!='FieldID'">{{value}}</td>	
+				</tr>																									
+			</table>
+		</div>
+	</div>			
 	<!--REGULAR SALE SECTION END-->				
 			
 	<div class="panel panel-primary"  ng-if="dtlist_array.length>0">
@@ -684,14 +689,14 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 				<button type="button" class="btn btn-success" id="Save" name="Save" 
 				ng-click="final_submit()">Save Bill</button>
 				
-				<button type="button" class="btn btn-success" id="Save" name="Save" 
+				<button type="button" class="btn btn-success" id="label" name="label" 
 				ng-click="print_label()">Print Label</button>
 				
-				<button type="button" class="btn btn-success" id="Save" name="Save" 
+				<button type="button" class="btn btn-success" id="bill" name="bill" 
 				ng-click="print_documents('POS_INVOICE',value)"> Print Bill</button>
 				
 				<button type="button" class="btn btn-success"  
-				ng-click="new_entry(FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'])">New Entry </button>
+				ng-click="new_entry(FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'])"  id="new_entry">New Entry </button>
 				
 				
 				<!--<a data-toggle="modal" data-target="#shortModal" 
@@ -781,7 +786,7 @@ class="form-control"  onfocus="this.select();" onmouseup="return false;" />
 	
 
 
-<!--{{FormInputArray[0]['header'][1]['fields'][0]['product_id']}}-->
+MAIN GRP ID - {{FormInputArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue_id']}}
 
 <!--product_group_id --{{FormInputArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue_id']}}<br />
 potency_id --{{FormInputArray[0]['header'][1]['fields'][0]['potency_id']['Inputvalue_id']}}<br />
@@ -791,8 +796,8 @@ no_of_dose --{{FormInputArray[0]['header'][1]['fields'][0]['no_of_dose']['Inputv
 
 RATE --{{all_master['RATE_MASTER'][FormInputArray[0]['header'][1]['fields'][0]['product_group_id']['Inputvalue_id']][FormInputArray[0]['header'][1]['fields'][0]['potency_id']['Inputvalue_id']][FormInputArray[0]['header'][1]['fields'][0]['pack_id']['Inputvalue_id']]['DOSE_1']['RATE']}}
 -->
-<!--{{all_master['RATE_MASTER'][233][236]}}-->
 
+<!--plist --{{all_master['PATIENT_LIST']}}-->
 
 </div>
 

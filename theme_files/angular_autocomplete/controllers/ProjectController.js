@@ -8,7 +8,6 @@
 
 var domain_name="http://localhost/Subhojit_DEPAK_BHUIYA/homeopathi/omkar_homeo/";
 
-
 //var domain_name="https://omkarhomoeohall.co.in/";
 
 
@@ -16,89 +15,6 @@ var query_result_link=domain_name+"Accounts_controller/query_result/";
 
 //************************ACCOUNT RECEIVE START*****************************************//
 var app = angular.module('Accounts',['GeneralServices']);
-
-
-
-app.directive('scrollToBottom', function($timeout, $window) {
-	return {
-			scope: {
-					scrollToBottom: "="
-			},
-			restrict: 'A',
-			link: function(scope, element, attr) {
-					scope.$watchCollection('scrollToBottom', function(newVal) {
-							if (newVal) {
-									$timeout(function() {
-											element[0].scrollTop =  element[0].scrollHeight;
-									}, 0);
-							}
-
-					});
-			}
-	};
-});
-
-//************************ACCOUNT -RECEIVE,PAYMENT,JOURNAL,CONTRA START*****************************************//
-
-app.directive('selectOnClick', ['$window', function ($window) {
-    return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-            element.on('blur', function () {
-                if (!$window.getSelection().toString()) {
-                    // Required for mobile Safari
-                    this.setSelectionRange(0, this.value.length)
-                }
-            });
-        }
-    };
-}]);
-
-app.filter('toRange', function(){
-	return function(input) {
-	  var lowBound, highBound;
-	  if (input.length == 1) {       
-		lowBound = 0;
-		highBound = +input[0] - 1;      
-	  } else if (input.length == 2) {      
-		lowBound = +input[0];
-		highBound = +input[1];
-	  }
-	  var i = lowBound;
-	  var result = [];
-	  while (i <= highBound) {
-		result.push(i);
-		i++;
-	  }
-	  return result;
-	}
-	});
-	
-	app.run(['$anchorScroll', function($anchorScroll) {
-		$anchorScroll.yOffset =1000;   // always scroll by 50 extra pixels
-	}]);
-
-
-
-
-app.directive('ngConfirmClick', [
-  function(){
-    return {
-      priority: -1,
-      restrict: 'A',
-      link: function(scope, element, attrs){
-        element.bind('click', function(e){
-          var message = attrs.ngConfirmClick;
-          // confirm() requires jQuery
-          if(message && !confirm(message)){
-            e.stopImmediatePropagation();
-            e.preventDefault();
-          }
-        });
-      }
-    }
-  }
-]);
 
 
 
@@ -149,15 +65,15 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 		$rootScope.potency_master=[];
 		$rootScope.pack_master=[];
 
-
-
-
+		$rootScope.save_data=[];
 
 
 		$rootScope.savedone_status='SAVE_NOT_DONE';
 		$rootScope.grandtotal=0;
 		$scope.formname='';
 		$rootScope.array_name='';
+		$rootScope.key_operation='';
+
 
 		var BaseUrl=domain_name+"Project_controller/experimental_form/";
 		$rootScope.search_div_display='none';
@@ -174,9 +90,56 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 		 console.log(data_save);
 
 			//GENERAL FUNCTIONS START
-			
 
+			$scope.keyPressed = function(e) 
+			{
+				$scope.keyCode = e.which;
+				console.log('Key Code'+$scope.keyCode);
+				var id= $rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
+				if(id>0 && $scope.keyCode==27)
+				{
+					
+					if($rootScope.key_operation=='')
+					{
+							if ($window.confirm("Do you want to save ?")) {
+							//	$scope.Message = "You clicked YES.";
+							//	$scope.final_submit(id);	
+							document.getElementById(Save).focus();			
+										
+								$rootScope.key_operation='SAVED';
+							} else {
+									$scope.Message = "You clicked NO.";
+							}		
+					}
+
+					if($rootScope.key_operation=='SAVED')
+					{
+							if ($window.confirm("Do you want to Print Label ?")) {
+								//$scope.Message = "You clicked YES.";
+								$scope.print_label();							
+								$rootScope.key_operation='LABEL_PRINTED';
+							} else {
+									//$scope.Message = "You clicked NO.";
+							}		
+					}
+
+					if($rootScope.key_operation=='LABEL_PRINTED')
+					{
+							if ($window.confirm("Do you want to Print Bill ?")) {
+								//$scope.Message = "You clicked YES.";
+								$scope.print_documents();							
+								$rootScope.key_operation='';
+							} else {
+									//$scope.Message = "You clicked NO.";
+							}		
+					}
+
+				}
 			
+				//console.log('You clicked'+$scope.Message);
+
+			};
+
 
 			$scope.download_all_master=function(id)
 			{	
@@ -438,6 +401,7 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 		$scope.mainOperation=function(event,header_index,field_index,Index2,index3,input_id_index)
 		{	
 			
+			
 			if(event.keyCode === 13)
 				{						
 												
@@ -446,40 +410,84 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 						{	
 									
 							if($rootScope.searchelement=='qnty')	
-							{$scope.save_check();}	
+							{
+								$scope.loading = true;
+								$scope.save_check();
+							
+							}	
 
 							input_id_index=Number(input_id_index+1);	
 
 							if($rootScope.searchelement=='main_group_id' )	
 							{
 
-								angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
-								{ 
-									if(key!='main_group_id' )
+								var Inputvalue= $rootScope.FormInputArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue'];
+								var id_header=Number($rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']);
+								//console.log('Inputvalue'+Inputvalue);
+
+								if(Inputvalue=='XS' || Inputvalue=='XL' || Inputvalue=='XB')
+								{
+									
+									if(id_header>0)
 									{
-										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
-										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']=0;	
-									}		
+										if(Inputvalue=='XS')
+										{$scope.final_submit();}	
+	
+										if(Inputvalue=='XL')
+										{$scope.print_label();}	
+	
+										if(Inputvalue=='XB')
+										{$scope.print_documents('POS_INVOICE',id_header);}	
 
-									if(key!='main_group_id' && key!='main_group_name' && key!='product_id' && key!='product_Synonym' )
-									{
-										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['InputType']='hidden';
-										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['input_id_index']=9000;	
-									}				
+									}
+									else
+									{$scope.server_msg='Invalid Bill !'; }
 
-								}); 
+								
+								}
+								else
+								{
 
-								general_functions.populate_data($rootScope.indx1,$rootScope.index2,$rootScope.searchelement,BaseUrl);
+									angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
+									{ 
+										if(key!='main_group_id' )
+										{
+											$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
+											$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']=0;	
+										}		
+	
+										if(key!='main_group_id' && key!='main_group_name' && key!='product_id' && key!='product_Synonym' )
+										{
+											$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['InputType']='hidden';
+											$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['input_id_index']=9000;	
+										}				
+	
+									}); 
+	
+									general_functions.populate_data($rootScope.indx1,$rootScope.index2,$rootScope.searchelement,BaseUrl);	
+									//	$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement,input_id_index);
+									document.getElementById(input_id_index).focus();	
 
-
-							//	$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement,input_id_index);
-								document.getElementById(input_id_index).focus();	
+								}
 							
+							
+							
+							
+							}
+							else  if($rootScope.searchelement=='product_id' )	
+							{
+									 
+									 general_functions.populate_data($rootScope.indx1,$rootScope.index2,$rootScope.searchelement,BaseUrl);
+									//  var main_group_id= $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['main_group_id']['Inputvalue'];
+									// 	if(main_group_id=='P' )
+									// 	{$rootScope.searchItems=$rootScope.batch_list;}
+
+									 document.getElementById(input_id_index).focus();	
+
 							}
 							else if($rootScope.searchelement=='tbl_party_id'  || $rootScope.searchelement=='batchno'|| 
 							 $rootScope.searchelement=='rate' ||  $rootScope.searchelement=='disc_per'	 ||
-							 $rootScope.searchelement=='disc_per2'  ||  $rootScope.searchelement=='patient_name' ||  $rootScope.searchelement=='product_Synonym' 
-							 ||  $rootScope.searchelement=='product_id')	
+							 $rootScope.searchelement=='disc_per2'  ||  $rootScope.searchelement=='patient_name' ||  $rootScope.searchelement=='product_Synonym')	
 							 {
 								
 								general_functions.populate_data($rootScope.indx1,$rootScope.index2,$rootScope.searchelement,BaseUrl);
@@ -565,10 +573,17 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 
 				}
 			
+
 				$rootScope.searchItems=[];
 				$rootScope.searchTextSmallLetters='';
 				$rootScope.selectedIndex =0;
-				
+				 if(searchelement=='batch' )
+				 {$rootScope.selectedIndex =-1;}
+				// else
+				// {$rootScope.selectedIndex =0;}
+			
+
+
 				angular.forEach($rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement], function (values, key) 
 				{ 
 					
@@ -588,27 +603,31 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 					}
 					
 				}); 
+			
 
 
 				if($rootScope.searchelement=='product_id')
 				{
+					$rootScope.searchItems=[];
 					$rootScope.searchItems=$rootScope.product_master;
 					$rootScope.search_div_display='block';
 				}
-
 				if($rootScope.searchelement=='potency_id')
 				{
 					$rootScope.searchItems=$rootScope.potency_master;
 					$rootScope.search_div_display='block';
 				}
-
 				if($rootScope.searchelement=='pack_id')
 				{
 					$rootScope.searchItems=$rootScope.pack_master;
 					$rootScope.search_div_display='block';
 				}
-
-			
+				if($rootScope.searchelement=='batchno')
+				{
+					$rootScope.searchItems=$rootScope.batch_list;
+					$rootScope.search_div_display='block';
+				}
+				
 
 
 			
@@ -636,6 +655,8 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 			
 			$rootScope.$watch('selectedIndex',function(val)
 			{		
+
+				console.log('selectedIndex:'+$rootScope.selectedIndex)
 				if(val !== -1) 
 				{
 					
@@ -740,10 +761,7 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 			//Function To Call on ng-click
 				$rootScope.AssignValueAndHide = function(index)
 				{
-
 				
-					if( $rootScope.current_form_report=='retail_bill_experiment')
-					{	
 						if($rootScope.searchelement=='batchno' )
 						{		
 								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
@@ -776,8 +794,6 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 							$rootScope.suggestions[index]['FieldID'];
 
 						}
-					}
-
 
 				$rootScope.suggestions=[];
 				$rootScope.searchItems=[];		
@@ -840,9 +856,11 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 					});
 
 					$scope.save_check();
+					
+					$scope.new_entry();
 
 		}
-
+	
 
 		
 	
@@ -850,6 +868,8 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 		{	
 
 				$rootScope.final_array=[];
+				$rootScope.save_array=[];
+
 				$rootScope.final_array = JSON.parse(JSON.stringify($rootScope.FormInputArray));
 				$rootScope.save_status='OK';
 				for(var i=0;i<2;i++)
@@ -857,32 +877,23 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 					angular.forEach($rootScope.final_array[0]['header'][i]['fields'][0], function (values, key) 
 					{ 
 						$rootScope.final_array[0]['header'][i]['fields'][0][key]['datafields']='';	
-
-						if($rootScope.final_array[0]['header'][i]['fields'][0][key]['validation_type']=='NOT_OK' 
-						&& $rootScope.save_status=='OK')
-						{ 
-							$rootScope.save_status='NOT_OK'; 
-							$scope.server_msg='Record Can Not Be Save! Please Rectify the '+
-							$rootScope.final_array[0]['header'][i]['fields'][0][key]['LabelName'] +' Related data';
-						}
 						
 					}); 
 				}		
 
-				// console.log('$rootScope.save_status :'+$rootScope.savedone_status);
-				// if($rootScope.save_status=='OK' && $rootScope.savedone_status=='SAVE_NOT_DONE')
-				// {$rootScope.savedone_status='SAVE_DONE'; $scope.savedata();}
-
-				$rootScope.savedone_status='SAVE_DONE'; 
-				$scope.savedata();
+				$rootScope.savedone_status='SAVE_DONE'; 			
+				$scope.savedata();			
 			
 		}	
 
+
 		//SAVE SECTION...
+
+
+
 		$scope.savedata=function()
 		{
-			$scope.showarray='YES';
-		
+						$scope.showarray='YES';
 
 						var data_link=BaseUrl;
 						var success={};	
@@ -899,10 +910,7 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 								$scope.server_msg=response.data.server_msg;
 								$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']=response.data.id_header;
 								$rootScope.FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['Inputvalue']=response.data.invoice_no;
-								
-								$scope.view_bill_wise_item(response.data.id_header);
-								$scope.dtlist_total(response.data.id_header);	
-								$scope.main_grid(1);
+															
 								angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
 								{ 
 									if(key!='main_group_id' )
@@ -915,8 +923,13 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 							//CHANGES HERE FORM BASIS
 							if($rootScope.current_form_report=='retail_bill_experiment')
 							{document.getElementById(7).focus();}
+
+							$scope.view_bill_wise_item(response.data.id_header);
+							$scope.dtlist_total(response.data.id_header);	
+							$scope.main_grid(1);
 			
 							$rootScope.savedone_status='SAVE_NOT_DONE';
+							$scope.loading = false;
 					
 						},
 						function error(response){
@@ -926,8 +939,9 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 
 		}
 
-		//SAVE SECTION...
 
+		//SAVE SECTION...
+		
 
 		//FOR BILL PRINT
 		$scope.print_documents = function(printtype) 
@@ -939,6 +953,7 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 			console.log(data_link);
 			//	$http.get(data_link).then(function(response){});
 			window.popup(data_link); 
+			$scope.new_entry();
 			
 		};
 	
@@ -970,6 +985,7 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 		
 
 }]);
+
 
 
 //DONE ALL
@@ -1156,54 +1172,7 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 												
 						//CHANGES HERE FORM BASIS
 																
-							/*
-							if($rootScope.searchelement=='party_name' 
-							|| $rootScope.searchelement=='mobno' 
-							|| $rootScope.searchelement=='address' 
-							||  $rootScope.searchelement=='doctor_mstr_id' 
-							||  $rootScope.searchelement=='id'
-							||  $rootScope.searchelement=='age_yy'
-							||  $rootScope.searchelement=='age_mm' )	
-							{$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement);}
-
-							if($rootScope.searchelement=='ACTUAL_VISIT_AMT')	
-							{$scope.save_prescription();}	
-
-							
-							 if($rootScope.searchelement=='party_name')	
-							{
-								
-									if($rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']!=='')
-									{
-										document.getElementById(14).focus();
-									}
-									else
-									{
-										input_id_index=Number(input_id_index+1);			
-										document.getElementById(input_id_index).focus();		
-									}
-								
-							}											
-							else if($rootScope.searchelement=='doctor_mstr_id')	
-							{
-								if($rootScope.FormInputArray[0]['header'][0]['fields'][0]['doctor_mstr_id']['Inputvalue']!='')
-								{
-									document.getElementById(19).focus();
-								}
-								else
-								{
-									input_id_index=Number(input_id_index+1);			
-									document.getElementById(input_id_index).focus();
-
-								}
-							}
-							else
-							{
-								input_id_index=Number(input_id_index+1);			
-								document.getElementById(input_id_index).focus();
-							}	
-
-							*/
+						
 
 							if($rootScope.searchelement=='ACTUAL_VISIT_AMT')	
 							{$scope.save_prescription('PRINT_PRESCRIPTION');}	
@@ -1764,8 +1733,7 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 }]);
 
 
-
-
+//DONE ALL
 app.controller('wholesale_bill_experiment',['$scope','$rootScope','$http','$window','general_functions','$location',
 function($scope,$rootScope,$http,$window,general_functions,$location)
 {
@@ -1783,13 +1751,13 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 		//$scope.barcodeimg=domain_name+'uploads/BILL-2.png';
 
 		//$scope.input_id_index=0;
-		$rootScope.fld_arr=[];	
+		// $rootScope.fld_arr=[];	
 
-		$rootScope.sec_indx0=0;	
-		$rootScope.sec_indx1=1;	
-		$rootScope.sec_indx2=2;	
-		$rootScope.sec_indx3=3;	
-		$rootScope.sec_indx4=4;	
+		// $rootScope.sec_indx0=0;	
+		// $rootScope.sec_indx1=1;	
+		// $rootScope.sec_indx2=2;	
+		// $rootScope.sec_indx3=3;	
+		// $rootScope.sec_indx4=4;	
 
 	//	$rootScope.final_array=[];
 		$rootScope.FormInputArray_template=[];	
@@ -1801,15 +1769,26 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 		$rootScope.main_grid_array=[];
 		$rootScope.dtlist_array=[];
 		$rootScope.dtlist_total_array=[];
-		$rootScope.product_rate_mstr={};
+	
 		$rootScope.product_rate_mstr_array=[];
 		$rootScope.product_rates=[];
+
+		$rootScope.test=[];
+		$rootScope.all_master=[];
+
+		$rootScope.product_master=[];
+		$rootScope.potency_master=[];
+		$rootScope.pack_master=[];
+
+		$rootScope.save_data=[];
 
 
 		$rootScope.savedone_status='SAVE_NOT_DONE';
 		$rootScope.grandtotal=0;
 		$scope.formname='';
 		$rootScope.array_name='';
+		$rootScope.key_operation='';
+
 
 		var BaseUrl=domain_name+"Project_controller/experimental_form/";
 		$rootScope.search_div_display='none';
@@ -1825,13 +1804,65 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 		 var data_save = domain_name+'Project_controller/experimental_form_grid/'+$rootScope.searchelement+'/'+$rootScope.indx1+'/'+$rootScope.index2;
 		 console.log(data_save);
 
-			//GENERAL FUNCTIONS START			
+			//GENERAL FUNCTIONS START
 
-			$scope.product_rates=function(id)
+			$scope.keyPressed = function(e) 
+			{
+				$scope.keyCode = e.which;
+				console.log('Key Code'+$scope.keyCode);
+				var id= $rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
+				if(id>0 && $scope.keyCode==27)
+				{
+					
+					if($rootScope.key_operation=='')
+					{
+							if ($window.confirm("Do you want to save ?")) {
+							//	$scope.Message = "You clicked YES.";
+							//	$scope.final_submit(id);	
+							document.getElementById(Save).focus();			
+										
+								$rootScope.key_operation='SAVED';
+							} else {
+									$scope.Message = "You clicked NO.";
+							}		
+					}
+
+					if($rootScope.key_operation=='SAVED')
+					{
+							if ($window.confirm("Do you want to Print Label ?")) {
+								//$scope.Message = "You clicked YES.";
+								$scope.print_label();							
+								$rootScope.key_operation='LABEL_PRINTED';
+							} else {
+									//$scope.Message = "You clicked NO.";
+							}		
+					}
+
+					if($rootScope.key_operation=='LABEL_PRINTED')
+					{
+							if ($window.confirm("Do you want to Print Bill ?")) {
+								//$scope.Message = "You clicked YES.";
+								$scope.print_documents();							
+								$rootScope.key_operation='';
+							} else {
+									//$scope.Message = "You clicked NO.";
+							}		
+					}
+
+				}
+			
+				//console.log('You clicked'+$scope.Message);
+
+			};
+
+
+			$scope.download_all_master=function(id)
 			{	
-				general_functions.product_rates(BaseUrl);
+				general_functions.download_all_master(BaseUrl);
+				//general_functions.all_master(BaseUrl);
+				//console.log('PRODUCT LIST :------------------------'+$rootScope.product_rate_mstr_array);
 			}
-			$scope.product_rates(1);
+			$scope.download_all_master(1);
 
 
 			$scope.main_grid=function(id)
@@ -1868,6 +1899,7 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 			
 			$scope.dtlist_view=function(indx)
 			{
+		
 							
 			}
 
@@ -1884,10 +1916,16 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 			
 					
 			$scope.view_list=function(id)
-			{		
-				general_functions.list_items($rootScope.current_form_report,'view_list',BaseUrl,id);				
+			{
+				console.log('view list id :'+id+'  :'+$rootScope.current_form_report);
+				//$scope.server_msg="Data Loading....Please Wait";						
+				general_functions.list_items($rootScope.current_form_report,'view_list',BaseUrl,id);	
+				// $scope.dtlist(id);
+				// 
+
 				$scope.view_bill_wise_item(id);
 				$scope.dtlist_total(id);	
+
 			}
 			$scope.view_list(0);
 
@@ -1953,6 +1991,8 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 			} );	
 
 			document.getElementById(3).focus();
+
+			
 			 
 		 }
 			 
@@ -1966,9 +2006,11 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 			$scope.delete_item=function(id)
 			{
 				
-				general_functions.delete_item($rootScope.current_form_report,'delete_item',BaseUrl,id);									
+				general_functions.delete_item($rootScope.current_form_report,'delete_item',BaseUrl,id);
+									
 				var mainid=	$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
-				console.log('mainid:'+mainid);				
+				console.log('mainid:'+mainid);
+				
 				$scope.view_bill_wise_item(mainid);
 				// $scope.dtlist(mainid);
 				$scope.dtlist_total(mainid);
@@ -1979,62 +2021,93 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 
 		 $scope.new_entry=function(id)
 			{	
+					if(id>0)
+					{
+						console.log('Delete bill '+id);
+						general_functions.delete_bill($rootScope.current_form_report,'delete_bill',BaseUrl,id);
+						$scope.main_grid(1);
+					}	
 
-				if(id>0)
-				{
-					console.log('Delete bill '+id);
-					general_functions.delete_bill($rootScope.current_form_report,'delete_bill',BaseUrl,id);
-					$scope.main_grid(1);
-				}	
-
-				$scope.view_list(0);
-				document.getElementById(1).focus();
+					$scope.view_list(0);
+					document.getElementById(1).focus();
 			}
+
+	
 
 		$scope.mainOperation=function(event,header_index,field_index,Index2,index3,input_id_index)
 		{	
 			
+			
 			if(event.keyCode === 13)
 				{						
 												
-						//CHANGES HERE FORM BASIS					
-									
+						//CHANGES HERE FORM BASIS
 							if($rootScope.searchelement=='qnty')	
-							{$scope.save_check();}	
-
+							{
+								$scope.loading = true;
+								$scope.save_check();
+							}	
 							input_id_index=Number(input_id_index+1);	
-
 							if($rootScope.searchelement=='main_group_id' )	
 							{
-								angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
-								{ 
-									if(key!='main_group_id' )
-									{
-										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
-										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']='';	
-									}				
-								}); 
-								$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement,input_id_index);
-								document.getElementById(input_id_index).focus();	
+
+										var Inputvalue= $rootScope.FormInputArray[0]['header'][1]['fields'][0]['main_group_id']['Inputvalue'];
+										var id_header=Number($rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']);
+										//console.log('Inputvalue'+Inputvalue);
+
+										angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
+										{ 
+											if(key!='main_group_id' )
+											{
+												$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
+												$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']=0;	
+											}		
+		
+											if(key!='main_group_id' && key!='main_group_name' && key!='product_id' && key!='product_Synonym' )
+											{
+												$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['InputType']='hidden';
+												$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['input_id_index']=9000;	
+											}				
+		
+										}); 
+		
+										general_functions.populate_data($rootScope.indx1,$rootScope.index2,$rootScope.searchelement,BaseUrl);	
+										//	$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement,input_id_index);
+										document.getElementById(input_id_index).focus();	
+
+									
 							
+							
+							}
+							else  if($rootScope.searchelement=='product_id' )	
+							{
+									 
+									 general_functions.populate_data($rootScope.indx1,$rootScope.index2,$rootScope.searchelement,BaseUrl);
+									//  var main_group_id= $rootScope.FormInputArray[0]['header'][indx1]['fields'][index2]['main_group_id']['Inputvalue'];
+									// 	if(main_group_id=='P' )
+									// 	{$rootScope.searchItems=$rootScope.batch_list;}
+
+									 document.getElementById(input_id_index).focus();	
+
 							}
 							else if($rootScope.searchelement=='tbl_party_id'  || $rootScope.searchelement=='batchno'|| 
 							 $rootScope.searchelement=='rate' ||  $rootScope.searchelement=='disc_per'	 ||
-							 $rootScope.searchelement=='disc_per2'  ||  $rootScope.searchelement=='patient_name' ||  $rootScope.searchelement=='product_Synonym' 
-							 ||  $rootScope.searchelement=='product_id')	
+							 $rootScope.searchelement=='disc_per2'  ||  $rootScope.searchelement=='patient_name' ||  $rootScope.searchelement=='product_Synonym')	
 							 {
-								 $scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement,input_id_index);
+								
+								general_functions.populate_data($rootScope.indx1,$rootScope.index2,$rootScope.searchelement,BaseUrl);
+								//$scope.other_search(1,'other_search',$rootScope.indx1,$rootScope.index2,$rootScope.searchelement,input_id_index);
 								 document.getElementById(input_id_index).focus();	
 							 }	
 							 else  if($rootScope.searchelement=='potency_id' ||  $rootScope.searchelement=='pack_id'  ||  $rootScope.searchelement=='no_of_dose')	
-							 {										
+							 {
+										
 										general_functions.set_rate();
-										document.getElementById(input_id_index).focus();
+										document.getElementById(input_id_index).focus();	
+
 							 }
-								else
-								{		
-									document.getElementById(input_id_index).focus();									
-								}	
+							 else
+						  	{	document.getElementById(input_id_index).focus();}	
 
 
 				}		
@@ -2050,13 +2123,17 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 				}					
 				
 
-		}
+	}
 
 		//	$rootScope.search = function(searchelement,indx1,index2,index3,index4,array_name)
 		$rootScope.search = function(searchelement,indx1,index2,index3,index4,array_name)
 		{		
-			
-			  $rootScope.spiner=false;
+			 //console.log('searchelement '+searchelement+' indx1 '+indx1+' index2 '+index2+' index3 '+index3+' index4 '+index4+' array name '+$rootScope.current_form_report);
+
+			 //console.log('$rootScope.current_form_report '+$rootScope.current_form_report);
+
+			 $rootScope.spiner=false;
+				//invoice_no
 				$rootScope.search_div_display='none';
 				$rootScope.searchelement=searchelement;
 				$rootScope.array_name=array_name;							
@@ -2065,6 +2142,8 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 				$rootScope.index3=index3;
 				$rootScope.index3=index4;
 
+				if($rootScope.current_form_report=='retail_bill_experiment' )
+				{
 					if(searchelement=='mrp' || searchelement=='disc_per'  || searchelement=='qnty')
 					{
 						
@@ -2078,18 +2157,38 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 						Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue'])*
 						Number($rootScope.FormInputArray[0]['header'][1]['fields'][0][searchelement]['Inputvalue']);
 
+
 					}
+
+					// var data_link=query_result_link+"42/";
+					// console.log(data_link);
+					// $http.get(data_link).then(function(response){
+					// angular.forEach(response.data,function(value,key){					
+					
+					// 	if(value.PACK_ID==187 && value.POTENCY_ID==186 && value.GROUP_ID==93)	
+					// 	{										
+					// 		$rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=700;										
+					// 	}
+
+					// });
+					// });
+
+				}
 			
+
 				$rootScope.searchItems=[];
 				$rootScope.searchTextSmallLetters='';
-				$rootScope.selectedIndex =0;
-				
+
+				if(searchelement!='batch' )
+				{$rootScope.selectedIndex =0;}
+
+
 				angular.forEach($rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement], function (values, key) 
 				{ 
 					
 					if(key=='Inputvalue')
 					{	$rootScope.searchTextSmallLetters = angular.uppercase(values);}
-				
+					
 					if(values!='' && key=='datafields')
 					{
 							var array_length=values.length;
@@ -2101,8 +2200,38 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 								//block none											
 							}
 					}
+					
 				}); 
+			
 
+
+				if($rootScope.searchelement=='product_id')
+				{
+					$rootScope.searchItems=[];
+					$rootScope.searchItems=$rootScope.product_master;
+					$rootScope.search_div_display='block';
+				}
+				if($rootScope.searchelement=='potency_id')
+				{
+					$rootScope.searchItems=$rootScope.potency_master;
+					$rootScope.search_div_display='block';
+				}
+				if($rootScope.searchelement=='pack_id')
+				{
+					$rootScope.searchItems=$rootScope.pack_master;
+					$rootScope.search_div_display='block';
+				}
+				if($rootScope.searchelement=='batchno')
+				{
+					$rootScope.searchItems=$rootScope.batch_list;
+					$rootScope.search_div_display='block';
+				}
+				
+
+
+			
+				//console.log('$rootScope.searchItems'+$rootScope.searchItems);
+				//$rootScope.suggestions=$rootScope.searchItems;
 				$rootScope.suggestions = [];
 				$rootScope.searchItems.sort();	
 				var myMaxSuggestionListLength = 0;
@@ -2136,7 +2265,12 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 						$rootScope.suggestions[$rootScope.selectedIndex]['FieldID'];
 					}
 					
+
+					//inner div $anchorScroll
+					//http://plnkr.co/edit/yFj9fL3sOhDqjhMawI72?p=preview&preview
+					
 					$scope.gotoAnchor(val);
+
 				
 				}
 			});		
@@ -2224,7 +2358,7 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 			//Function To Call on ng-click
 				$rootScope.AssignValueAndHide = function(index)
 				{
-						
+				
 						if($rootScope.searchelement=='batchno' )
 						{		
 								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
@@ -2296,11 +2430,15 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 
 		$scope.final_submit=function(id)
 		{
+					// $scope.save_check();
+
 					var data_link=BaseUrl;
 					var success={};	
 					var id=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
 					var data_save = {'form_name':$scope.current_form_report,'subtype':'FINAL_SUBMIT','id':id};
-					console.log('data_save final id : '+id);					
+
+					console.log('data_save final id : '+id);
+					
 					var config = {headers : 
 						{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'	}
 					}
@@ -2315,8 +2453,11 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 					});
 
 					$scope.save_check();
-		}
+					
+					$scope.new_entry();
 
+		}
+	
 
 		
 	
@@ -2324,6 +2465,8 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 		{	
 
 				$rootScope.final_array=[];
+				$rootScope.save_array=[];
+
 				$rootScope.final_array = JSON.parse(JSON.stringify($rootScope.FormInputArray));
 				$rootScope.save_status='OK';
 				for(var i=0;i<2;i++)
@@ -2331,28 +2474,23 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 					angular.forEach($rootScope.final_array[0]['header'][i]['fields'][0], function (values, key) 
 					{ 
 						$rootScope.final_array[0]['header'][i]['fields'][0][key]['datafields']='';	
-
-						if($rootScope.final_array[0]['header'][i]['fields'][0][key]['validation_type']=='NOT_OK' 
-						&& $rootScope.save_status=='OK')
-						{ 
-							$rootScope.save_status='NOT_OK'; 
-							$scope.server_msg='Record Can Not Be Save! Please Rectify the '+
-							$rootScope.final_array[0]['header'][i]['fields'][0][key]['LabelName'] +' Related data';
-						}
 						
 					}); 
 				}		
 
-				$rootScope.savedone_status='SAVE_DONE'; 
-				$scope.savedata();
+				$rootScope.savedone_status='SAVE_DONE'; 			
+				$scope.savedata();			
 			
 		}	
 
+
 		//SAVE SECTION...
+
+
+
 		$scope.savedata=function()
 		{
-			$scope.showarray='YES';
-		
+						$scope.showarray='YES';
 
 						var data_link=BaseUrl;
 						var success={};	
@@ -2369,10 +2507,7 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 								$scope.server_msg=response.data.server_msg;
 								$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']=response.data.id_header;
 								$rootScope.FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['Inputvalue']=response.data.invoice_no;
-								
-								$scope.view_bill_wise_item(response.data.id_header);
-								$scope.dtlist_total(response.data.id_header);	
-								$scope.main_grid(1);
+															
 								angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
 								{ 
 									if(key!='main_group_id' )
@@ -2383,8 +2518,13 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 								}); 
 			
 							//CHANGES HERE FORM BASIS
-							document.getElementById(7).focus();
+							document.getElementById(6).focus();
+							$scope.view_bill_wise_item(response.data.id_header);
+							$scope.dtlist_total(response.data.id_header);	
+							$scope.main_grid(1);
+			
 							$rootScope.savedone_status='SAVE_NOT_DONE';
+							$scope.loading = false;
 					
 						},
 						function error(response){
@@ -2394,8 +2534,9 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 
 		}
 
-		//SAVE SECTION...
 
+		//SAVE SECTION...
+		
 
 		//FOR BILL PRINT
 		$scope.print_documents = function(printtype) 
@@ -2407,6 +2548,7 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 			console.log(data_link);
 			//	$http.get(data_link).then(function(response){});
 			window.popup(data_link); 
+			$scope.new_entry();
 			
 		};
 	
@@ -2439,325 +2581,807 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 
 }]);
 
-app.controller('Product_master',['$scope','$rootScope','$http',
-function($scope,$rootScope,$http)
+
+
+
+//DONE ...NOT COMPLETE
+app.controller('purchase_experiment',['$scope','$rootScope','$http','$window','general_functions','$location',
+function($scope,$rootScope,$http,$window,general_functions,$location)
 {
 	"use strict";
 
-	//$scope.appState='EMIPAYMENT';
-	//var domain_name="http://localhost/abir_das_unitedlab/SATNAM/";	
-	$scope.spiner='ON';
-	var BaseUrl=domain_name+"Accounts_controller/AccountsTransactions/Product_master/";
-			
 
-			$scope.mainOperation=function(event,element_name)
-			{	
-					console.log('event '+event);
-					// if(element_name===19)
-					// {
-					// 	$scope.get_set_value('','','DRCRCHECKING');
-					// 	document.getElementById(7).focus();			
-					// }			
-
-					// if(event.keyCode === 13)
-					// {	
-					// 	if(element_name===10)
-					// 	{document.getElementById('exp_monyr').focus();}		
-
-					// 	if(element_name===11)
-					// 	{document.getElementById('mfg_monyr').focus();}			
-
-					// 	element_name=Number(element_name+1);			
-					// 	document.getElementById(element_name).focus();		
-					// }						
-			}
-
-			//===================START SEARCH SECTION =========================================
-		
-			$rootScope.taxlist= [];
-			$rootScope.brandlist= [];
-			$rootScope.grouplist= [];
-			$rootScope.productlist=[];			
-
-			var data_link=query_result_link+"34/";
-			$http.get(data_link).then(function(response){angular.forEach(response.data,function(value,key)
-			{$rootScope.productlist_master.push({id: value.id,name:value.productname});});});
-			
-			$scope.savemsg='Product master Loading. Please wait ...... '; 	
-			var data_link=BaseUrl+"product_master/";							
-			console.log(data_link);					
-			$http.get(data_link).then(function(response){
-				angular.forEach(response.data,function(value,key){		
-					$scope.savemsg='All product loaded'; 			
-					$rootScope.productlist.push({id: value.id,name:value.productname,available_qnty:value.available_qnty});
-				});
-			});
-			
-			$scope.spiner='OFF';
-
-			var data_link=query_result_link+"38/";
-			console.log(data_link);
-			$http.get(data_link).then(function(response){angular.forEach(response.data,function(value,key)
-			{$rootScope.brandlist.push({id:value.id,name:value.name});});});
-
-			var data_link=query_result_link+"39/";
-			console.log(data_link);
-			$http.get(data_link).then(function(response){angular.forEach(response.data,function(value,key)
-			{$rootScope.grouplist.push({id:value.id,name:value.name});});});
-
-			var data_link=query_result_link+"40/";
-			console.log(data_link);
-			$http.get(data_link).then(function(response){angular.forEach(response.data,function(value,key)
-			{$rootScope.taxlist.push({id:value.id,name:value.acc_name});});});
-
-
-		$rootScope.search = function(searchelement)
-		{
-		
-			$scope.SEARCHTYPE='PRODUCT';
-			$rootScope.searchelement=searchelement;
-			$rootScope.suggestions = [];
-			$rootScope.searchItems=[];
-		
-			if($rootScope.searchelement=='product_id_name')
-			{$rootScope.searchItems=$rootScope.productlist;}	
-			else if($rootScope.searchelement=='group_id_name')
-			{$rootScope.searchItems=$rootScope.grouplist;}	
-			else if($rootScope.searchelement=='brand_id_name')
-			{$rootScope.searchItems=$rootScope.brandlist;}	
-			else if($rootScope.searchelement=='tax_per')
-			{$rootScope.searchItems=$rootScope.taxlist;}	
-			else
-			{//Sale_test.list_items($rootScope.searchelement,$scope.product_id);}
-			}
+		var CurrentDate=new Date();
+		var year = CurrentDate.getFullYear();
+		var month = CurrentDate.getMonth()+1;
+		var dt = CurrentDate.getDate();
+		if (dt < 10) {	dt = '0' + dt;}
+		if (month < 10) {month = '0' + month;}
+		$scope.tran_date=year+'-' + month + '-'+dt;
+		$scope.startdate=$scope.enddate=	$scope.tran_date;
 	
-			console.log($rootScope.searchItems);
+		$rootScope.FormInputArray_template=[];	
+		$rootScope.FormInputArray=[];	
+		$rootScope.returnobject={};
+		$rootScope.returnArray=[];	
+		$rootScope.spiner=false;
+		$rootScope.main_grid_array=[];
+		$rootScope.dtlist_array=[];
+		$rootScope.dtlist_total_array=[];	
+		$rootScope.product_rate_mstr_array=[];
+		$rootScope.product_rates=[];
+		$rootScope.test=[];
+		$rootScope.all_master=[];
+		$rootScope.product_master=[];
+		$rootScope.potency_master=[];
+		$rootScope.pack_master=[];
+		$rootScope.save_data=[];
+
+
+		$rootScope.savedone_status='SAVE_NOT_DONE';
+		$rootScope.grandtotal=0;
+		$scope.formname='';
+		$rootScope.array_name='';
+		$rootScope.key_operation='';
+
+
+		var BaseUrl=domain_name+"Project_controller/experimental_form/";
+		$rootScope.search_div_display='none';
+		//block none
+
+		//$scope.codestructure1_id=0;
+		$scope.server_msg='Enter Form';
+		//$rootScope.current_form_report='grn_entry';
+
+		 $rootScope.current_form_report=localStorage.getItem("TranPageName");
+		 console.log('page name :'+$rootScope.current_form_report);
+
+		 var data_save = domain_name+'Project_controller/experimental_form_grid/'+$rootScope.searchelement+'/'+$rootScope.indx1+'/'+$rootScope.index2;
+		 console.log(data_save);
+
+			//GENERAL FUNCTIONS START
+
+			$scope.keyPressed = function(e) 
+			{
+				$scope.keyCode = e.which;
+				console.log('Key Code'+$scope.keyCode);
+				var id= $rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
+				if(id>0 && $scope.keyCode==27)
+				{
+					
+					if($rootScope.key_operation=='')
+					{
+							if ($window.confirm("Do you want to save ?")) {
+							//	$scope.Message = "You clicked YES.";
+							//	$scope.final_submit(id);	
+							document.getElementById(Save).focus();			
+										
+								$rootScope.key_operation='SAVED';
+							} else {
+									$scope.Message = "You clicked NO.";
+							}		
+					}
+
+					if($rootScope.key_operation=='SAVED')
+					{
+							if ($window.confirm("Do you want to Print Label ?")) {
+								//$scope.Message = "You clicked YES.";
+								$scope.print_label();							
+								$rootScope.key_operation='LABEL_PRINTED';
+							} else {
+									//$scope.Message = "You clicked NO.";
+							}		
+					}
+
+					if($rootScope.key_operation=='LABEL_PRINTED')
+					{
+							if ($window.confirm("Do you want to Print Bill ?")) {
+								//$scope.Message = "You clicked YES.";
+								$scope.print_documents();							
+								$rootScope.key_operation='';
+							} else {
+									//$scope.Message = "You clicked NO.";
+							}		
+					}
+
+				}
+			
+				//console.log('You clicked'+$scope.Message);
+
+			};
+
+
+			$scope.download_all_master=function(id)
+			{	
+				general_functions.download_all_master(BaseUrl);
+				//general_functions.all_master(BaseUrl);
+				//console.log('PRODUCT LIST :------------------------'+$rootScope.product_rate_mstr_array);
+			}
+			$scope.download_all_master(1);
+
+
+			$scope.main_grid=function(id)
+			{	
+				$rootScope.grandtotal=0;
+				general_functions.main_grid($rootScope.current_form_report,'main_grid',BaseUrl,id,$scope.startdate,$scope.enddate);
+				
+			}
+			$scope.main_grid(1);
+
+			$scope.setTotals = function(item)
+			{
+				angular.forEach(item, function (values, key) 
+					{ 	
+						if(key=='Grand Total')
+						{
+							console.log(key+' '+values)	;		
+							$rootScope.grandtotal =Number($rootScope.grandtotal) +Number(values);
 						
-			$rootScope.searchItems.sort();	
-			var myMaxSuggestionListLength = 0;
-			for(var i=0; i<$rootScope.searchItems.length; i++)
+						}								
+					}); 
+			}
+			
+			
+
+			$scope.view_bill_wise_item=function(id)
+			{general_functions.view_bill_wise_item(BaseUrl,id);}
+
+			$scope.dtlist=function(id)
+			{general_functions.dtlist(BaseUrl,id);}
+
+			$scope.dtlist_total=function(id)
+			{general_functions.dtlist_total(BaseUrl,id);}
+			
+			$scope.dtlist_view=function(indx)
+			{
+
+				var field_list=['id','product_id','batchno','mrp','disc_per','rate','qnty','subtotal','exp_monyr','tax_ledger_id','rackno'];	
+
+				angular.forEach(field_list, function (values, key) 
+				{ 
+					$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['Inputvalue']=
+					$rootScope.dtlist_array[indx][values]['Inputvalue'];
+
+					$rootScope.FormInputArray[0]['header'][1]['fields'][0][values]['Inputvalue_id']=
+					$rootScope.dtlist_array[indx][values]['Inputvalue_id'];
+					
+				}); 
+
+				document.getElementById(8).focus();
+									
+							
+			}
+
+			$scope.other_search=function(id,subtype,header_index,field_index,searchelement,input_id_index)
+			{
+				general_functions.other_search_new($rootScope.current_form_report,'other_search',BaseUrl,id,input_id_index);		
+				$rootScope.suggestions = [];	
+			}
+
+			$scope.view_detail=function(id,subtype,header_index,field_index,searchelement)
+			{
+				general_functions.view_detail($rootScope.current_form_report,BaseUrl,id);										
+			}
+			
+					
+			$scope.view_list=function(id)
+			{
+				console.log('view list id :'+id+'  :'+$rootScope.current_form_report);
+				//$scope.server_msg="Data Loading....Please Wait";						
+				general_functions.list_items($rootScope.current_form_report,'view_list',BaseUrl,id);	
+				 //$scope.dtlist(id);
+				// 
+
+			//	$scope.view_bill_wise_item(id);
+				//$scope.dtlist_total(id);	
+
+			}
+			$scope.view_list(0);
+
+			$scope.get_field_name=function(header_index,field_param,field_name)
+			{return $rootScope.FormInputArray[0]['header'][header_index]['fields'][0][field_name][field_param];}
+
+			$scope.create_date_field=function(inputid)
+			{	
+				//console.log('inputid :'+inputid);
+
+				$( function() {			
+					$("#"+inputid ).datepicker({changeMonth: true,dateFormat: 'yy-mm-dd',changeYear: true});
+					$("#"+inputid).change(function() {var  trandate = $("#"+inputid).val();
+					$("#"+inputid).val(trandate);});
+				} );	
+
+			}
+			$scope.create_date_field('startdate');
+			$scope.create_date_field('enddate');
+			
+
+			$scope.gotoAnchor = function(x) 
+			{
+			 var newHash = 'innerAnchor' + x;
+
+			 if ($location.hash() !== newHash) {							
+				 $location.hash('innerAnchor' + x);
+			 } else {							
+				 $anchorScroll();
+			 }
+
+		 };
+
+		 $scope.test=function()
+		 {
+			 var data_save = domain_name+'Project_controller/experimental_form_grid/'+$rootScope.searchelement+'/'+$rootScope.indx1+'/'+$rootScope.index2;
+			 console.log(data_save);
+
+			 for(var indx=0;indx<2;indx++)
+			 {
+					angular.forEach($rootScope.FormInputArray[0]['header'][indx]['fields'][0], function (values, key) 
+					{ 
+						if($rootScope.FormInputArray[0]['header'][indx]['fields'][0][key]['InputType']=='datefield')
+						{
+							var inputid=$rootScope.FormInputArray[0]['header'][indx]['fields'][0][key]['input_id_index'];
+							$scope.create_date_field(inputid);
+							$rootScope.FormInputArray[0]['header'][indx]['fields'][0][key]['Inputvalue']=$scope.tran_date;
+							
+						}							
+					}); 
+			 }
+			 
+
+			 $( function() {			
+				$('#exp_monyr').inputmask("datetime",{
+					mask: "1/y", 
+					placeholder: "mm/yyyy", 
+					leapday: "-02-29", 
+					separator: "/", 
+					alias: "dd/mm/yyyy"
+				});  
+			} );	
+
+			document.getElementById(0).focus();
+			 
+		 }
+			 
+			$scope.delete_bill=function(id)
+			{
+					general_functions.delete_bill($rootScope.current_form_report,'delete_bill',BaseUrl,id);
+					$scope.main_grid(1);
+					$scope.view_list(0);
+			}	
+
+			$scope.delete_item=function(id)
 			{
 				
-					var searchItemsSmallLetters = angular.uppercase($rootScope.searchItems[i].name);
-					var searchTextSmallLetters = angular.uppercase($scope[$rootScope.searchelement]);
-					if( searchItemsSmallLetters.indexOf(searchTextSmallLetters) >=0){
+				general_functions.delete_item($rootScope.current_form_report,'delete_item',BaseUrl,id);
+									
+				var mainid=	$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
+				console.log('mainid:'+mainid);
+				
+				$scope.view_bill_wise_item(mainid);
+				// $scope.dtlist(mainid);
+				$scope.dtlist_total(mainid);
+				$scope.main_grid(1);
+
+			}
+			
+
+		 $scope.new_entry=function(id)
+			{	
+
+			
+				if(id>0)
+				{
+					console.log('Delete bill '+id);
+					general_functions.delete_bill($rootScope.current_form_report,'delete_bill',BaseUrl,id);
+					$scope.main_grid(1);
+				}	
+
+				$scope.view_list(0);
+				document.getElementById(0).focus();
+			}
+
 	
-						if($rootScope.searchelement=='product_id_name' )
-						{	$rootScope.suggestions.push({id: $rootScope.searchItems[i].id,name:$rootScope.searchItems[i].name,available_qnty:$rootScope.searchItems[i].available_qnty} );}
-						else
-						{$rootScope.suggestions.push({id: $rootScope.searchItems[i].id,name:$rootScope.searchItems[i].name} );}
-	
-						myMaxSuggestionListLength += 1;
-						if(myMaxSuggestionListLength === 1500)
-						{break;}
+
+		$scope.mainOperation=function(event,header_index,field_index,Index2,index3,input_id_index)
+		{	
+			
+			
+			if(event.keyCode === 13)
+				{						
+												
+						//CHANGES HERE FORM BASIS
+														
+							if($rootScope.searchelement=='qnty')	
+							{
+								$scope.loading = true;
+								$scope.save_check();
+							
+							}	
+
+							input_id_index=Number(input_id_index+1);	
+
+							if($rootScope.searchelement=='product_id' )	
+							{
+									 general_functions.populate_data_purchase($rootScope.indx1,$rootScope.index2,$rootScope.searchelement,BaseUrl);
+									 document.getElementById(input_id_index).focus();	
+
+							}
+							else if($rootScope.searchelement=='tbl_party_id'  || $rootScope.searchelement=='batchno' ||  $rootScope.searchelement=='rate' )	
+							 {								
+								 general_functions.populate_data_purchase($rootScope.indx1,$rootScope.index2,$rootScope.searchelement,BaseUrl);
+								 document.getElementById(input_id_index).focus();	
+							 }	
+							 else
+							{		
+									document.getElementById(input_id_index).focus();									
+							}	
+
+
+				}		
+				if(event.keyCode === 39)
+				{	
+					input_id_index=Number(input_id_index+1);			
+					document.getElementById(input_id_index).focus();		
+				}		
+				if(event.keyCode === 37)
+				{	
+					input_id_index=Number(input_id_index-1);			
+					document.getElementById(input_id_index).focus();		
+				}					
+				
+
+		}
+
+		//	$rootScope.search = function(searchelement,indx1,index2,index3,index4,array_name)
+		$rootScope.search = function(searchelement,indx1,index2,index3,index4,array_name)
+		{		
+			 //console.log('searchelement '+searchelement+' indx1 '+indx1+' index2 '+index2+' index3 '+index3+' index4 '+index4+' array name '+$rootScope.current_form_report);
+
+			 //console.log('$rootScope.current_form_report '+$rootScope.current_form_report);
+
+			 $rootScope.spiner=false;
+				//invoice_no
+				$rootScope.search_div_display='none';
+				$rootScope.searchelement=searchelement;
+				$rootScope.array_name=array_name;							
+				$rootScope.indx1=indx1;
+				$rootScope.index2=index2;
+				$rootScope.index3=index3;
+				$rootScope.index3=index4;
+
+			
+					if(searchelement=='mrp' || searchelement=='disc_per'  || searchelement=='qnty')
+					{
+						
+						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue']=
+						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['batchno']['Inputvalue'];
+
+						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue']=
+						Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue'])-
+						Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['mrp']['Inputvalue'])*
+						Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['disc_per']['Inputvalue'])/100;
+
+						$rootScope.FormInputArray[0]['header'][1]['fields'][0]['subtotal']['Inputvalue']=
+						Number($rootScope.FormInputArray[0]['header'][1]['fields'][0]['rate']['Inputvalue'])*
+						Number($rootScope.FormInputArray[0]['header'][1]['fields'][0][searchelement]['Inputvalue']);
+
+
 					}
-			}
 
-		};
-	
-	$rootScope.$watch('selectedIndex',function(val){		
-		if(val !== -1) {
-		//	$scope[$rootScope.searchelement] =$rootScope.suggestions[$rootScope.selectedIndex];
-			$scope[$rootScope.searchelement] =$rootScope.suggestions[$rootScope.selectedIndex]['name'];	
-		}
-	});		
-	$rootScope.checkKeyDown = function(event){
-		console.log(event.keyCode);
-
-		if(event.keyCode === 40){//down key, increment selectedIndex
-			event.preventDefault();
-			if($rootScope.selectedIndex+1 < $rootScope.suggestions.length){
-				$rootScope.selectedIndex++;
-			}else{
-				$rootScope.selectedIndex = 0;
-			}
-		}else if(event.keyCode === 38){ //up key, decrement selectedIndex
-			event.preventDefault();
-			if($rootScope.selectedIndex-1 >= 0){
-				$rootScope.selectedIndex--;
-			}else{
-				$rootScope.selectedIndex = $rootScope.suggestions.length-1;
-			}
-		}
-		else if(event.keyCode === 13){ //enter key, empty suggestions array
-			$rootScope.AssignValueAndHide($rootScope.selectedIndex);
-			//console.log($rootScope.selectedIndex);
-		//	event.preventDefault();			
-		//	$rootScope.suggestions = [];
-		//	$rootScope.searchItems=[];
-		//	$rootScope.selectedIndex = -1;
-		}
-		else if(event.keyCode === 9){ //enter tab key
-			//console.log($rootScope.selectedIndex);
-			if($rootScope.selectedIndex>-1){
-				$rootScope.AssignValueAndHide($rootScope.selectedIndex);
-			}			
-
-		}else if(event.keyCode === 27){ //ESC key, empty suggestions array
-			$rootScope.AssignValueAndHide($rootScope.selectedIndex);
-			console.log($rootScope.selectedIndex);
-			event.preventDefault();
-			$rootScope.suggestions = [];
-			$rootScope.searchItems=[];
-			$rootScope.selectedIndex = -1;
-		}else{
-			$rootScope.search();	
-		}
-	};
-	
-	//ClickOutSide
-	var exclude1 = document.getElementById($rootScope.searchelement);
-	$rootScope.hideMenu = function($event){
-		$rootScope.search();
-		//make a condition for every object you wat to exclude
-		if($event.target !== exclude1) {
-			$rootScope.searchItems=[];
-			$rootScope.suggestions = [];
-			$rootScope.selectedIndex = -1;
-		}
-	};
-	//======================================
-	
-	//Function To Call on ng-keyup
-	$rootScope.checkKeyUp = function(event){ 
-		if(event.keyCode !== 8 || event.keyCode !== 46){//delete or backspace
-			if($scope[$rootScope.searchelement] === ""){
-				$rootScope.suggestions = [];
-				$rootScope.searchItems=[];
-				$rootScope.selectedIndex = -1;
-			}
-		}
-	};
-	//======================================
-	//List Item Events
-	//Function To Call on ng-click
-	$rootScope.AssignValueAndHide = function(index)
-	{
-
-		$scope[$rootScope.searchelement]= $rootScope.suggestions[index];
-	
-		if($rootScope.searchelement=='product_id_name')
-		{
-			var id=	$rootScope.suggestions[index]['id'];	
-			var data_link=BaseUrl+"product_id/"+id;					
-			//console.log(data_link);					
-			$http.get(data_link).then(function(response){
-				angular.forEach(response.data,function(value,key){
-					$scope['product_id']=value.id;  //ACTUAL ID
-					$scope['product_id_name']=value.name; // NAME 					
-					$scope['hsncode']=value.hsncode; 
-
-					$scope['tax_ledger_id']=value.tax_ledger_id; // NAME 	
-					$scope['tax_per']=value.tax_per; 
-
-					$scope['group_id']=value.group_id; 
-					$scope['group_id_name']=value.group_id_name; 
-
-					$scope['brand_id']=value.brand_id; 
-					$scope['brand_id_name']=value.brand_id_name; 
-																					
-				});
-			});
-
-			
-		}
-
-		if($rootScope.searchelement=='group_id_name')
-		{
-			$scope['group_id']=$rootScope.suggestions[index]['id'];
-			$scope['group_id_name']=$rootScope.suggestions[index]['name'];				
-		}
-		if($rootScope.searchelement=='tax_per')
-		{
-			$scope['tax_ledger_id']=$rootScope.suggestions[index]['id'];
-			$scope['tax_per']=$rootScope.suggestions[index]['name'];				
-		}
-		if($rootScope.searchelement=='brand_id_name')
-		{
-			$scope['brand_id']=$rootScope.suggestions[index]['id'];
-			$scope['brand_id_name']=$rootScope.suggestions[index]['name'];				
-		}
-			
-		 $rootScope.suggestions=[];
-		 $rootScope.searchItems=[];
-		 $rootScope.selectedIndex = -1;
-	};
-
-	//===================END SEARCH SECTION =========================================
-
-
-	$scope.savedata=function()
-	{
-		var data_link=BaseUrl+"SAVE";
-		var success={};
-		$scope.spiner='ON';
-		//console.log('$scope.id_detail'+$scope.id_detail);
-		var data_save = 
-		{
-			'product_id': $scope.get_set_value($scope.product_id,'num','SETVALUE'),
-			'productname': $scope.get_set_value($scope.product_id_name,'str','SETVALUE'),
-			'hsncode': $scope.get_set_value($scope.hsncode,'str','SETVALUE'),
-			'group_id': $scope.get_set_value($scope.group_id,'num','SETVALUE'),
-			'tax_ledger_id': $scope.get_set_value($scope.tax_ledger_id,'num','SETVALUE'),
-			'brand_id': $scope.get_set_value($scope.brand_id,'num','SETVALUE')
-		};	
-	
-		var config = {headers : 
-			{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'	}
-		}
-		//$http.post(data_link, data,config)
-		$http.post(data_link,data_save,config)
-		.then (function success(response){
-
-			//console.log('ID HEADER '+response.data.id_header);
-			$scope.savemsg='Product has been saved Successfully!'; 			
-			$scope.get_set_value(response.data,'','REFRESH');
-			document.getElementById('1').focus();
-			
-		},
-		function error(response){
-			$scope.errorMessage = 'Error adding user!';
-			$scope.message = '';
-		});
 		
 
-	}
-	
-	$scope.get_set_value=function(datavalue,datatype,operation)
-	{
-		if(operation=='SETVALUE')
-		{
-			if(angular.isUndefined(datavalue)==true)
+				$rootScope.searchItems=[];
+				$rootScope.searchTextSmallLetters='';
+				$rootScope.selectedIndex =0;
+				 if(searchelement=='batch' )
+				 {$rootScope.selectedIndex =-1;}
+				// else
+				// {$rootScope.selectedIndex =0;}
+			
+
+
+				angular.forEach($rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement], function (values, key) 
+				{ 
+					
+					if(key=='Inputvalue')
+					{	$rootScope.searchTextSmallLetters = angular.uppercase(values);}
+					
+					if(values!='' && key=='datafields')
+					{
+							var array_length=values.length;
+							if(array_length>0)
+							{
+								$rootScope.searchItems=values;
+								//console.log('$rootScope.searchItems:'+$rootScope.searchItems);
+								$rootScope.search_div_display='block';
+								//block none											
+							}
+					}
+					
+				}); 
+			
+
+
+				if($rootScope.searchelement=='product_id')
+				{
+					$rootScope.searchItems=[];
+					$rootScope.searchItems=$rootScope.product_master;
+					$rootScope.search_div_display='block';
+				}
+			
+				if($rootScope.searchelement=='batchno')
+				{
+					$rootScope.searchItems=$rootScope.batch_list;
+					$rootScope.search_div_display='block';
+				}
+				
+
+
+			
+				//console.log('$rootScope.searchItems'+$rootScope.searchItems);
+				//$rootScope.suggestions=$rootScope.searchItems;
+				$rootScope.suggestions = [];
+				$rootScope.searchItems.sort();	
+				var myMaxSuggestionListLength = 0;
+				for(var i=0; i<$rootScope.searchItems.length; i++)
+				{					
+						var searchItemsSmallLetters = angular.uppercase($rootScope.searchItems[i].FieldVal);							
+						if( searchItemsSmallLetters.indexOf($rootScope.searchTextSmallLetters) >=0)
+						{									
+							
+							$rootScope.suggestions.push($rootScope.searchItems[i]);
+							myMaxSuggestionListLength += 1;
+							if(myMaxSuggestionListLength === 50)
+							{break;}
+							
+						}						
+				}
+
+		};
+
+			
+			$rootScope.$watch('selectedIndex',function(val)
+			{		
+
+				console.log('selectedIndex:'+$rootScope.selectedIndex)
+				if(val !== -1) 
+				{
+					
+					if($rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][0][$rootScope.searchelement]['Inputvalue']!='')
+					{
+						$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
+						$rootScope.suggestions[$rootScope.selectedIndex]['FieldVal'];
+						$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
+						$rootScope.suggestions[$rootScope.selectedIndex]['FieldID'];
+					}
+					
+
+					//inner div $anchorScroll
+					//http://plnkr.co/edit/yFj9fL3sOhDqjhMawI72?p=preview&preview
+					
+					$scope.gotoAnchor(val);
+
+				
+				}
+			});		
+			
+			$rootScope.checkKeyDown = function(event,header_index,field_index,Index2,index3,input_id_index)
 			{
-				if(datatype=='num')
-				{return 0;}
-				if(datatype=='str')
-				{return '';}		
-			}
-			else
-			{return datavalue;}
+				
+				console.log(event.keyCode);
+					if(event.keyCode === 40){//down key, increment selectedIndex
+					event.preventDefault();
+					if($rootScope.selectedIndex+1 < $rootScope.suggestions.length){
+						$rootScope.selectedIndex++;
+					}else{
+						$rootScope.selectedIndex = 0;
+					}
+
+					//$scope.mainOperation(event,header_index,field_index,Index2,index3,input_id_index);
+					//console.log('event.keyCode:'+event.keyCode+' header_index:'+header_index+' field_index:'+field_index);
+					//console.log('Index2:'+Index2+' index3:'+index3+' input_id_index:'+input_id_index);
+				
+				}else if(event.keyCode === 38){ //up key, decrement selectedIndex
+					event.preventDefault();
+					if($rootScope.selectedIndex-1 >= 0){
+						$rootScope.selectedIndex--;
+					}else{
+						$rootScope.selectedIndex = $rootScope.suggestions.length-1;
+					}
+				}
+				else if(event.keyCode === 13){ //enter key, empty suggestions array
+					$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+					//$scope.mainOperation(event,header_index,field_index,Index2,index3,input_id_index);
+				}
+				else if(event.keyCode === 9){ //enter tab key
+					//console.log($rootScope.selectedIndex);
+					if($rootScope.selectedIndex>-1){
+						$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+					}			
+		
+				}
+				else if(event.keyCode === 27){ //ESC key, empty suggestions array
+					$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+				}
+				else if(event.keyCode === 39){ //right key
+					//$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+					$scope.mainOperation(event,header_index,field_index,Index2,index3,input_id_index);
+				}
+				else if(event.keyCode === 37){ //left key
+				//	$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+				$scope.mainOperation(event,header_index,field_index,Index2,index3,input_id_index);
+				}
+				else if(event.keyCode === 113){ //F2 KEY FOR ADD
+					//	$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+					$scope.mainOperation(event,header_index,field_index,Index2,index3,input_id_index);
+					}
+				
+				else{
+					$rootScope.search();	
+				}
+			};
+			
+			//ClickOutSide
+			var exclude1 = document.getElementById($rootScope.searchelement);
+			$rootScope.hideMenu = function($event){
+				$rootScope.search();
+				//make a condition for every object you wat to exclude
+				if($event.target !== exclude1) {
+				
+				}
+			};
+			//======================================
+			
+			//Function To Call on ng-keyup
+			$rootScope.checkKeyUp = function(event)
+			{ 
+				if(event.keyCode !== 8 || event.keyCode !== 46){//delete or backspace
+					if($scope[$rootScope.searchelement] === ""){
+						$rootScope.suggestions = [];
+						$rootScope.searchItems=[];			
+						$rootScope.selectedIndex = -1;
+					}
+				}
+			};
+			//======================================
+			//List Item Events
+			//Function To Call on ng-click
+				$rootScope.AssignValueAndHide = function(index)
+				{
+				
+						if($rootScope.searchelement=='batchno' )
+						{		
+								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
+								$rootScope.suggestions[index]['FieldVal'];
+								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
+								$rootScope.suggestions[index]['FieldID'];
+
+								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue']
+								= $rootScope.suggestions[index]['Rack_No'];		
+
+								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rackno']['Inputvalue_id']
+								= $rootScope.suggestions[index]['Rkid'];	
+
+								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['exp_monyr']['Inputvalue']
+								= $rootScope.suggestions[index]['exp_monyr'];
+
+								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['rate']['Inputvalue']
+								= $rootScope.suggestions[index]['rate'];
+							
+								$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2]['mrp']['Inputvalue']
+								= $rootScope.suggestions[index]['MRP'];		
+
+						}
+						else
+						{
+
+							$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue']=
+							$rootScope.suggestions[index]['FieldVal'];
+							$rootScope.FormInputArray[0]['header'][$rootScope.indx1]['fields'][$rootScope.index2][$rootScope.searchelement]['Inputvalue_id']=
+							$rootScope.suggestions[index]['FieldID'];
+
+						}
+
+				$rootScope.suggestions=[];
+				$rootScope.searchItems=[];		
+				$rootScope.selectedIndex = -1;
+			};
+
+
+		$scope.bill_process_functions=function()
+		{					
+				var txt;
+				if (confirm("Save Bill ?")) {
+					$scope.final_submit();
+
+					if (confirm("Label print ?")) {
+
+						$rootScope.FormInputArray[0]['header'][0]['fields'][0]['BILL_STATUS']['Inputvalue']='LABEL_PRINTED';
+						$scope.save_check();
+						$scope.savedata();
+
+						$scope.print_label();
+					}
+					if (confirm("Bill print ?")) {
+
+						$rootScope.FormInputArray[0]['header'][0]['fields'][0]['BILL_STATUS']['Inputvalue']='BILL_PRINTED';
+						$scope.save_check();
+						$scope.savedata();
+
+						$scope.print_documents();
+					}
+
+				} else {
+					txt = "You pressed Cancel!";
+				}
+			console.log('uou have pressed'+txt);
+				
+		}
+
+		$scope.final_submit=function(id)
+		{
+					// $scope.save_check();
+
+					var data_link=BaseUrl;
+					var success={};	
+					var id=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
+					var data_save = {'form_name':$scope.current_form_report,'subtype':'FINAL_SUBMIT','id':id};
+
+					console.log('data_save final id : '+id);
+					
+					var config = {headers : 
+						{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'	}
+					}
+					//$http.post(data_link, data,config)
+					$http.post(data_link,data_save,config)
+					.then (function success(response){
+							$scope.server_msg=response.data.server_msg;
+					},
+					function error(response){
+						$scope.errorMessage = 'Error adding user!';
+						$scope.message = '';
+					});
+
+					$scope.save_check();
+					
+					$scope.new_entry();
+
 		}
 	
-		if(operation=='REFRESH')
-		{		
-			$scope.spiner='OFF';
-			$scope['product_id']='';
-			$scope['product_id_name']='';				
-			$scope['hsncode']='';
-			$scope['group_id']='';
-			$scope['group_id_name']='';
-			$scope['tax_ledger_id']='';
-			$scope['tax_per']='';
-			$scope['brand_id']='';
-			$scope['brand_id_name']='';	
-			document.getElementById('1').focus();	
+
+		
+	
+		$scope.save_check=function()
+		{	
+
+				$rootScope.final_array=[];
+				$rootScope.save_array=[];
+
+				$rootScope.final_array = JSON.parse(JSON.stringify($rootScope.FormInputArray));
+				$rootScope.save_status='OK';
+				for(var i=0;i<2;i++)
+				{
+					angular.forEach($rootScope.final_array[0]['header'][i]['fields'][0], function (values, key) 
+					{ 
+						$rootScope.final_array[0]['header'][i]['fields'][0][key]['datafields']='';	
+						
+					}); 
+				}		
+
+				$rootScope.savedone_status='SAVE_DONE'; 			
+				$scope.savedata();			
+			
+		}	
+
+
+		//SAVE SECTION...
+
+
+
+		$scope.savedata=function()
+		{
+						$scope.showarray='YES';
+
+						var data_link=BaseUrl;
+						var success={};	
+						var data = JSON.stringify($rootScope.final_array);	
+						var data_save = {'form_name':$scope.current_form_report,'subtype':'SAVE_DATA','raw_data':data};
+			
+						var config = {headers : 
+							{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'	}
+						}
+						//$http.post(data_link, data,config)
+						$http.post(data_link,data_save,config)
+						.then (function success(response){
+			
+								$scope.server_msg=response.data.server_msg;
+								$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue']=response.data.id_header;
+								$rootScope.FormInputArray[0]['header'][0]['fields'][0]['invoice_no']['Inputvalue']=response.data.invoice_no;
+															
+								angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
+								{ 
+									if(key!='main_group_id' )
+									{
+										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
+										$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']='';	
+									}				
+								}); 
+			
+							//CHANGES HERE FORM BASIS
+							document.getElementById(8).focus();
+
+						//	$scope.view_bill_wise_item(response.data.id_header);
+							$scope.dtlist(response.data.id_header);
+							$scope.dtlist_total(response.data.id_header);	
+							$scope.main_grid(1);
+						
+			
+							$rootScope.savedone_status='SAVE_NOT_DONE';
+							$scope.loading = false;
+					
+						},
+						function error(response){
+							$scope.errorMessage = 'Error adding user!';
+							$scope.message = '';
+						});
 
 		}
-	}
 
 
+		//SAVE SECTION...
+		
+
+		//FOR BILL PRINT
+		$scope.print_documents = function(printtype) 
+		{ 
+			var printtype='POS_INVOICE';
+			//var BaseUrl=domain_name+"Project_controller/experimental_form/";
+			var id=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
+			var data_link=domain_name+"Project_controller/print_documents/"+printtype+'/'+id;
+			console.log(data_link);
+			//	$http.get(data_link).then(function(response){});
+			window.popup(data_link); 
+			$scope.new_entry();
+			
+		};
+	
+
+		$scope.print_label = function() 
+		{ 
+			
+			var PRINTTYPE='LABEL';
+			var id_header=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
+			var BaseUrl=domain_name+"Project_controller/print_all/";
+			var data_link=BaseUrl+id_header+'/'+PRINTTYPE;
+			window.popup(data_link); 				 
+		};
+
+		$scope.print_slip = function(printtype) 
+		{ 
+			var printtype='PRINT_SLIP';
+			//var BaseUrl=domain_name+"Project_controller/experimental_form/";
+			var id=$rootScope.FormInputArray[0]['header'][0]['fields'][0]['id']['Inputvalue'];
+			var data_link=domain_name+"Project_controller/print_documents/"+printtype+'/'+id;
+			console.log(data_link);
+			//	$http.get(data_link).then(function(response){});
+			window.popup(data_link); 
+			
+		};
+
+
+		
+		
 
 }]);
+
+
+//************************EXPERIMENT SECTION END *****************************************//
+
+
+
+
+
+
 
 
 app.controller('main_transaction_controller',['$scope','$rootScope','$http','$window','general_functions','$location',
@@ -3052,36 +3676,6 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 				}	
 
 
-
-
-
-					//var txt;
-					// var r = confirm("Do you want to Create New Invoice ?");
-					// if (r == true) {
-
-								//CHECKING THE BILL IF BILL_STATUS =NONE THEN DELETE THE BILL 
-								
-
-
-
-								// angular.forEach($rootScope.FormInputArray[0]['header'][0]['fields'][0], function (values, key) 
-								// { 
-								// 	$rootScope.FormInputArray[0]['header'][0]['fields'][0][key]['Inputvalue']='';
-								// 	$rootScope.FormInputArray[0]['header'][0]['fields'][0][key]['Inputvalue_id']='';	
-								// }); 
-
-								// angular.forEach($rootScope.FormInputArray[0]['header'][1]['fields'][0], function (values, key) 
-								// { 								
-								// 		$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue']='';
-								// 		$rootScope.FormInputArray[0]['header'][1]['fields'][0][key]['Inputvalue_id']='';	
-								// }); 
-
-								// $rootScope.FormInputArray[0]['header'][0]['fields'][0]['invoice_date']['Inputvalue']=$scope.tran_date;
-														
-								// $scope.dtlist(0);
-								// $scope.test();
-								// document.getElementById(0).focus();
-					//}
 
 			}
 
@@ -4090,8 +4684,6 @@ function($scope,$rootScope,$http,$window,general_functions,$location)
 }]);
 
 
-
-
 	
 //************************PRODUCT MASTER END*****************************************//
 
@@ -4157,13 +4749,14 @@ function($scope,$rootScope,general_functions,$http){
 
 
 
-app.controller('product_master',['$scope','$rootScope','$http',
-function($scope,$rootScope,$http){
+app.controller('product_master',['$scope','$rootScope','general_functions','$http',
+function($scope,$rootScope,general_functions,$http){
 	"use strict";
 	
 			$scope.products={};
 			$scope.ledgers={};
 			$rootScope.FormInputArray=[];	
+			$rootScope.all_master=[];
 
 			var BaseUrl=domain_name+"Project_controller/product_master/";
 			var AcTranType;
@@ -4179,20 +4772,29 @@ function($scope,$rootScope,$http){
 			if (dt < 10) {	dt = '0' + dt;}
 			if (month < 10) {month = '0' + month;}
 			$scope.tran_date=year+'-' + month + '-'+dt;
-			
-			
-			var data_link=query_result_link+"32/";$http.get(data_link).then(function(response) {$scope.master_lovs=response.data;});
-			//console.log(data_link);
-			var data_link=query_result_link+"33/";$http.get(data_link).then(function(response) {$scope.active_inactive_list=response.data;});
 
-			var data_link=query_result_link+"39/";$http.get(data_link).then(function(response) {$scope.product_group_list=response.data;});
-			var data_link=query_result_link+"38/";$http.get(data_link).then(function(response) {$scope.brand_list=response.data;});
 			
-			var data_link=query_result_link+"40/";$http.get(data_link).then(function(response) {$scope.tax_list=response.data;});
-			var data_link=query_result_link+"41/";$http.get(data_link).then(function(response) {$scope.active_inactive_list=response.data;});
-			console.log(data_link);
+			$scope.download_all_master=function(id)
+			{
+					general_functions.download_master_for_product(BaseUrl);
+					$scope.product_group_list=$rootScope.all_master['PRODUCT_GROUP_LIST'];
+					$scope.brand_list=$rootScope.all_master['BRAND_LIST'];
+					$scope.active_inactive_list=$rootScope.all_master['ACTIVE_INACTIVE_LIST'];
+			}
 
-			console.log(data_link);
+			$scope.download_all_master(1);
+
+			
+
+			// var data_link=query_result_link+"39/";$http.get(data_link).then(function(response) {$scope.product_group_list=response.data;});
+			// console.log(data_link);
+			// var data_link=query_result_link+"38/";$http.get(data_link).then(function(response) {$scope.brand_list=response.data;});
+			// console.log(data_link);
+			
+			// var data_link=query_result_link+"40/";$http.get(data_link).then(function(response) {$scope.tax_list=response.data;});
+			// console.log(data_link);
+			// var data_link=query_result_link+"41/";$http.get(data_link).then(function(response) {$scope.active_inactive_list=response.data;});
+			// console.log(data_link);
 						
 			$scope.entry_index=0;
 			$scope.transetting='ENTRY';	
@@ -4239,9 +4841,6 @@ function($scope,$rootScope,$http){
 				{
 					angular.forEach(response.data,function(value,key)
 					{
-
-					//	console.log('test'+value.list_of_values);
-
 						$rootScope.FormInputArray[0] =
 							{		
 								group_id:value.group_id,	
@@ -4250,10 +4849,6 @@ function($scope,$rootScope,$http){
 							};		
 					});	
 				});	
-
-				// $scope.id_header=id_header;
-				// $rootScope.transetting='ENTRY';	
-				// $scope.form_control();
 
 			}		
 		
@@ -4287,6 +4882,327 @@ function($scope,$rootScope,$http){
 	
 }]);
 
+
+
+app.controller('Product_master_old',['$scope','$rootScope','$http',
+function($scope,$rootScope,$http)
+{
+	"use strict";
+
+	//$scope.appState='EMIPAYMENT';
+	//var domain_name="http://localhost/abir_das_unitedlab/SATNAM/";	
+	$scope.spiner='ON';
+	var BaseUrl=domain_name+"Accounts_controller/AccountsTransactions/Product_master/";
+			
+
+			$scope.mainOperation=function(event,element_name)
+			{	
+					console.log('event '+event);
+					// if(element_name===19)
+					// {
+					// 	$scope.get_set_value('','','DRCRCHECKING');
+					// 	document.getElementById(7).focus();			
+					// }			
+
+					// if(event.keyCode === 13)
+					// {	
+					// 	if(element_name===10)
+					// 	{document.getElementById('exp_monyr').focus();}		
+
+					// 	if(element_name===11)
+					// 	{document.getElementById('mfg_monyr').focus();}			
+
+					// 	element_name=Number(element_name+1);			
+					// 	document.getElementById(element_name).focus();		
+					// }						
+			}
+
+			//===================START SEARCH SECTION =========================================
+		
+			$rootScope.taxlist= [];
+			$rootScope.brandlist= [];
+			$rootScope.grouplist= [];
+			$rootScope.productlist=[];			
+
+			var data_link=query_result_link+"34/";
+			$http.get(data_link).then(function(response){angular.forEach(response.data,function(value,key)
+			{$rootScope.productlist_master.push({id: value.id,name:value.productname});});});
+			
+			$scope.savemsg='Product master Loading. Please wait ...... '; 	
+			// var data_link=BaseUrl+"product_master/";							
+			// console.log(data_link);					
+			// $http.get(data_link).then(function(response){
+			// 	angular.forEach(response.data,function(value,key){		
+			// 		$scope.savemsg='All product loaded'; 			
+			// 		$rootScope.productlist.push({id: value.id,name:value.productname,available_qnty:value.available_qnty});
+			// 	});
+			// });
+			
+			$scope.spiner='OFF';
+
+			var data_link=query_result_link+"38/";
+			console.log(data_link);
+			$http.get(data_link).then(function(response){angular.forEach(response.data,function(value,key)
+			{$rootScope.brandlist.push({id:value.id,name:value.name});});});
+
+			var data_link=query_result_link+"39/";
+			console.log(data_link);
+			$http.get(data_link).then(function(response){angular.forEach(response.data,function(value,key)
+			{$rootScope.grouplist.push({id:value.id,name:value.name});});});
+
+			var data_link=query_result_link+"40/";
+			console.log(data_link);
+			$http.get(data_link).then(function(response){angular.forEach(response.data,function(value,key)
+			{$rootScope.taxlist.push({id:value.id,name:value.acc_name});});});
+
+
+		$rootScope.search = function(searchelement)
+		{
+		
+			$scope.SEARCHTYPE='PRODUCT';
+			$rootScope.searchelement=searchelement;
+			$rootScope.suggestions = [];
+			$rootScope.searchItems=[];
+		
+			if($rootScope.searchelement=='product_id_name')
+			{$rootScope.searchItems=$rootScope.productlist;}	
+			else if($rootScope.searchelement=='group_id_name')
+			{$rootScope.searchItems=$rootScope.grouplist;}	
+			else if($rootScope.searchelement=='brand_id_name')
+			{$rootScope.searchItems=$rootScope.brandlist;}	
+			else if($rootScope.searchelement=='tax_per')
+			{$rootScope.searchItems=$rootScope.taxlist;}	
+			else
+			{//Sale_test.list_items($rootScope.searchelement,$scope.product_id);}
+			}
+	
+			console.log($rootScope.searchItems);
+						
+			$rootScope.searchItems.sort();	
+			var myMaxSuggestionListLength = 0;
+			for(var i=0; i<$rootScope.searchItems.length; i++)
+			{
+				
+					var searchItemsSmallLetters = angular.uppercase($rootScope.searchItems[i].name);
+					var searchTextSmallLetters = angular.uppercase($scope[$rootScope.searchelement]);
+					if( searchItemsSmallLetters.indexOf(searchTextSmallLetters) >=0){
+	
+						if($rootScope.searchelement=='product_id_name' )
+						{	$rootScope.suggestions.push({id: $rootScope.searchItems[i].id,name:$rootScope.searchItems[i].name,available_qnty:$rootScope.searchItems[i].available_qnty} );}
+						else
+						{$rootScope.suggestions.push({id: $rootScope.searchItems[i].id,name:$rootScope.searchItems[i].name} );}
+	
+						myMaxSuggestionListLength += 1;
+						if(myMaxSuggestionListLength === 1500)
+						{break;}
+					}
+			}
+
+		};
+	
+	$rootScope.$watch('selectedIndex',function(val){		
+		if(val !== -1) {
+		//	$scope[$rootScope.searchelement] =$rootScope.suggestions[$rootScope.selectedIndex];
+			$scope[$rootScope.searchelement] =$rootScope.suggestions[$rootScope.selectedIndex]['name'];	
+		}
+	});		
+	$rootScope.checkKeyDown = function(event){
+		console.log(event.keyCode);
+
+		if(event.keyCode === 40){//down key, increment selectedIndex
+			event.preventDefault();
+			if($rootScope.selectedIndex+1 < $rootScope.suggestions.length){
+				$rootScope.selectedIndex++;
+			}else{
+				$rootScope.selectedIndex = 0;
+			}
+		}else if(event.keyCode === 38){ //up key, decrement selectedIndex
+			event.preventDefault();
+			if($rootScope.selectedIndex-1 >= 0){
+				$rootScope.selectedIndex--;
+			}else{
+				$rootScope.selectedIndex = $rootScope.suggestions.length-1;
+			}
+		}
+		else if(event.keyCode === 13){ //enter key, empty suggestions array
+			$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+			//console.log($rootScope.selectedIndex);
+		//	event.preventDefault();			
+		//	$rootScope.suggestions = [];
+		//	$rootScope.searchItems=[];
+		//	$rootScope.selectedIndex = -1;
+		}
+		else if(event.keyCode === 9){ //enter tab key
+			//console.log($rootScope.selectedIndex);
+			if($rootScope.selectedIndex>-1){
+				$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+			}			
+
+		}else if(event.keyCode === 27){ //ESC key, empty suggestions array
+			$rootScope.AssignValueAndHide($rootScope.selectedIndex);
+			console.log($rootScope.selectedIndex);
+			event.preventDefault();
+			$rootScope.suggestions = [];
+			$rootScope.searchItems=[];
+			$rootScope.selectedIndex = -1;
+		}else{
+			$rootScope.search();	
+		}
+	};
+	
+	//ClickOutSide
+	var exclude1 = document.getElementById($rootScope.searchelement);
+	$rootScope.hideMenu = function($event){
+		$rootScope.search();
+		//make a condition for every object you wat to exclude
+		if($event.target !== exclude1) {
+			$rootScope.searchItems=[];
+			$rootScope.suggestions = [];
+			$rootScope.selectedIndex = -1;
+		}
+	};
+	//======================================
+	
+	//Function To Call on ng-keyup
+	$rootScope.checkKeyUp = function(event){ 
+		if(event.keyCode !== 8 || event.keyCode !== 46){//delete or backspace
+			if($scope[$rootScope.searchelement] === ""){
+				$rootScope.suggestions = [];
+				$rootScope.searchItems=[];
+				$rootScope.selectedIndex = -1;
+			}
+		}
+	};
+	//======================================
+	//List Item Events
+	//Function To Call on ng-click
+	$rootScope.AssignValueAndHide = function(index)
+	{
+
+		$scope[$rootScope.searchelement]= $rootScope.suggestions[index];
+	
+		if($rootScope.searchelement=='product_id_name')
+		{
+			var id=	$rootScope.suggestions[index]['id'];	
+			var data_link=BaseUrl+"product_id/"+id;					
+			//console.log(data_link);					
+			$http.get(data_link).then(function(response){
+				angular.forEach(response.data,function(value,key){
+					$scope['product_id']=value.id;  //ACTUAL ID
+					$scope['product_id_name']=value.name; // NAME 					
+					$scope['hsncode']=value.hsncode; 
+
+					$scope['tax_ledger_id']=value.tax_ledger_id; // NAME 	
+					$scope['tax_per']=value.tax_per; 
+
+					$scope['group_id']=value.group_id; 
+					$scope['group_id_name']=value.group_id_name; 
+
+					$scope['brand_id']=value.brand_id; 
+					$scope['brand_id_name']=value.brand_id_name; 
+																					
+				});
+			});
+
+			
+		}
+
+		if($rootScope.searchelement=='group_id_name')
+		{
+			$scope['group_id']=$rootScope.suggestions[index]['id'];
+			$scope['group_id_name']=$rootScope.suggestions[index]['name'];				
+		}
+		if($rootScope.searchelement=='tax_per')
+		{
+			$scope['tax_ledger_id']=$rootScope.suggestions[index]['id'];
+			$scope['tax_per']=$rootScope.suggestions[index]['name'];				
+		}
+		if($rootScope.searchelement=='brand_id_name')
+		{
+			$scope['brand_id']=$rootScope.suggestions[index]['id'];
+			$scope['brand_id_name']=$rootScope.suggestions[index]['name'];				
+		}
+			
+		 $rootScope.suggestions=[];
+		 $rootScope.searchItems=[];
+		 $rootScope.selectedIndex = -1;
+	};
+
+	//===================END SEARCH SECTION =========================================
+
+
+	$scope.savedata=function()
+	{
+		var data_link=BaseUrl+"SAVE";
+		var success={};
+		$scope.spiner='ON';
+		//console.log('$scope.id_detail'+$scope.id_detail);
+		var data_save = 
+		{
+			'product_id': $scope.get_set_value($scope.product_id,'num','SETVALUE'),
+			'productname': $scope.get_set_value($scope.product_id_name,'str','SETVALUE'),
+			'hsncode': $scope.get_set_value($scope.hsncode,'str','SETVALUE'),
+			'group_id': $scope.get_set_value($scope.group_id,'num','SETVALUE'),
+			'tax_ledger_id': $scope.get_set_value($scope.tax_ledger_id,'num','SETVALUE'),
+			'brand_id': $scope.get_set_value($scope.brand_id,'num','SETVALUE')
+		};	
+	
+		var config = {headers : 
+			{'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'	}
+		}
+		//$http.post(data_link, data,config)
+		$http.post(data_link,data_save,config)
+		.then (function success(response){
+
+			//console.log('ID HEADER '+response.data.id_header);
+			$scope.savemsg='Product has been saved Successfully!'; 			
+			$scope.get_set_value(response.data,'','REFRESH');
+			document.getElementById('1').focus();
+			
+		},
+		function error(response){
+			$scope.errorMessage = 'Error adding user!';
+			$scope.message = '';
+		});
+		
+
+	}
+	
+	$scope.get_set_value=function(datavalue,datatype,operation)
+	{
+		if(operation=='SETVALUE')
+		{
+			if(angular.isUndefined(datavalue)==true)
+			{
+				if(datatype=='num')
+				{return 0;}
+				if(datatype=='str')
+				{return '';}		
+			}
+			else
+			{return datavalue;}
+		}
+	
+		if(operation=='REFRESH')
+		{		
+			$scope.spiner='OFF';
+			$scope['product_id']='';
+			$scope['product_id_name']='';				
+			$scope['hsncode']='';
+			$scope['group_id']='';
+			$scope['group_id_name']='';
+			$scope['tax_ledger_id']='';
+			$scope['tax_per']='';
+			$scope['brand_id']='';
+			$scope['brand_id_name']='';	
+			document.getElementById('1').focus();	
+
+		}
+	}
+
+
+
+}]);
 
 app.controller('product_master_minimum_stock',['$scope','$rootScope','$http',
 function($scope,$rootScope,$http){
@@ -5139,10 +6055,125 @@ function($scope,$rootScope,$http){
 	
 	}]);
 
-/*
-	Masked Input plugin for jQuery
-	Copyright (c) 2007-2013 Josh Bush (digitalbush.com)
-	Licensed under the MIT license (http://digitalbush.com/projects/masked-input-plugin/#license)
-	Version: 1.3.1
-*/
+
+
+
+
+
+app.directive('shortcut', function() {
+		return {
+			restrict: 'E',
+			replace: true,
+			scope: true,
+			link:    function postLink(scope, iElement, iAttrs){
+				jQuery(document).on('keyup', function(e){
+					 scope.$apply(scope.keyPressed(e));
+				 });
+
+				//  $(document).on('keyup', function(e) {
+				// 	if (e.key == "Enter") $('.save').click();
+				// 	if (e.key == "Escape") $('.cancel').click();
+				// });
+
+
+			}
+		};
+	});	
+
+app.directive('loading', function () {
+		return {
+			restrict: 'E',
+			replace:true,
+			template: '<div class="loading"><img src="http://omkarhomoeohall.co.in/theme_files/loader.gif" width="100" height="100" /></div>',
+			link: function (scope, element, attr) {
+						scope.$watch('loading', function (val) {
+								if (val)
+										$(element).show();
+								else
+										$(element).hide();
+						});
+			}
+		}
+});
+	
+app.directive('scrollToBottom', function($timeout, $window) {
+	return {
+			scope: {
+					scrollToBottom: "="
+			},
+			restrict: 'A',
+			link: function(scope, element, attr) {
+					scope.$watchCollection('scrollToBottom', function(newVal) {
+							if (newVal) {
+									$timeout(function() {
+											element[0].scrollTop =  element[0].scrollHeight;
+									}, 0);
+							}
+
+					});
+			}
+	};
+});
+
+//************************ACCOUNT -RECEIVE,PAYMENT,JOURNAL,CONTRA START*****************************************//
+
+app.directive('selectOnClick', ['$window', function ($window) {
+    return {
+        restrict: 'A',
+        link: function (scope, element, attrs) {
+            element.on('blur', function () {
+                if (!$window.getSelection().toString()) {
+                    // Required for mobile Safari
+                    this.setSelectionRange(0, this.value.length)
+                }
+            });
+        }
+    };
+}]);
+
+app.filter('toRange', function(){
+	return function(input) {
+	  var lowBound, highBound;
+	  if (input.length == 1) {       
+		lowBound = 0;
+		highBound = +input[0] - 1;      
+	  } else if (input.length == 2) {      
+		lowBound = +input[0];
+		highBound = +input[1];
+	  }
+	  var i = lowBound;
+	  var result = [];
+	  while (i <= highBound) {
+		result.push(i);
+		i++;
+	  }
+	  return result;
+	}
+	});
+	
+	app.run(['$anchorScroll', function($anchorScroll) {
+		$anchorScroll.yOffset =1000;   // always scroll by 50 extra pixels
+	}]);
+
+
+
+
+app.directive('ngConfirmClick', [
+  function(){
+    return {
+      priority: -1,
+      restrict: 'A',
+      link: function(scope, element, attrs){
+        element.bind('click', function(e){
+          var message = attrs.ngConfirmClick;
+          // confirm() requires jQuery
+          if(message && !confirm(message)){
+            e.stopImmediatePropagation();
+            e.preventDefault();
+          }
+        });
+      }
+    }
+  }
+]);
 

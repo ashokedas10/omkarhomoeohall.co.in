@@ -58,8 +58,33 @@ class Project_model extends CI_Model {
         return false;
 	}
 	
-
 	
+	public function set_printer_for_current_user($emp_id=0,$printer_type='')
+	{
+
+		$printer_computer_id=$this->GetSingleVal('printer_computer_id','tbl_employee_mstr','id='.$emp_id);
+		$selected_printer_name='';
+
+		if($printer_type=='BILL_PRINTER')
+		{
+			$whr="id=".$printer_computer_id;
+			$selected_printer_name=$this->GetSingleVal('BILL_PRINTER','printer_setup',$whr);
+		}
+		if($printer_type=='LABEL_PRINTER')
+		{
+			$whr="id=".$printer_computer_id;
+			$selected_printer_name=$this->GetSingleVal('LABEL_PRINTER','printer_setup',$whr);
+		}
+		if($printer_type=='PRESCRIPTION_PRINTER')
+		{
+			$whr="id=".$printer_computer_id;
+			$selected_printer_name=$this->GetSingleVal('PRESCRIPTION_PRINTER','printer_setup',$whr);
+		}
+		
+		$sql="update tbl_employee_mstr set selected_printer_name='".$selected_printer_name."' WHERE id=".$emp_id;
+		$this->db->query($sql);
+
+	}	
 
 	public function master_stored_session()
 	{
@@ -508,15 +533,14 @@ class Project_model extends CI_Model {
 			// }
 
 		
-		
-			if($product->product_id>0 && $product_save['available_qnty']>-1)
+			//if($product->product_id>0 && $product_save['available_qnty']>-1)
+
+			if($product->product_id>0 )
 			{
 				//$this->save_records_model($product->product_id,'product_balance_companywise',$product_save);
-
 				$product_save['product_id']=$product->product_id;
 				$product_save['company_id']=$product->company_id;	
 				$this->projectmodel->save_records_model($product_balance_companywise_id,'product_balance_companywise',$product_save);
-			
 			}
 			//CLEARSTONE - 30ML			
 			
@@ -542,8 +566,6 @@ class Project_model extends CI_Model {
 			if(count($records)>0){foreach ($records as $record){$tot_issue=$record->totqnty;}}
 
 			
-
-
 			//DELETED
 			$tot_sale_deleted=0;
 			$records = "select sum(qnty) totqnty from invoice_summary a, invoice_details b where  
@@ -567,7 +589,6 @@ class Project_model extends CI_Model {
 			// {
 			// 	if($product->status=='SALE')
 			// 	{$rack_save['total_available_qnty']=$rack_save['total_available_qnty']+intval($product->qnty); }
-	
 			// }
 
 			if($product->rackno>0 )
@@ -712,11 +733,16 @@ class Project_model extends CI_Model {
 								$whr="product_group_id=".$row1->main_group_id." and doctor_mstr_id=".$doctor_ledger_id;
 								$doctor_commission_percentage=
 								floatval($this->projectmodel->GetSingleVal('commission_percentage','doctor_commission_set',$whr));
+
+								$whr="id=".$row1->product_id;
+								$spl_discount=floatval($this->projectmodel->GetSingleVal('spl_discount','productmstr',$whr));
+																
+								if($spl_discount>0 && $spl_discount<=$doctor_commission_percentage)
+								{ $doctor_commission_percentage=$spl_discount; }
 								
 								if($row1->ITEM_DELETE_STATUS=='DELETED')
-								{
-									$doctor_commission_percentage=0;
-								}								
+								{$doctor_commission_percentage=0;}		
+
 								$inv_details['doctor_commission_percentage']=$doctor_commission_percentage;
 							}
 							
@@ -1331,14 +1357,14 @@ function gethierarchy_list($parentuid='',$returntype='HQ')
 		from invoice_summary a ,invoice_details b ,productmstr c
 		where a.id=b.invoice_summary_id and c.id=b.product_id and 
 		(a.status='OPEN_BALANCE' or a.status='PURCHASE' or a.status='SALE_RTN') and b.product_id=".$product_id." 
-		and a.company_id=".$company_id." group by b.mrp" ;
+		and a.company_id=".$company_id." group by b.mrp order by b.mrp" ;
 
 		$records = $this->get_records_from_sql($records);	
 		foreach ($records as $record)
 		{
-			$available_qnty=$this->batch_wise_available_stock($product_id,$record->MRP,$record->exp_monyr,$company_id);
-			if($available_qnty>0)
-			{
+			 $available_qnty=$this->batch_wise_available_stock($product_id,$record->MRP,$record->exp_monyr,$company_id);
+			//if($available_qnty>0)
+			//{
 				$data[$key]['FieldID']=$record->FieldID;
 				$data[$key]['FieldVal']=$record->FieldVal;
 				$data[$key]['Product_name']=$record->productname;
@@ -1361,7 +1387,7 @@ function gethierarchy_list($parentuid='',$returntype='HQ')
 				$data[$key]['Rkid']=$record->rackno;
 				$data[$key]['pid']=$record->id;
 				$key=$key+1;
-			}
+			//}
 
 		}	
 		

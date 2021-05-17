@@ -229,9 +229,12 @@ function shortcut()
 
 <div ng-app="Accounts"   >
 
-<div ng-controller="main_transaction_controller" class="panel panel-primary" id="myBody" onkeypress = "shortcut()" ng-init="test( )">
+<div ng-controller="purchase_experiment" class="panel panel-primary" id="myBody" onkeypress = "shortcut()" ng-init="test( )">
 																
 		<table class="table table-bordered table-striped" >
+		
+		
+			
 		
 	<!--{{returnArray}}
 	<br /><br />
@@ -486,14 +489,14 @@ function shortcut()
 		</table>
 	</div>
 				
-		<!--REGULAR SALE SECTION END-->				
+				
 			
 		<div class="panel panel-primary"  ng-if="dtlist_array.length>0">
 		<div class="panel-body" >
-		<!--{{dtlist_array}}-->
+		
 		
 			<table class="table table-bordered table-hover table-condensed "  >	
-			<!--tt :{{dtlist_array}}-->
+			
 				
 				<tr  style="background-color:#999999">			
 				<td>Srl</td>
@@ -525,6 +528,8 @@ function shortcut()
 			   </tr>	
 																												
 			</table>
+			
+			
 	   </div></div>		
 				
 	
@@ -635,6 +640,8 @@ function shortcut()
 		</table>
 			
 	
+	
+	{{all_master['PRODUCT_DETAIL']}}
 
 </div>
 

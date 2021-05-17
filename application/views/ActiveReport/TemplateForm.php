@@ -200,13 +200,31 @@
 						}
 					}
 					
-					if($frmrpttemplatehdrID==44 && $key1=='company_id')
+					if($frmrpttemplatehdrID==44  && $key1=='company_id')
 					{
 						$location='';
 						$sql="select * from company_details 	where  	id=".$bdr;
 						$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
 						foreach ($rowrecord as $row1)
 						{$bdr=$row1->NAME;}						
+					}
+					
+					if($frmrpttemplatehdrID==54  && $key1=='company_id')
+					{
+						$location='';
+						$sql="select * from company_details 	where  	id=".$bdr;
+						$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
+						foreach ($rowrecord as $row1)
+						{$bdr=$row1->NAME;}						
+					}
+					
+					if($frmrpttemplatehdrID==31  && $key1=='printer_computer_id')
+					{
+						$location='';
+						$sql="select * from printer_setup 	where  	id=".$bdr;
+						$rowrecord = $this->projectmodel->get_records_from_sql($sql);	
+						foreach ($rowrecord as $row1)
+						{$bdr=$row1->computer_name;}						
 					}
 					
 					

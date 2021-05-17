@@ -136,7 +136,9 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
 		
 			
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/8/list/"><i class="fa fa-circle-o"></i>Company Setting</a></li> 
-		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/31/list/"><i class="fa fa-circle-o"></i>User Master</a></li> 		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/54/list/"><i class="fa fa-circle-o"></i>Printer Setting</a></li> 
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/31/list/"><i class="fa fa-circle-o"></i>User Master</a></li> 
+				
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/26/list/"><i class="fa fa-circle-o"></i>State Master</a></li>
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/44/list/"><i class="fa fa-circle-o"></i>Rack Master</a></li> 	 		
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/TempleteForm/21/list/"><i class="fa fa-circle-o"></i>Brand Master</a></li> 		
@@ -211,6 +213,11 @@ if($login_status=='SUPER' || $login_status=='ADMIN' ) {
 		
 		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/wholesale_bill_experiment/acc_tran/47/">
 		<i class="fa fa-circle-o"></i>Whole Sale Experiment</a></li>
+		
+		
+		<li><a href="<?php echo ADMIN_BASE_URL?>Project_controller/load_form_report/purchase_experiment/acc_tran/47/">
+		<i class="fa fa-circle-o"></i>Purchase Experiment</a></li>
+		
 		
               </ul>
             </li>	

@@ -31,6 +31,50 @@ function __construct()
 
 
 	
+
+	public function get_printer_name()
+	{
+
+		if (isset($_SERVER['HTTP_ORIGIN'])) {
+			header("Access-Control-Allow-Origin: *");
+			header('Access-Control-Allow-Credentials: true');
+			header('Access-Control-Max-Age: 86400');    // cache for 1 day
+		}
+
+		// Access-Control headers are received during OPTIONS requests
+		if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') 
+		{
+			if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
+				header("Access-Control-Allow-Methods: GET, POST, OPTIONS");         
+
+			if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
+				header("Access-Control-Allow-Headers:{$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
+
+			exit(0);
+		}
+		
+		
+		$id_header=$id_detail='';
+		$form_data=json_decode(file_get_contents("php://input"));
+		$data=$return_data=$save_details=$save_hdr=array();
+				
+		$printer_computer_id=trim($form_data->printer_computer_id);
+
+		$return_data['selected_printer_name']='';
+		$records="select selected_printer_name from tbl_employee_mstr where selected_printer_name<>'' and  printer_computer_id=".$printer_computer_id;
+		$records = $this->projectmodel->get_records_from_sql($records);	
+		$return_data['selected_printer_name']=$records[0]->selected_printer_name;
+
+		//$return_data['selected_printer_name']='Generic IBM Graphics 9pin wide';
+
+		header('Access-Control-Allow-Origin: *');
+		header("Content-Type: application/json");
+		echo json_encode($return_data);
+						
+	}
+
+
+	
 	public function dbbackup()
 	{
 	   
